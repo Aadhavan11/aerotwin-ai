@@ -437,7 +437,7 @@ export default function Planning() {
                 <Legend />
                 <Bar
                   dataKey="Optimized"
-                  fill="#2f5d8a"
+                  fill="#1d1d1f"
                   isAnimationActive={false}
                 >
                   <LabelList dataKey="Optimized" position="top" fontSize={12} />

@@ -103,7 +103,7 @@ export default function EngineSection({
       <g key={name} className={`sec-tag ${cls} ${sel ? "sel" : ""}`} onClick={() => onSelect(name)} style={{ cursor: "pointer" }}>
         <line x1={a.x} y1={a.y + OFF} x2={a.tx + 56} y2={a.row < 0 ? ty + 22 : ty} stroke="#9aa1a7" strokeWidth={0.8} />
         <circle cx={a.x} cy={a.y + OFF} r={2.6} fill="#16191d" />
-        <rect x={a.tx} y={ty} width={112} height={22} rx={6} fill={sel ? "#eef3f8" : "#fff"} stroke={sel ? "#2f5d8a" : "#cfcfca"} />
+        <rect x={a.tx} y={ty} width={112} height={22} rx={6} fill={sel ? "#eef3f8" : "#fff"} stroke={sel ? "#1d1d1f" : "#cfcfca"} />
         <text x={a.tx + 7} y={ty + 15} fontSize={10}>
           <tspan fontWeight={600}>{name}</tspan>
           <tspan dx={5} className="mono">{v == null ? "-" : fmt(v)}</tspan>
@@ -172,8 +172,8 @@ export default function EngineSection({
           ["5", 564],
         ].map(([n, x]) => (
           <g key={n}>
-            <line x1={x} y1={AX - 136} x2={x} y2={AX + 136} stroke="#2f5d8a" strokeDasharray="3 3" strokeWidth={0.8} opacity={0.55} />
-            <text x={Number(x) + 5} y={AX - 124} textAnchor="start" fontSize={10} fill="#2f5d8a" className="mono">
+            <line x1={x} y1={AX - 136} x2={x} y2={AX + 136} stroke="#1d1d1f" strokeDasharray="3 3" strokeWidth={0.8} opacity={0.55} />
+            <text x={Number(x) + 5} y={AX - 124} textAnchor="start" fontSize={10} fill="#1d1d1f" className="mono">
               {n}
             </text>
           </g>

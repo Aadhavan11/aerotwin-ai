@@ -283,7 +283,7 @@ function Gantt({ now, legs, view, items, focus }: { now: string; legs: Leg[]; vi
         </div>
       </div>
       <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
-        Next five days, UTC. Solid blue: planned maintenance. Red line: hard deadline. Pale blue: time on the ground between flights.
+        Next five days, UTC. Black: planned maintenance. Red line: hard deadline. Grey: time on the ground between flights.
       </p>
     </Card>
   );

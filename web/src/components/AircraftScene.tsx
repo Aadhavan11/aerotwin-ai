@@ -31,7 +31,7 @@ const CLOSE: Record<string, { part: string; dir: [number, number, number]; dist:
   nose: { part: "cockpit", dir: [0.75, 0.3, -1], dist: 9 },
 };
 
-const tint = { alert: new THREE.Color(0xc0392b), watch: new THREE.Color(0xc27c0e), select: new THREE.Color(0x2f5d8a) };
+const tint = { alert: new THREE.Color(0xc0392b), watch: new THREE.Color(0xc27c0e), select: new THREE.Color(0x56606c) };
 
 export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback, catalog }: Props) {
   const host = useRef<HTMLDivElement>(null);

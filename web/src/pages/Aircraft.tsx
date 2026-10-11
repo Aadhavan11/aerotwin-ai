@@ -197,8 +197,8 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
                 <XAxis dataKey="cycle" type="number" domain={["dataMin", "dataMax"]} tickLine={false} />
                 <YAxis domain={[0, 100]} unit="%" tickLine={false} axisLine={false} />
                 <Tooltip labelFormatter={(v) => `Cycle ${v}`} formatter={(v) => (Array.isArray(v) ? v.map((x) => Math.round(Number(x))).join("–") : Math.round(Number(v)))} />
-                <Area type="monotone" dataKey="band" name="p10–p90" stroke="none" fill="#2f5d8a" fillOpacity={0.14} isAnimationActive={false} />
-                <Area type="monotone" dataKey="median" name="p50" stroke="#2f5d8a" fill="none" strokeWidth={1.6} isAnimationActive={false} />
+                <Area type="monotone" dataKey="band" name="p10–p90" stroke="none" fill="#1d1d1f" fillOpacity={0.1} isAnimationActive={false} />
+                <Area type="monotone" dataKey="median" name="p50" stroke="#1d1d1f" fill="none" strokeWidth={1.6} isAnimationActive={false} />
                 <ReferenceLine x={component.cycles} stroke="#6b717a" strokeDasharray="3 3" />
               </AreaChart>
             </ResponsiveContainer>

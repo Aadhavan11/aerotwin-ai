@@ -129,7 +129,7 @@ export default function USMap({
   ];
   const path = (a: Station, b: Station) =>
     `M${px(a.lon)},${py(a.lat)} Q${(px(a.lon) + px(b.lon)) / 2},${Math.min(py(a.lat), py(b.lat)) - Math.abs(px(a.lon) - px(b.lon)) * 0.15} ${px(b.lon)},${py(b.lat)}`;
-  const STATUS_FILL: Record<string, string> = { ok: "#2f7a4f", watch: "#a8650c", alert: "#b3261e", in_maintenance: "#2f5d8a", aog: "#16191d" };
+  const STATUS_FILL: Record<string, string> = { ok: "#3a3a3f", watch: "#a8650c", alert: "#b3261e", in_maintenance: "#8e8e93", aog: "#16191d" };
   // A small top-view aircraft glyph, nose towards +x.
   const glyph = "M7 0 L3 -1 L1 -6 L-1 -6 L0 -1 L-5 -1 L-6.5 -3 L-7.5 -3 L-6.5 0 L-7.5 3 L-6.5 3 L-5 1 L0 1 L-1 6 L1 6 L3 1 Z";
   return (
