@@ -28,20 +28,20 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 - [ ] Everyone: set up the dev environment (`INTEGRATION.md` section 10); make sure you can run `python --version` >= 3.11 and `node --version` >= 20.
 - [ ] **Shamit:** repo skeleton, `models.py` (copy from CONTRACTS), `settings.py`, `db.py` + `init_db`, `main.py` with every router returning fixtures when `MOCK=1`, the 9 fixture files, Makefile, `requirements.txt`, `.env.example`, `.gitignore`. Push. **= C0**
 - [ ] **Aashirth:** download C-MAPSS (or decide to use the synthetic fallback), write `ml/sensors.py` (sensor-name mapping) and push it **first** (Shamit's telemetry needs it).
-- [ ] **Pardhu:** write `copilot/kb/task_cards.yaml` (10 cards) and push (Shamit's copilot and your `derive_tasks` both need it).
+- [x] **Pardhu:** write `copilot/kb/task_cards.yaml` (10 cards) and push (Shamit's copilot and your `derive_tasks` both need it).
 - [ ] **Aadhavan:** `npm create vite`, Tailwind, Recharts, router; app shell + SIMULATED badge; load `fixtures/*.json` statically.
 
 ### Block 1: 9:15 to 10:00 PM, L1 stubs merged
 - [ ] **Shamit:** fleet generator v0 (seeded) writing the DB; `POST /scenario/reset golden`; `SimClock`.
 - [ ] **Aashirth:** `ml.health.score_engine` L1 (z-score rule on T50/Nc/Ps30); `twin.state` L1 (in-memory) + `GET /aircraft/{tail}` from fixtures/DB.
-- [ ] **Pardhu:** `ground_windows`, `derive_tasks` (L1 from fixtures), `greedy` + `static_baseline`, `plan_metrics`; `GET /plan`.
+- [x] **Pardhu:** `ground_windows`, `derive_tasks` (L1 from fixtures), `greedy` + `static_baseline`, `plan_metrics`; `GET /plan`. (done on the stand-in golden state, see `app/solver/README.md`)
 - [ ] **Aadhavan:** Fleet overview wired to `/fleet` (fixtures first); table + KPI tiles + US map.
 - **Gate:** `make demo-check` runs end to end on stubs by **10:00 PM**.
 
 ### Block 2: 10:00 PM to 12:45 AM, the real implementations (L2)
 - [ ] **Shamit:** telemetry source replaying C-MAPSS (from `ml.cmapss`), `POST /sim/step`, `POST /scenario/inject`; tool registry; **scripted** agent workflow with steps stored; `/agents/run` + polling endpoint.
 - [ ] **Aashirth:** RF RUL with quantiles + eval (MAE/RMSE); IsolationForest anomaly + metrics; data-quality flags; twin state with history, predicted curve, timeline; `/metrics` ML block.
-- [ ] **Pardhu:** CP-SAT model; objective + hard constraints; infeasibility reasons; `previous` plan stability; `apply_event_to_state`; `replan` + diff; `compare`.
+- [x] **Pardhu:** CP-SAT model; objective + hard constraints; infeasibility reasons; `previous` plan stability; `apply_event_to_state`; `replan` + diff; `compare`. (done on the stand-in golden state; re-verify at C1 on the real snapshot)
 - [ ] **Aadhavan:** Aircraft Twin screen (SVG aircraft, clickable zones, RUL band, sensor trend, timeline); Planning board (Gantt, baseline/optimized toggle, metrics cards).
 
 ### Block 3: 12:45 to 1:30 AM, **C1: first end-to-end loop** (all four, together, on one screen share/room)
@@ -51,7 +51,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 ### Block 4: 1:30 to 3:15 AM, finish the six features, then freeze
 - [ ] **Shamit:** LLM mode for agents (tool loop + number check + cache); copilot chat; work orders + audit; Operations agent using `simulate`.
 - [ ] **Aashirth:** tests + `HEALTH.md`; help Shamit with `search_kb` and the numeric-claims check; polish predicted curves.
-- [ ] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning; then the doc's stretch goals if all six are green.
+- [x] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning. [ ] then the doc's stretch goals if all six are green (not started).
 - [ ] **Aadhavan:** Simulation Lab screen; Copilot drawer + Agent Activity + work-order approval; error/loading states.
 - [ ] **3:15 AM: FEATURE FREEZE (C2).** Sleep shift 1: Aashirth + Pardhu (3:15 to 5:00). Shamit + Aadhavan continue.
 
