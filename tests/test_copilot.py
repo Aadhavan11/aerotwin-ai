@@ -311,7 +311,7 @@ def test_run_agent_emits_steps_and_swaps_in_the_template_on_bad_numbers():
     ok = FakeClient([tool_use("list_at_risk", {}), reply(block("text", text="SIM-017 engine_2 has RUL p10 18."))])
     res = llm.run_agent("health", "find risk", {"horizon": 60}, {"list_at_risk": b.tools()["list_at_risk"]},
                         client=ok, ts_fn=lambda: NOW, template="TEMPLATE")
-    assert [s.kind for s in res.steps] == ["tool_call", "tool_result", "thought", "summary"]
+    assert [s.kind for s in res.steps] == ["thought", "tool_call", "tool_result", "summary"]   # in the order they happened
     assert [s.n for s in res.steps] == [1, 2, 3, 4]
     assert res.numbers_ok and res.text.startswith("SIM-017")
     bad = FakeClient([tool_use("list_at_risk", {}), reply(block("text", text="RUL p10 99."))])
