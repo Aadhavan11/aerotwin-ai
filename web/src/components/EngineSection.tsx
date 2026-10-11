@@ -173,7 +173,7 @@ export default function EngineSection({
         ].map(([n, x]) => (
           <g key={n}>
             <line x1={x} y1={AX - 136} x2={x} y2={AX + 136} stroke="#2f5d8a" strokeDasharray="3 3" strokeWidth={0.8} opacity={0.55} />
-            <text x={Number(x) + 6} y={AX + 128} textAnchor="start" fontSize={10} fill="#2f5d8a" className="mono">
+            <text x={Number(x) + 5} y={AX - 124} textAnchor="start" fontSize={10} fill="#2f5d8a" className="mono">
               {n}
             </text>
           </g>

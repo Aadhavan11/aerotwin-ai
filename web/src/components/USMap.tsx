@@ -149,10 +149,10 @@ export default function USMap({
           return (
             <g key={s.iata}>
               <rect x={x - 4} y={y - 4} width={8} height={8} fill={closed ? "#b3261e" : "#16191d"} />
-              <text x={x + 10} y={y - 6} fontSize="14" fontWeight="600" fill="#16191d" fontFamily="var(--font-mono)">
+              <text x={x + 10} y={y - 6} fontSize="14" fontWeight="600" fill="#16191d" fontFamily="var(--font-mono)" stroke="#f2f2ef" strokeWidth="4" paintOrder="stroke">
                 {s.iata}
               </text>
-              <text x={x + 10} y={y + 9} fontSize="11" fill="#6b717a">
+              <text x={x + 10} y={y + 9} fontSize="11" fill="#6b717a" stroke="#f2f2ef" strokeWidth="4" paintOrder="stroke">
                 {here.length} on ground · {closed ? "hangar closed" : `${s.hangar_slots} bay${s.hangar_slots === 1 ? "" : "s"}`}
               </text>
               <title>{`${s.iata}: ${here.length} aircraft on the ground, ${s.hangar_slots} hangar slots`}</title>
@@ -190,7 +190,8 @@ export default function USMap({
           const a = station(l.dep),
             b = station(l.arr);
           if (!a || !b) return null;
-          const progress = (at - Date.parse(l.sched_dep)) / (Date.parse(l.sched_arr) - Date.parse(l.sched_dep));
+          const raw = (at - Date.parse(l.sched_dep)) / (Date.parse(l.sched_arr) - Date.parse(l.sched_dep));
+          const progress = Math.min(0.9, Math.max(0.1, raw)); // keep the glyph on the route, clear of the station marker
           const x = px(a.lon) + (px(b.lon) - px(a.lon)) * progress,
             y = py(a.lat) + (py(b.lat) - py(a.lat)) * progress;
           const heading = (Math.atan2(py(b.lat) - py(a.lat), px(b.lon) - px(a.lon)) * 180) / Math.PI;
@@ -210,7 +211,7 @@ export default function USMap({
               }}
               style={{ cursor: "pointer" }}
             >
-              <path d={glyph} transform={`translate(${x},${y}) rotate(${heading}) scale(1.35)`} fill={STATUS_FILL[st] ?? "#16191d"} />
+              <path d={glyph} transform={`translate(${x},${y}) rotate(${heading}) scale(1.05)`} fill={STATUS_FILL[st] ?? "#16191d"} />
               <title>
                 {l.tail} · {l.dep} to {l.arr} · position interpolated from the schedule
               </title>

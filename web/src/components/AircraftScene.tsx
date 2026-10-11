@@ -15,7 +15,7 @@ type Props = {
 
 const GROUPS = ["Engines", "Landing gear", "Systems", "Flight controls", "Airframe"] as const;
 const VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number]; label: string }> = {
-  three: { pos: [40, 17, -52], target: [-1.5, -0.8, 0], label: "3/4" },
+  three: { pos: [35, 13, -45], target: [-1, 0.6, 0], label: "3/4" },
   side: { pos: [0, 1.5, -66], target: [0, 1, 0], label: "Side" },
   top: { pos: [0.01, 92, 0], target: [0, 0, 0], label: "Top" },
   front: { pos: [66, 1.5, 0], target: [0, 0.5, 0], label: "Front" },
@@ -262,7 +262,10 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
   }, [aircraftType]);
 
   const chosen = parts.find((p) => p.id === partId);
-  const visibleParts = parts.filter((p) => p.group === group);
+  // Parts of the component currently selected in the twin come first, so an alerting engine is at the top of its list.
+  const visibleParts = parts
+    .filter((p) => p.group === group)
+    .sort((x, y) => Number(!!y.component && selected.endsWith("/" + y.component)) - Number(!!x.component && selected.endsWith("/" + x.component)));
   const linked = (p: Part) => (p.component ? components.find((c) => c.component_id.endsWith("/" + p.component)) : undefined);
 
   return (
