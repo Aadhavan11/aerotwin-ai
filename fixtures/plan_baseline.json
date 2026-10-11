@@ -1,0 +1,84 @@
+{
+  "synthetic": true,
+  "id": "P-1",
+  "created": "2026-10-12T12:00:00Z",
+  "mode": "static_baseline",
+  "feasible": true,
+  "infeasible_reasons": [],
+  "assignments": [
+    {
+      "task_id": "T-SIM-017-engine_2-001",
+      "tail": "SIM-017",
+      "station": "ATL",
+      "start": "2026-10-14T12:25:00Z",
+      "end": "2026-10-14T18:25:00Z",
+      "technician_id": "ATL-T1",
+      "part_source": "DFW",
+      "window_hours": 9.4167,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base ATL that fits before the deadline: ATL, Oct 14 12:25Z to Oct 14 18:25Z. BORESCOPE-KIT shipped from DFW (+$800, ready in 18 h); technician ATL-T1 (engine) on shift. Ground window 9.4 h for a 6 h job: 0 h extension. Finishes 58.2 h before the Oct 17 04:40Z deadline."
+    },
+    {
+      "task_id": "T-SIM-012-engine_1-001",
+      "tail": "SIM-012",
+      "station": "DEN",
+      "start": "2026-10-14T17:09:00Z",
+      "end": "2026-10-14T23:09:00Z",
+      "technician_id": "DEN-T1",
+      "part_source": "DFW",
+      "window_hours": 9.75,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base DEN that fits before the deadline: DEN, Oct 14 17:09Z to Oct 14 23:09Z. BORESCOPE-KIT shipped from DFW (+$800, ready in 24 h); technician DEN-T1 (engine) on shift. Ground window 9.8 h for a 6 h job: 0 h extension. Finishes 243.2 h before the Oct 25 02:19Z deadline."
+    },
+    {
+      "task_id": "T-SIM-008-brakes-002",
+      "tail": "SIM-008",
+      "station": "SEA",
+      "start": "2026-10-15T04:51:00Z",
+      "end": "2026-10-15T06:21:00Z",
+      "technician_id": "SEA-T1",
+      "part_source": null,
+      "window_hours": 1.6667,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base SEA that fits before the deadline: SEA, Oct 15 04:51Z to Oct 15 06:21Z. No part needed; technician SEA-T1 (gear) on shift. Ground window 1.7 h for a 1.5 h job: 0 h extension. Finishes 5.7 h before the Oct 15 12:00Z deadline."
+    },
+    {
+      "task_id": "T-SIM-021-avionics-001",
+      "tail": "SIM-021",
+      "station": "LAX",
+      "start": "2026-10-16T13:47:00Z",
+      "end": "2026-10-16T15:47:00Z",
+      "technician_id": "LAX-T2",
+      "part_source": null,
+      "window_hours": 8.6667,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base LAX that fits before the deadline: LAX, Oct 16 13:47Z to Oct 16 15:47Z. AVIONICS-LRU on hand at LAX; technician LAX-T2 (avionics) on shift. Ground window 8.7 h for a 2 h job: 0 h extension. Finishes 221.0 h before the Oct 25 20:45Z deadline."
+    },
+    {
+      "task_id": "T-SIM-005-hydraulics-001",
+      "tail": "SIM-005",
+      "station": "LAX",
+      "start": "2026-10-16T18:25:00Z",
+      "end": "2026-10-16T23:25:00Z",
+      "technician_id": "LAX-T2",
+      "part_source": "ATL",
+      "window_hours": 10.4167,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base LAX that fits before the deadline: LAX, Oct 16 18:25Z to Oct 16 23:25Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 10.4 h for a 5 h job: 0 h extension. Finishes 121.8 h before the Oct 22 01:15Z deadline."
+    }
+  ],
+  "metrics": {
+    "downtime_h": 0.0,
+    "flights_affected": 0,
+    "logistics_cost_usd": 2200.0,
+    "tech_utilization": 0.0108,
+    "hangar_utilization": 0.0142,
+    "schedule_changes": 0,
+    "tasks_total": 5,
+    "tasks_scheduled": 5,
+    "late_or_unscheduled": 0
+  },
+  "objective_value": 41.3558,
+  "solve_seconds": 0.0053,
+  "evidence": []
+}
