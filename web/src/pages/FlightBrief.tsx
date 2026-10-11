@@ -7,11 +7,11 @@ import { STATUS_ORDER, fmtZ } from "../lib/format";
 import { openAgentWorkspace } from "../lib/role";
 
 const BANNER: Record<string, { box: string; head: string }> = {
-  ok: { box: "border-emerald-300", head: "No open health alerts for this aircraft in the twin." },
+  ok: { box: "border-slate-300", head: "No open health alerts for this aircraft in the twin." },
   watch: { box: "border-amber-300", head: "A component is on watch." },
   alert: { box: "border-red-300", head: "A health alert is open." },
-  in_maintenance: { box: "border-blue-500", head: "The aircraft is in maintenance." },
-  aog: { box: "border-violet-500", head: "The aircraft is on the ground (AOG)." },
+  in_maintenance: { box: "border-slate-800", head: "The aircraft is in maintenance." },
+  aog: { box: "border-slate-500", head: "The aircraft is on the ground (AOG)." },
 };
 
 /** Pilot / flight crew: one aircraft, in plain language. Advisory only. */
@@ -112,7 +112,7 @@ export default function FlightBrief() {
                     <StatusPill status={c.status} />
                   </div>
                   <div className="mt-2 h-1.5 overflow-hidden rounded bg-slate-200" title={`Health ${Math.round(c.health * 100)}%`}>
-                    <div className={`h-full ${c.status === "ok" ? "bg-emerald-500" : c.status === "watch" ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${Math.round(c.health * 100)}%` }} />
+                    <div className={`h-full ${c.status === "ok" ? "bg-slate-800" : c.status === "watch" ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${Math.round(c.health * 100)}%` }} />
                   </div>
                   <div className="mt-2 text-xs text-slate-500">
                     Health {Math.round(c.health * 100)}% · anomaly score {c.anomaly_score.toFixed(2)}

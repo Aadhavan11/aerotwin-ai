@@ -17,11 +17,12 @@ const TABS: [Tab, string][] = [
 ];
 
 /** Maintenance planner: work orders to decide, the jobs in the plan, and the technicians, parts and hangar slots at every station. */
-export default function Maintenance() {
+export default function WorkOrders() {
   const { role } = useRole();
   const orders = usePoll<WorkOrder[]>("/workorders", 2500);
   const stations = usePoll<Station[]>("/stations", 6000);
   const plan = usePoll<PlanBundle>("/plan", 5000);
+  const clock = usePoll<{ sim_now: string }>("/health", 5000).data?.sim_now;
   const [tab, setTab] = useState<Tab>("pending_approval");
   const [sel, setSel] = useState<string>("ALL");
   if (!orders.data || !stations.data || !plan.data)
@@ -31,8 +32,11 @@ export default function Maintenance() {
   const count = (s: Tab) => (s === "all" ? all.length : all.filter((w) => w.status === s).length);
   const shown = (tab === "all" ? all : all.filter((w) => w.status === tab)).slice().sort((a, b) => ms(a.start) - ms(b.start));
   const st = stations.data;
-  const techTotal = st.reduce((n, s) => n + s.technicians.length, 0);
-  const techFree = st.reduce((n, s) => n + s.technicians.filter((t) => t.available).length, 0);
+  const t0 = clock ? Date.parse(clock) : Date.now();
+  // Technicians work 12 h shifts over several days: count the people on shift at the simulation time, not every shift in the horizon.
+  const onShift = (techs: Station["technicians"]) => techs.filter((t) => Date.parse(t.shift_start) <= t0 && t0 < Date.parse(t.shift_end));
+  const techTotal = st.reduce((n, s) => n + onShift(s.technicians).length, 0);
+  const techFree = st.reduce((n, s) => n + onShift(s.technicians).filter((t) => t.available).length, 0);
   const closed = st.filter((s) => s.hangar_slots === 0).length;
   const outOfStock = st.reduce((n, s) => n + s.parts.filter((x) => x.qty === 0).length, 0);
   const jobs = plan.data.current.assignments.slice().sort((a, b) => ms(a.start) - ms(b.start));
@@ -52,7 +56,7 @@ export default function Maintenance() {
       <div className="facts">
         <Kpi label="Pending approval" value={count("pending_approval")} tone={count("pending_approval") ? "amber" : "emerald"} hint="Work orders" />
         <Kpi label="Approved" value={count("approved")} tone="emerald" hint="Ready to schedule" />
-        <Kpi label="Technicians available" value={`${techFree} of ${techTotal}`} hint="Across all stations" />
+        <Kpi label="Technicians available" value={`${techFree} of ${techTotal}`} hint="On shift now, all stations" />
         <Kpi label="Hangars closed" value={closed} tone={closed ? "red" : "emerald"} hint="Stations with 0 slots" />
         <Kpi label="Parts out of stock" value={outOfStock} tone={outOfStock ? "amber" : "emerald"} hint="Stock lines at 0" />
       </div>
@@ -67,7 +71,7 @@ export default function Maintenance() {
                 role="tab"
                 aria-selected={tab === k}
                 onClick={() => setTab(k)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium ${tab === k ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium ${tab === k ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}
               >
                 {l} ({count(k)})
               </button>
@@ -109,18 +113,18 @@ export default function Maintenance() {
         {one === null ? (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {st.map((s) => {
-              const free = s.technicians.filter((t) => t.available).length;
+              const free = onShift(s.technicians).filter((t) => t.available).length;
               const none = s.parts.filter((x) => x.qty === 0);
               const here = jobs.filter((a) => a.station === s.iata).length;
               return (
-                <button key={s.iata} onClick={() => setSel(s.iata)} className="rounded-lg border border-slate-200 p-3 text-left hover:border-blue-500">
+                <button key={s.iata} onClick={() => setSel(s.iata)} className="rounded-lg border border-slate-200 p-3 text-left hover:border-slate-900">
                   <div className="flex items-center justify-between">
                     <b className="text-slate-800">{s.iata}</b>
                     {s.hangar_slots === 0 ? <Chip tone="amber">hangar closed</Chip> : <span className="text-xs text-slate-500">{s.hangar_slots} hangar slots</span>}
                   </div>
                   <div className="mt-2 space-y-0.5 text-xs text-slate-500">
                     <div>
-                      Technicians: {free} of {s.technicians.length} available
+                      Technicians on shift: {free} of {onShift(s.technicians).length} available
                     </div>
                     <div>
                       Parts: {s.parts.length} lines{none.length ? `, ${none.length} out of stock` : ""}
@@ -147,14 +151,16 @@ export default function Maintenance() {
                   </tr>
                 </thead>
                 <tbody>
-                  {one.technicians.map((t) => (
+                  {one.technicians.filter((t) => Date.parse(t.shift_end) > t0 && Date.parse(t.shift_start) < t0 + 24 * 3_600_000).map((t) => (
                     <tr key={t.id} className="border-t border-slate-200">
                       <td className="py-1.5 text-slate-800">{t.id}</td>
                       <td className="py-1.5 text-slate-600">{t.skills.join(", ")}</td>
                       <td className="py-1.5 text-xs tabular-nums text-slate-500">
                         {fmtZ(t.shift_start)} to {fmtZ(t.shift_end)}
                       </td>
-                      <td className="py-1.5">{t.available ? <Chip tone="blue">available</Chip> : <Chip tone="amber">unavailable</Chip>}</td>
+                      <td className="py-1.5">
+                        {!t.available ? <Chip tone="amber">unavailable</Chip> : Date.parse(t.shift_start) <= t0 ? <Chip tone="blue">on shift</Chip> : <Chip>later</Chip>}
+                      </td>
                     </tr>
                   ))}
                   {one.technicians.length === 0 && (
@@ -195,7 +201,7 @@ export default function Maintenance() {
         )}
       </Card>
 
-      <Card title={one ? `Jobs planned at ${one.iata}` : "Jobs in the plan"} right={<Link className="text-xs text-blue-600 hover:underline" to="/planning">Open the plan</Link>}>
+      <Card title={one ? `Jobs planned at ${one.iata}` : "Jobs in the plan"} right={<Link className="text-xs text-slate-900 underline hover:underline" to="/planning">Open the plan</Link>}>
         {(one ? jobs.filter((a) => a.station === one.iata) : jobs).length === 0 ? (
           <p className="text-sm text-slate-500">No jobs planned{one ? " at this station" : ""}.</p>
         ) : (
@@ -213,7 +219,7 @@ export default function Maintenance() {
               {(one ? jobs.filter((a) => a.station === one.iata) : jobs).map((a) => (
                 <tr key={a.task_id} className="border-t border-slate-200">
                   <td className="py-1.5">
-                    <Link className="font-medium text-blue-600 hover:underline" to={`/aircraft/${a.tail}`}>
+                    <Link className="font-medium text-slate-900 underline hover:underline" to={`/aircraft/${a.tail}`}>
                       {a.tail}
                     </Link>
                   </td>
