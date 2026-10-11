@@ -1,6 +1,6 @@
 # TASK BOARD: who builds what, when, and who is waiting on whom
 
-Clock times are ET, Sat 2026-10-10 evening to Sun morning. They assume the event ends Sun ~7 AM (**unverified: confirm the real deadline**).
+Clock times are ET, Sat 2026-10-10 evening to Sun morning. The event ends **Sun 9:00 AM** (official guide, checked 2026-10-10, "no exceptions"); the times below were planned for a 7 AM finish, so the extra 2 hours are buffer: freeze code at 7:00 AM, submit by 8:15 AM. Rules, judging format and the submission checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md).
 Tick boxes by editing this file in a small commit (`[docs] tick ...`), so everyone sees progress in the repo.
 
 ## 1. Who owns which feature
