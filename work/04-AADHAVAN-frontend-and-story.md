@@ -1,7 +1,6 @@
 # Work package 4: Aadhavan. The interface (3.2 UI, 3.5 lab, 3.6 copilot UI) and the story
 
-> **This file is the spec for the screens and the story. Under the new split Aadhavan builds screen 2 (Aircraft Twin) and the story, plus the agents and copilot backend specified in `work/01` sections C, D, E. Screens 1, 3, 4, 5 and the app shell are now Shamit's.**
-> Details: [`OWNERSHIP.md`](OWNERSHIP.md).
+> **Owners changed after this file was written. This file is a SPEC; which sections are yours and which moved to someone else is in [`OWNERSHIP.md`](OWNERSHIP.md), which wins.** The spec text below is unchanged.
 
 You build **everything the judges see**. The backend is being built at the same time, so you start from fixtures and the mock API and swap to the
 real one without changing your code. Your demo is the product.

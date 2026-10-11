@@ -28,11 +28,11 @@ interfaces, TASK-BOARD.md for roles and order, SCOPE.md for scope. If something 
 
 ABOUT ME
 - Name: [YOUR NAME]
-- My role (see SCOPE.md section 4): [Shamit: platform + front end (shell, fleet, planning, lab, copilot UI) | Aashirth: ML + twin state + telemetry/scenarios | Pardhu: scheduler + what-if + fleet generator | Aadhavan: agents + copilot backend + twin screen + story]
+- My role (see SCOPE.md section 4): [Shamit | Aashirth | Pardhu | Aadhavan] (work/OWNERSHIP.md lists exactly which pieces are mine)
 - My skills and languages: [e.g. Python, React, optimization, ML]
 - My laptop and OS: [ ]
 - Time left in the event: [ ]
-- Teammates (details in work/OWNERSHIP.md, which wins): Shamit (platform + front end + integration), Aashirth (ML + twin state + telemetry/scenarios), Pardhu (scheduler + what-if + fleet generator), Aadhavan (agents + copilot backend + twin screen + story, concept owner)
+- Teammates: Shamit, Aashirth, Pardhu, Aadhavan (concept owner). Who owns what is in work/OWNERSHIP.md, which wins over every other doc.
 
 YOUR FIRST REPLY (no code yet)
 1. Summarize the project in 8 lines in your own words.

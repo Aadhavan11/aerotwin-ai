@@ -47,17 +47,16 @@ The doc's own must-have list (section 12) is already a complete demo.
 
 ## 4. Roles
 
-Chosen by task difficulty and how much each task depends on the others. Each person has a clear interface (`CONTRACTS.md`), a deadline and a fallback.
+**Who owns what is written in one place: [`work/OWNERSHIP.md`](work/OWNERSHIP.md). It wins over this summary.** Roles were chosen by task difficulty and how much each task depends on the others; each person has a clear interface (`CONTRACTS.md`), a deadline and a fallback.
 
-| Person | Owns | Deliverable by 1:00 AM | Fallback if stuck |
-|---|---|---|---|
-| **Shamit** | **Platform + front end + integration:** contracts, database, API skeleton + mock API, web shell, Fleet Overview, Planning board, Simulation Lab, Copilot drawer + Agent Activity + approvals UI; integration lead and merger | C0 (models, DB, mock API, fixtures) by 9:15 PM; shell + Fleet Overview on fixtures | Static screens fed by JSON files; Lab reduced to buttons + a diff list |
-| **Aashirth** | **ML + twin state + simulation feed (3.1, 3.2 backend):** anomaly model + RUL on C-MAPSS (MAE/RMSE), health scoring, data quality, component state engine; telemetry source, `/sim/step`, scenario injection | Sensor mapping pushed; model scoring one engine; twin serving `GET /aircraft/{tail}` | Score with a rule on sensor z-scores; keep state in memory |
-| **Pardhu** | **Scheduler + what-if + fleet generator (3.3, 3.5):** task cards, seeded fleet/rotations/stations, ground windows, tasks from RUL, greedy / static baseline / CP-SAT, replan, compare | Fleet generator + greedy/baseline plan on the golden state; CP-SAT by 12:15 AM | Ship greedy as "optimized" and say so |
-| **Aadhavan** | **Agents + copilot backend + Aircraft Twin screen + story (3.4, 3.6 backend, 3.2 UI), and concept owner:** tool registry, agent runner (scripted then LLM), work orders + audit, clickable twin, then demo script, video, Devpost | Tool registry skeleton on fixtures; twin screen on fixtures | Scripted agents only; static twin screen |
+| Person | Summary (see OWNERSHIP.md for the exact pieces) |
+|---|---|
+| **Shamit** | Contracts, database, API skeleton + mock API, and the front end (shell, Fleet Overview, Planning, Simulation Lab, Copilot + Agent Activity + approvals); integration lead and merger |
+| **Aadhavan** | The simulator (fleet generator, telemetry feed, scenario injection), the Aircraft Twin screen, and the story (demo script, video, Devpost); **concept owner** |
+| **Aashirth** | ML health models and the twin state engine (3.1, 3.2 backend); then LLM mode and the copilot backend if time allows |
+| **Pardhu** | Scheduler and what-if (3.3, 3.5) and the agent tool registry + scripted runner (3.4) |
 
-Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu** (at least one person from each pair is awake until the freeze). Detailed ownership: [`work/OWNERSHIP.md`](work/OWNERSHIP.md), which wins over this table.
-Everyone works with their own Claude using `CLAUDE-PROMPT.md`. Names are first names only in this public repo.
+Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu** (at least one person from each pair is awake until the freeze). Everyone works with their own Claude using `CLAUDE-PROMPT.md`. Names are first names only in this public repo.
 
 ## 5. Schedule (clock times, ET)
 

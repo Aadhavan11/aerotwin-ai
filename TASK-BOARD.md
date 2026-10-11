@@ -5,29 +5,13 @@ Tick boxes by editing this file in a small commit (`[docs] tick ...`), so everyo
 
 ## 1. Who owns which feature
 
-> **Owners changed Sat night (Shamit and Aadhavan swapped jobs). `work/OWNERSHIP.md` is the source of truth for who builds what; where this file names a different owner, follow OWNERSHIP.md. The specs themselves are unchanged.**
-
-| Feature | Owner | Support |
-|---|---|---|
-| Foundation: contracts, database, API skeleton, mock mode, fixtures, `make` targets | **Shamit** | |
-| Fleet generator (aircraft, rotations, stations, technicians, parts, golden constraints), `SimClock` | **Pardhu** | Shamit supplies the DB tables |
-| Telemetry source (C-MAPSS replay), `/sim/step`, scenario injection | **Aashirth** | Shamit's Lab screen calls it |
-| **3.1** Health intelligence (anomaly + RUL, data quality) | **Aashirth** | |
-| **3.2** Digital twin state engine (backend) | **Aashirth** | |
-| **3.2** Aircraft Twin screen | **Aadhavan** | Aashirth explains `TwinView` |
-| **3.3** Scheduling (CP-SAT, greedy, static baseline, derive tasks) | **Pardhu** | Aashirth supplies RUL |
-| **3.4** Agents (tool registry, runner, scripted + LLM) | **Aadhavan** | Pardhu/Aashirth supply tool functions |
-| **3.5** What-if (apply event, simulate, replan, compare) | **Pardhu** | |
-| **3.6** Copilot backend, KB, work orders, audit | **Aadhavan** | Pardhu authors the KB task cards |
-| Web shell, Fleet Overview, Planning board, Simulation Lab, Copilot drawer + Agent Activity + approvals UI | **Shamit** | Aadhavan supplies the endpoints' shapes |
-| Demo story, video, Devpost; concept owner | **Aadhavan** (lead), everyone reviews | |
-| Stretch goals from the doc (after all six reach L2) | **Pardhu** | Aashirth |
+> **Owners are written only in [`work/OWNERSHIP.md`](work/OWNERSHIP.md) (it wins).** It lists every piece (contracts, DB, API, each screen, simulator, agents, copilot backend, ML, twin, scheduler, what-if, story), its spec, its owner, and the load check and cut lines.
 
 Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least one person from each pair is awake until 3:15 AM.
 
 ## 2. Timeline by person
 
-> The checklists below were written before the ownership swap. **Keep the time boxes, but take the items from `work/OWNERSHIP.md`** (e.g. the agent and copilot items are Aadhavan's, the screens except the Aircraft Twin are Shamit's, the telemetry/scenario items are Aashirth's, the fleet generator is Pardhu's).
+> The checklists below were written before the ownership changes. **Keep the time boxes, but take the items from `work/OWNERSHIP.md`** (it lists which piece belongs to whom).
 
 ### Block 0: Sat 8:30 to 9:15 PM (everyone)
 - [ ] Everyone: read your work package (`work/0x-*.md`), `FEATURES-3.1-3.6.md` (your features) and `CONTRACTS.md` sections 1, 2 and 5. 15 min.
@@ -75,14 +59,14 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 | Needs ... | ... from | By | If it is late |
 |---|---|---|---|
 | `models.py`, fixtures, mock API | Shamit | 9:15 PM | Others copy models from `CONTRACTS.md` and work on fixtures by hand |
-| Sensor-name mapping `ml/sensors.py` | Aashirth | 9:00 PM | Shamit uses the mapping in `FEATURES-3.1-3.6.md` / `work/02` |
-| KB task cards `task_cards.yaml` | Pardhu | 9:15 PM | Shamit hard-codes 5 tasks in `derive_tasks` L1 |
-| Fleet DB + legs (golden) | Shamit | 9:45 PM | Pardhu works from `fixtures/legs_golden.json` and `stations.json` |
+| Sensor-name mapping `ml/sensors.py`, then `ml.cmapss.trajectories()` | Aashirth | 9:00 PM / 9:30 PM | Aadhavan's telemetry source fabricates a drifting `T50` until they land |
+| KB task cards `task_cards.yaml` | Pardhu | 9:15 PM | Aadhavan's fleet generator and Pardhu's `derive_tasks` hard-code 5 tasks |
+| Fleet DB + legs (golden) | Aadhavan (fleet generator), tables from Shamit | 9:45 PM | Pardhu works from `fixtures/legs_golden.json` and `stations.json` |
 | `HealthScore` with RUL quantiles | Aashirth | 10:00 PM L1, 12:00 AM L2 | Pardhu uses `fixtures/health_scores.json`; deadlines still computed from p10 |
-| `FleetState` snapshot (`twin.snapshot`) | Aashirth + Shamit | 10:00 PM | Pardhu builds `FleetState` from fixtures |
-| `solve`, `replan`, `compare` | Pardhu | 10:00 PM L1, 12:15 AM L2 | Shamit's tools call the greedy stub; plan shape is identical |
-| Tool registry + `/agents/run` | Shamit | 11:30 PM scripted | Aadhavan uses `fixtures/agent_run_golden.json` |
-| Endpoints for every screen | owners (see CONTRACTS section 4) | per screen | Aadhavan builds on `MOCK=1` or static fixtures |
+| `FleetState` snapshot (`twin.snapshot`) | Aashirth (+ DB from Shamit) | 10:00 PM | Pardhu builds `FleetState` from fixtures |
+| `solve`, `replan`, `compare` | Pardhu | 10:00 PM L1, 12:15 AM L2 | The tool registry calls the greedy stub; plan shape is identical |
+| Tool registry + scripted runner + `/agents/run` | Pardhu | 11:30 PM scripted | Shamit's Agent Activity screen uses `fixtures/agent_run_golden.json` |
+| Endpoints for every screen | owners (see `work/OWNERSHIP.md`) | per screen | Shamit builds on `MOCK=1` or static fixtures |
 | ML numbers (MAE, RMSE, precision, recall) | Aashirth | 1:30 AM | Slide says "ML metrics: in progress", never invents numbers |
 
 ## 4. If you finish early (pick up in this order, tell the group first)
