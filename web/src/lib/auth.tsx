@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { setActor } from "./actor";
 import type { RoleId } from "./role";
 
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Ctx["status"]>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [config, setConfig] = useState<AuthConfig | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -86,9 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const google = useCallback((credential: string, role?: RoleId) => wrap("/auth/google", { credential, role }), []);
   const logout = useCallback(async () => {
     await call("/auth/logout", {});
+    navigate("/", { replace: true }); // the next person to sign in lands on their own position's home, not on the last page
     setUser(null);
     setStatus("anon");
-  }, []);
+  }, [navigate]);
   const switchRole = useCallback(async (role: RoleId) => {
     const r = await call("/auth/role", { role });
     if (r.status === 200 && r.data?.user) setUser(r.data.user as AuthUser);

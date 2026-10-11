@@ -9,7 +9,7 @@ order. Built in 36 hours at Hacklanta 2026 by Shamit, Aashirth, Pardhu and Aadha
 **Everything about aircraft health is simulated and labeled SIMULATED. The system is advisory only; it certifies nothing.**
 Devpost text: [`docs/DEVPOST.md`](docs/DEVPOST.md). Event rules and checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md). Demo script: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md).
 
-**Live demo:** https://shamitbasu.com/hacklanta (a shared public instance on simulated data: every visitor shares one simulation, so reset it under System if it looks different).
+**Live demo:** https://shamitbasu.com/hacklanta (a shared public instance on simulated data: every visitor shares one simulation, so reset it under System if it looks different). It asks you to sign in: pick a demo account on the sign-in screen (one per position), create an account and choose your position, or use Google. Details: [docs/AUTH.md](docs/AUTH.md). Local runs have no sign-in unless `AUTH_REQUIRED=1`.
 
 ## Run it (about 5 minutes, no keys, no internet at demo time)
 
