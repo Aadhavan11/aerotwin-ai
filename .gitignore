@@ -23,7 +23,12 @@ web/dist/
 # keep the template, ignore real env files
 !.env.example
 
-# third-party 3D model: licence not yet confirmed, so it is not committed (see web/public/models/README.md)
+# loose model files dropped straight into web/public/models are not committed; the supplied CC BY 4.0 aircraft model lives in models/b737-800/ with its credit (see web/public/models/README.md and docs/ASSETS.md)
 web/public/models/*.glb
 web/public/models/*.gltf
 !web/public/models/README.md
+
+# secrets of the hosted demo, written by the key drop boxes: never commit
+.anthropic-key
+.master-password
+.google-client-id

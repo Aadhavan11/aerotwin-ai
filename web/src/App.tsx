@@ -98,8 +98,12 @@ export default function App() {
           <span className="sim-pill" title="Every aircraft, flight and sensor value is simulated">
             Simulated
           </span>
-          <span className="clock" title={health.error ? "Connection to the API lost" : "Connected to the API"}>
+          <span
+            className="clock"
+            title={health.error ? "Connection to the API lost" : "Simulation clock (UTC), not the real date. It starts at Oct 12 12:00Z and only moves when the simulation is advanced."}
+          >
             <i className={`conn ${health.error ? "down" : ""}`} />
+            <b className="clock-label">SIM</b>
             {fmtZ(h?.sim_now)}
           </span>
           {auth.status === "user" && (

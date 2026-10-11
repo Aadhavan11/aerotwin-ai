@@ -7,7 +7,7 @@ import MaintenanceCalendar, { NewRequestForm, type CalItem, type Prefill } from 
 import MaintenanceRequest from "../components/MaintenanceRequest";
 import SuggestedActions from "../components/SuggestedActions";
 import { Btn, Card, ErrorBox, Loading } from "../components/ui";
-import { fmtH, fmtUsd, fmtZ } from "../lib/format";
+import { fmtH, fmtUsd } from "../lib/format";
 
 /** One metric, optimized against the static baseline, with how much better (or worse) the plan is. */
 function Metric({ label, opt, base, fmt, lowerIsBetter = true, hint }: { label: string; opt: number; base: number; fmt: (n: number) => string; lowerIsBetter?: boolean; hint?: string }) {
@@ -54,12 +54,7 @@ export default function Planning() {
   const cur: Plan = data.current,
     base: Plan = data.baseline;
   const all = orders.data ?? [];
-  const sel = (() => {
-    if (!selKey) return null;
-    if (selKey.startsWith("wo:")) return all.find((w) => w.id === selKey.slice(3)) ?? null;
-    return null;
-  })();
-  const selectedItem = selKey;
+  const sel = selKey?.startsWith("wo:") ? (all.find((w) => w.id === selKey.slice(3)) ?? null) : null;
   const solve = async () => {
     setBusy(true);
     try {
@@ -84,9 +79,8 @@ export default function Planning() {
       setBusy(false);
     }
   };
-  const mc = (p: PlanMetrics) => p;
-  const o = mc(cur.metrics),
-    b = mc(base.metrics);
+  const o: PlanMetrics = cur.metrics,
+    b: PlanMetrics = base.metrics;
   const costRows = [
     { name: "Parts", Optimized: o.cost_parts_usd ?? 0, Baseline: b.cost_parts_usd ?? 0 },
     { name: "Labor", Optimized: o.cost_labor_usd ?? 0, Baseline: b.cost_labor_usd ?? 0 },
@@ -146,7 +140,7 @@ export default function Planning() {
             aircraft={fleet.data.aircraft}
             simNow={simNow}
             show={show}
-            selected={selectedItem}
+            selected={selKey}
             onSelect={(i: CalItem) => {
               setCreating(null);
               setSelKey(i.wo ? `wo:${i.wo.id}` : `task:${i.taskId}`);

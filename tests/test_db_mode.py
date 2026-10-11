@@ -1,10 +1,9 @@
 """Database mode: after reset_db (seeded from fixtures), /fleet, /legs and /stations come from SQLite."""
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app import db, settings
+from app import settings
 from app.contracts.models import *  # noqa: F401,F403
 
 

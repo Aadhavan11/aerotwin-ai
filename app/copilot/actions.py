@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 from app.contracts.models import EvidenceRef, WorkOrder
-from app.copilot import persist, workorders
+from app.copilot import workorders
 
 PARTS = ("BORESCOPE-KIT", "BRAKE-ASSY", "HYD-PUMP", "AVIONICS-LRU")
 _FIELDS = ("title", "work", "part", "part_qty", "order_part", "start", "end")

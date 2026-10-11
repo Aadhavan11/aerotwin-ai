@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from app.contracts.models import Assignment, Plan, Station, Task, WorkOrder
+from app.contracts.models import Assignment, Station, Task, WorkOrder
 from app.copilot import kb, workorders
 
 LABEL = {"engine": "Engine", "brakes": "Brakes", "landing_gear": "Landing gear", "hydraulics": "Hydraulics", "avionics": "Avionics"}

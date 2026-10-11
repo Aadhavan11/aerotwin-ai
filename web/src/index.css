@@ -2884,3 +2884,14 @@ aside.fixed {
   gap: 8px 16px;
   align-items: center;
 }
+
+/* the clock in the top bar is the simulation clock */
+.clock-label {
+  margin-right: 2px;
+  padding: 1px 6px;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 999px;
+  font: 600 9.5px var(--mono);
+  letter-spacing: 0.1em;
+  color: #fcd34d;
+}

@@ -1,7 +1,6 @@
 """Estimated plan cost (app/solver/costs.py): simulated price list, adds up, and the baseline pays for what it cannot do in time."""
 from __future__ import annotations
 
-from datetime import timedelta
 
 import pytest
 
