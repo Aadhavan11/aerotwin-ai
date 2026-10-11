@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { post, usePoll } from "../api/client";
-import type { AgentRun, AgentStep, AuditEntry, ChatResponse, EvidenceRef, WorkOrder } from "../api/types";
+import type { AgentRun, AgentStep, AuditEntry, ChatResponse, EvidenceRef, HealthInfo, WorkOrder } from "../api/types";
+import { useRole } from "../lib/role";
+import { collectScreen } from "../lib/screen";
 import { AGENT_STYLE, fmtZ } from "../lib/format";
 import { Btn, Chip } from "./ui";
 
@@ -39,6 +42,12 @@ export default function CopilotDrawer({ open, onClose }: { open: boolean; onClos
   const [tab, setTab] = useState<Tab>("agents");
   const [user, setUser] = useState(() => { try { return localStorage.getItem("aerotwin.user") || "Shamit"; } catch { return "Shamit"; } });
   useEffect(() => { try { localStorage.setItem("aerotwin.user", user); } catch { /* ignore */ } }, [user]);
+  // The AI sees the screen: every question and every agent run carries the page, role, aircraft, selection, clock and visible text.
+  const loc = useLocation();
+  const { role } = useRole();
+  const clock = usePoll<HealthInfo>(open ? "/health" : null, 5000);
+  const screen = () => collectScreen(loc.pathname, loc.search, role.label, clock.data?.sim_now);
+  const tailNow = /\/aircraft\/([A-Za-z0-9-]+)/.exec(loc.pathname)?.[1] ?? new URLSearchParams(loc.search).get("tail");
 
   // chat
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -48,7 +57,7 @@ export default function CopilotDrawer({ open, onClose }: { open: boolean; onClos
   const ask = async (text: string) => {
     if (!text.trim()) return;
     setMsgs((m) => [...m, { who: "you", text }]); setInput(""); setThinking(true);
-    try { const { data } = await post<ChatResponse>("/copilot/chat", { session_id: "web", message: text }); setMsgs((m) => [...m, { who: "copilot", text: data.answer, resp: data }]); }
+    try { const { data } = await post<ChatResponse>("/copilot/chat", { session_id: "web", message: text, screen: screen() }); setMsgs((m) => [...m, { who: "copilot", text: data.answer, resp: data }]); }
     catch (e) { setMsgs((m) => [...m, { who: "copilot", text: `Error: ${(e as Error).message}` }]); } finally { setThinking(false); }
   };
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, thinking]);
@@ -57,7 +66,7 @@ export default function CopilotDrawer({ open, onClose }: { open: boolean; onClos
   const [mode, setMode] = useState<"scripted" | "llm">("scripted");
   const [run, setRun] = useState<AgentRun | null>(null);
   const [runErr, setRunErr] = useState("");
-  const start = async () => { setRunErr(""); setRun(null); try { const { data } = await post<AgentRun>("/agents/run", { goal: "Plan maintenance for the aircraft that need attention", scope: {}, mode }); setRun(data); } catch (e) { setRunErr(String((e as Error).message)); } };
+  const start = async () => { setRunErr(""); setRun(null); try { const { data } = await post<AgentRun>("/agents/run", { goal: "Plan maintenance for the aircraft that need attention", scope: {}, mode, screen: screen() }); setRun(data); } catch (e) { setRunErr(String((e as Error).message)); } };
   useEffect(() => {
     if (!run || run.status !== "running") return;
     const id = setInterval(async () => {
@@ -111,7 +120,7 @@ export default function CopilotDrawer({ open, onClose }: { open: boolean; onClos
 
         {tab === "chat" && (
           <div className="space-y-3">
-            <div className="flex flex-wrap gap-1.5">{QUICK.map((q) => <button key={q} onClick={() => ask(q)} className="rounded-full border border-slate-300 px-2.5 py-1 text-left text-xs text-slate-700 hover:bg-slate-100">{q}</button>)}</div>
+            <div className="flex flex-wrap gap-1.5">{[...(tailNow ? ["What aircraft is this?", "What is wrong with this aircraft?"] : []), ...QUICK].map((q) => <button key={q} onClick={() => ask(q)} className="rounded-full border border-slate-300 px-2.5 py-1 text-left text-xs text-slate-700 hover:bg-slate-100">{q}</button>)}</div>
             {msgs.map((m, i) => (
               <div key={i} className={m.who === "you" ? "text-right" : ""}>
                 <div className={`inline-block max-w-[92%] rounded-xl px-3 py-2 text-left text-sm ${m.who === "you" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-900"}`}>{m.text}</div>

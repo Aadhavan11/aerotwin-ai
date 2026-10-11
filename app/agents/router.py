@@ -15,7 +15,8 @@ router = APIRouter(tags=["agents"])
 @router.post("/agents/run", response_model=AgentRun)
 def post_agents_run(req: AgentRunRequest) -> AgentRun:
     """Starts a run and returns immediately with status "running"; poll GET /agents/runs/{id} every second."""
-    return run_workflow(req.goal, req.scope, req.mode, background=True)
+    scope = {**req.scope, "screen": req.screen.model_dump(exclude={"text"})} if req.screen else req.scope  # the agents see the same screen as the person
+    return run_workflow(req.goal, scope, req.mode, background=True)
 
 
 @router.get("/agents/runs/{run_id}", response_model=AgentRun)

@@ -87,7 +87,7 @@ def _summary_of(res: dict) -> str:
 
 
 def _cache_key(goal: str, scope: dict, state) -> str:
-    scope_part = json.dumps({k: v for k, v in scope.items() if k != "replay"}, sort_keys=True, default=str)
+    scope_part = json.dumps({k: v for k, v in scope.items() if k not in ("replay", "screen")}, sort_keys=True, default=str)  # the screen must not break a rehearsed replay
     return llm.RunCache.key(f"{goal}|{scope_part}", llm.state_hash(state))
 
 

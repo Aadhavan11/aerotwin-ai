@@ -1,10 +1,11 @@
 import { useState, type CSSProperties } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePoll } from "../api/client";
-import type { FleetOverview, HealthInfo, Leg } from "../api/types";
+import type { FleetOverview, HealthInfo, Leg, PlanBundle } from "../api/types";
 import { Card, ErrorBox, Kpi, Loading, StatusPill } from "../components/ui";
 import Icon from "../components/Icon";
 import USMap from "../components/USMap";
+import StationsTable from "../components/StationsTable";
 import { STATUS_STYLE, STATUS_ORDER } from "../lib/format";
 
 export default function Fleet() {
@@ -12,6 +13,7 @@ export default function Fleet() {
   const fleet = usePoll<FleetOverview>("/fleet", 3000);
   const legs = usePoll<Leg[]>("/legs", 15000);
   const health = usePoll<HealthInfo>("/health", 4000);
+  const plan = usePoll<PlanBundle>("/plan", 6000);
   const [query, setQuery] = useState("");
   const data = fleet.data;
   if (!data)
@@ -36,7 +38,15 @@ export default function Fleet() {
     m[a.status] = (m[a.status] ?? 0) + 1;
     return m;
   }, {});
-  const focus = all[0];
+  const total = Math.max(1, data.aircraft.length);
+  // Two different measures, labeled as such: healthy = no open watch or alert; available = not in maintenance and not AOG.
+  const healthy = Math.round((100 * (counts.ok ?? 0)) / total);
+  const available = data.aircraft.length - (counts.in_maintenance ?? 0) - (counts.aog ?? 0);
+  // The priority card is only for an aircraft that needs something: an OK aircraft is not a "priority inspection".
+  const worst = all[0];
+  const focus = worst && worst.status !== "ok" ? worst : null;
+  const shortest = all.filter((a) => a.rul_p10_min != null).sort((a, b) => (a.rul_p10_min ?? 0) - (b.rul_p10_min ?? 0))[0];
+  const flights = (v: number | null | undefined) => (v == null ? "Unknown" : `${Math.round(v)} flights`);
   return (
     <div className="space-y-5">
       <div className="page-heading">
@@ -54,15 +64,15 @@ export default function Fleet() {
           hint={`${data.stations.length} maintenance stations`}
         />
         <Kpi
-          label="Requires attention"
+          label="On watch or alert"
           value={k.needing_attention}
           tone={k.needing_attention ? "amber" : "emerald"}
-          hint="Watch & alert components"
+          hint={k.needing_attention === 1 ? "Aircraft with an open item" : "Aircraft with an open item"}
         />
         <Kpi
-          label="Maintenance / 72 h"
+          label="Tasks due in 72 h"
           value={k.predicted_maintenance_72h}
-          hint="Conservative deadlines"
+          hint="Hard deadline inside 72 h"
         />
         <Kpi
           label="In maintenance"
@@ -71,10 +81,10 @@ export default function Fleet() {
           hint="Active service status"
         />
         <Kpi
-          label="Operational readiness"
-          value={`${k.readiness_pct}%`}
-          tone="emerald"
-          hint="Available aircraft / total"
+          label="Available to fly"
+          value={`${available} of ${data.aircraft.length}`}
+          tone={available === data.aircraft.length ? "emerald" : "amber"}
+          hint="Not in maintenance or AOG"
         />
       </div>
       <div className="grid gap-4 xl:grid-cols-[1.7fr_1fr]">
@@ -105,12 +115,12 @@ export default function Fleet() {
                 className="readiness-dial"
                 style={
                   {
-                    "--readiness": `${Math.max(0, Math.min(100, k.readiness_pct))}%`,
+                    "--readiness": `${Math.max(0, Math.min(100, healthy))}%`,
                   } as CSSProperties
                 }
               >
                 <div>
-                  {k.readiness_pct}%<small>READY</small>
+                  {healthy}%<small>HEALTHY</small>
                 </div>
               </div>
               <div className="fleet-distribution">
@@ -126,19 +136,23 @@ export default function Fleet() {
               </div>
             </div>
             <div className="distribution-bar">
-              {Object.entries(counts).map(([status, count]) => (
-                <span
-                  key={status}
-                  style={{
-                    width: `${(count / data.aircraft.length) * 100}%`,
-                    background: STATUS_STYLE[status]?.dot,
-                  }}
-                />
-              ))}
+              {["ok", "watch", "alert", "in_maintenance", "aog"]
+                .filter((status) => (counts[status] ?? 0) > 0)
+                .map((status) => (
+                  <span
+                    key={status}
+                    title={`${STATUS_STYLE[status].label}: ${counts[status]}`}
+                    style={{
+                      width: `${((counts[status] ?? 0) / total) * 100}%`,
+                      background: STATUS_STYLE[status]?.dot,
+                    }}
+                  />
+                ))}
             </div>
             <p className="text-[10px] text-slate-500">
-              Derived from the current aircraft state. Readiness is
-              availability, not an airworthiness determination.
+              Healthy means no open watch or alert. Available means not in
+              maintenance and not AOG. Neither is an airworthiness
+              determination.
             </p>
           </Card>
           <Card
@@ -160,11 +174,9 @@ export default function Fleet() {
                 </p>
                 <div className="mt-4 flex items-end justify-between border-t border-slate-200 pt-3">
                   <div className="text-[9px] uppercase tracking-wider text-slate-500">
-                    Lowest known RUL p10
+                    Conservative remaining life (p10)
                     <strong className="mt-1 block font-mono text-xl text-slate-800">
-                      {focus.rul_p10_min == null
-                        ? "Unknown"
-                        : `${focus.rul_p10_min} cycles`}
+                      {flights(focus.rul_p10_min)}
                     </strong>
                   </div>
                   <span className="text-[10px] text-slate-500">
@@ -178,11 +190,34 @@ export default function Fleet() {
                 </Link>
               </>
             ) : (
-              <p className="text-sm text-slate-500">No aircraft registered.</p>
+              <div className="space-y-3 text-sm text-slate-500">
+                <p>
+                  <b className="text-slate-800">Nothing needs inspection.</b> Every aircraft is healthy.
+                </p>
+                {shortest && (
+                  <p className="text-xs">
+                    Shortest remaining life:{" "}
+                    <Link className="text-blue-600" to={`/aircraft/${shortest.tail}`}>
+                      {shortest.tail}
+                    </Link>
+                    , {shortest.worst_component?.split("/")[1]?.replace("_", " ")}, {flights(shortest.rul_p10_min)}.
+                  </p>
+                )}
+              </div>
             )}
           </Card>
         </div>
       </div>
+      <Card
+        title="Maintenance stations"
+        right={<span className="font-mono text-[9px] text-slate-500">AS OF SIM TIME</span>}
+      >
+        <StationsTable stations={data.stations} aircraft={data.aircraft} assignments={plan.data?.current.assignments ?? []} now={health.data?.sim_now} />
+        <p className="mt-3 text-xs text-slate-500">
+          Bays free = hangar slots minus jobs running now and aircraft already in maintenance there. Technicians are counted on shift at the simulation clock;
+          re-supply lists parts that are out of stock (with where they ship from, how long it takes and what it costs) or already on their way.
+        </p>
+      </Card>
       <Card
         title="Aircraft registry"
         right={
@@ -209,7 +244,7 @@ export default function Fleet() {
                 <th>LOCATION</th>
                 <th>STATUS</th>
                 <th>PRIORITY COMPONENT</th>
-                <th className="text-right">RUL P10 / CYCLES</th>
+                <th className="text-right">LIFE P10 (FLIGHTS)</th>
                 <th />
               </tr>
             </thead>
@@ -234,7 +269,7 @@ export default function Fleet() {
                     {a.worst_component?.split("/")[1] ?? "—"}
                   </td>
                   <td className="text-right font-mono">
-                    {a.rul_p10_min ?? "—"}
+                    {a.rul_p10_min == null ? "—" : Math.round(a.rul_p10_min)}
                   </td>
                   <td className="pl-4 text-slate-400">
                     <Icon name="arrow" size={13} />

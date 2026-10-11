@@ -303,9 +303,20 @@ class AgentRun(Stamped):
     explanation: str = ""                       # may be LLM-written; numbers inside must exist in tool outputs
     missing_info: list[str] = []
 
+class ScreenContext(BaseModel):
+    """What the person is looking at, sent by the web app with every question and agent run so the AI can see the screen."""
+    page: str = ""                              # "Aircraft twin", "Fleet overview", "Control room" ...
+    path: str = ""                              # "/aircraft/SIM-017"
+    role: str = ""                              # "Pilot / flight crew"
+    tail: Optional[str] = None                  # the aircraft on screen, if any
+    selected: Optional[str] = None              # selected system or item, as shown on screen
+    sim_now: Optional[str] = None
+    text: str = ""                              # the visible text (trimmed)
+
 class ChatRequest(BaseModel):
     session_id: str
     message: str
+    screen: Optional[ScreenContext] = None      # optional and additive
 
 class ChatResponse(Stamped):
     answer: str

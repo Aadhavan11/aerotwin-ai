@@ -20,7 +20,7 @@ from collections import deque
 from typing import Optional
 
 from app.contracts.models import ChatRequest, ChatResponse, EvidenceRef
-from app.copilot import audit, llm
+from app.copilot import audit, llm, screen as screen_ctx
 from app.copilot.tools import Toolbox, normalize_tail
 
 log = logging.getLogger(__name__)
@@ -269,6 +269,13 @@ def chat(req: ChatRequest, *, toolbox: Optional[Toolbox] = None, client=None, mo
 def _answer(req: ChatRequest, toolbox: Optional[Toolbox], client, mode: Optional[str]) -> ChatResponse:
     box = toolbox or Toolbox()
     hist = SESSIONS.setdefault(req.session_id, deque(maxlen=HISTORY_TURNS * 2))
+    seen = screen_ctx.answer(req.message, req.screen)  # questions about the screen itself, or "this aircraft", answered from what is on screen
+    if seen is not None:
+        text, ev = seen
+        hist.append({"role": "user", "content": req.message})
+        hist.append({"role": "assistant", "content": text})
+        LAST_MODE.update(mode="screen", note="answered from the screen context")
+        return ChatResponse(answer=text, evidence=ev)
     use_llm = mode == "llm" or (mode is None and llm.llm_available())
     if use_llm:
         resp = _chat_llm(req, box, hist, client)
@@ -298,13 +305,16 @@ def _chat_llm(req: ChatRequest, box: Toolbox, hist: deque, client) -> Optional[C
         LAST_MODE.update(mode="scripted", note=f"LLM client unavailable ({type(exc).__name__}); used scripted answers")
         return None
     system = llm.SAFETY.format(role="maintenance copilot") + " " + llm.COPILOT_PROMPT
+    on_screen = screen_ctx.describe(req.screen)
+    if on_screen:
+        system += "\n\n" + on_screen + "\nYou can see the screen described above and you know everything the person can see on it. Answer questions about the screen directly from it."
     messages = [*list(hist), {"role": "user", "content": req.message}]
     res = llm.run_tool_loop(client, system=system, messages=messages, tools=box.tools())
     if res.error or not res.text:
         log.warning("copilot LLM failed (%s); using scripted mode", res.error or "empty answer")
         LAST_MODE.update(mode="scripted", note=f"LLM call failed ({str(res.error or 'empty answer')[:120]}); used scripted answers")
         return None
-    history_text = [m["content"] for m in messages if isinstance(m.get("content"), str)]
+    history_text = [m["content"] for m in messages if isinstance(m.get("content"), str)] + screen_ctx.sources(req.screen)  # numbers on screen are legitimate
     bad = llm.unsupported_numbers(res.text, res.sources(history_text))
     if bad:
         log.warning("copilot answer contains numbers no tool returned %s; using scripted mode", bad)
