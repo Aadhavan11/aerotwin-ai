@@ -31,12 +31,6 @@ Check that it works: `GET http://localhost:8000/health` should list all six modu
 Fleet map and health of 24 aircraft; a 3D aircraft twin with component health and remaining-life bands; a planning timeline with the optimized plan against a static baseline and the
 risk of waiting; a scenario lab (fault, part delay, hangar closed, technician out) with explained re-plans; agent and copilot workspace; human approval and an audit log.
 
-## AI assistance
-This project was built with the help of Claude (Anthropic), used as a coding and writing assistant by team members. Claude helped draft code, tests and documentation; the team reviewed and ran the
-results. The prototype itself does not rely on a language model for any number or safety decision: the maintenance schedule comes from a constraint solver (OR-Tools CP-SAT), and the agents call
-deterministic tools. All aircraft, fleet, task-card and degradation data are simulated (NASA C-MAPSS for engine degradation, otherwise synthetic). Results are simulated relative to a stated
-baseline; they are not verified airline savings. Per-module notes and what existed before the event: [`docs/AI-DISCLOSURE-DRAFT.md`](docs/AI-DISCLOSURE-DRAFT.md).
-
 ## Team docs
 
 | Read in this order | |

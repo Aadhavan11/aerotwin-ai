@@ -47,7 +47,7 @@ Honesty
 - If a test fails or you did not check something, say so plainly. Do not claim "done" without evidence.
 - Any result we show (MAE, RMSE, precision, recall, downtime, flights affected) must come from our own run, with the baseline and dataset stated.
 Hackathon
-- No code until I confirm the event rules allow it (pre-written code, open-source use, AI-assistance policy). Disclose AI use where required.
+- The event rules were checked on 2026-10-10 (`docs/HACKLANTA-RULES.md`). No AI-use statement in the README or Devpost unless Shamit asks for one or an event rule requires it (then run it by Shamit first). The Hacklanta guide has no such rule (checked 2026-10-10).
 - Stay inside the MUST tier (SCOPE.md section 6) before any SHOULD/COULD. Warn me when I start a COULD item early. Respect the feature freeze.
 Data and safety framing
 - Fictional SIM-xxx tail numbers only; no real airline faults, manuals or telemetry. Label everything simulated as SIMULATED in code, API and UI.

@@ -1,6 +1,6 @@
 # Hacklanta 2026: the official rules, as they affect us
 
-Source: the organizers' Hacker Guide (a public Notion page, "Hacklanta 2026 Hacker Guide"), read **Sat 2026-10-10, 11:35 PM ET**.
+Source: the organizers' Hacker Guide (public page: https://aluminum-soprano-222.notion.site/Hacklanta-2026-Hacker-Guide-3b81ccc4ed5c80f4b717c0ccc4b5df54), read **Sat 2026-10-10, 11:35 PM ET**.
 The organizers say it is updated live, so **re-read it before submitting** and watch the event Discord for announcements (the Google Form link is posted there).
 This file records what the guide says; where it is silent we say so instead of guessing.
 
@@ -49,7 +49,7 @@ All links must stay accessible throughout judging.
 - "The main design, development, and integration must happen during the event."
 - "Previously completed projects, projects reused from another hackathon without major new work, or projects that **misrepresent how they were built** are not eligible."
 
-The guide has **no separate AI-disclosure rule**: AI tools are allowed. Because misrepresenting how a project was built is a disqualifier, we still say plainly that Claude was used as a coding and writing assistant (text in [`AI-DISCLOSURE-DRAFT.md`](AI-DISCLOSURE-DRAFT.md)).
+The guide has **no AI-disclosure rule**: AI tools are allowed. **House rule (Shamit, 2026-10-11): we publish no AI-use statement unless he asks for one or an event rule requires one, and then it is run by him first.** We never claim the project was built without AI tools; if a judge asks how it was built, answer truthfully.
 
 ### What existed before hacking started (to disclose on Devpost)
 
@@ -71,7 +71,7 @@ The guide has **no separate AI-disclosure rule**: AI tools are allowed. Because 
 - [ ] Demo run once on a laptop with the NASA files (`make data`), then `make demo-check` passes.
 - [ ] **Backup video recorded** and uploaded as PUBLIC (Aadhavan, by 7:30 AM).
 - [ ] **Devpost text** written from this file's list (Aadhavan; draft help available).
-- [ ] README top section: what it is, how to run it, the disclosure paragraph (Shamit).
+- [ ] README top section: what it is and how to run it (done).
 - [ ] Decide `parked-meridian/` (remove or disclose).
 - [ ] **Google Form** submitted once (one member), after the Devpost link exists.
 - [ ] Submitted by 8:15 AM Sunday; links tested from a logged-out browser.

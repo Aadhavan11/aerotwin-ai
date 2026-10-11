@@ -52,7 +52,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 - [ ] Sleep shift 2: Shamit + Aadhavan (5:00 to 6:30 if the submission is already staged).
 
 ### Block 6: 5:45 to 7:00 AM
-- [ ] Submit (earlier if the real deadline is earlier). Check: repo public link works, no secrets, README explains what is simulated, AI use disclosed per event rules, video uploaded.
+- [ ] Submit (earlier if the real deadline is earlier). Check: repo public link works, no secrets, README explains what is simulated, video uploaded.
 
 ## 3. Who is waiting on whom (dependency matrix)
 
