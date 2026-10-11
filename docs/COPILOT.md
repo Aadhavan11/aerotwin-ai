@@ -8,7 +8,8 @@ Code: `app/copilot/` (`chat.py`, `tools.py`, `llm.py`, `workorders.py`, `audit.p
 |---|---|---|
 | Scripted copilot | Keyword intents for the six example questions call deterministic tools and fill a template. Always available. | A hand-built fleet and plan (34 tests) |
 | LLM copilot | Claude chooses tools and writes the answer; any numeral not in tool output replaces the answer with the scripted one; any API error, refusal or truncation falls back to scripted. | A fake client only |
-| Work orders | Drafted from a plan, always `pending_approval`. Only a named person can approve or reject (`system` and `agent:*` are refused). Repeat decisions return 409. Each step writes an audit entry. | Unit and HTTP tests |
+| Work orders | Drafted from a plan, always `pending_approval`. Only a named person can approve or reject (`system`, `unknown` and `agent:*` are refused). Repeat decisions return 409. Each step writes an audit entry. One store for the chat and the agent runs. | Unit and HTTP tests |
+| Storage | Shared SQLite tables (`work_orders`, `audit`, `kv`) when the DB is seeded and `MOCK` is off; memory otherwise. Survives a restart; a scenario reset that clears those tables clears the copilot. | Unit tests on a temp DB |
 | Never later | A new plan supersedes a pending order. An approved order is replaced only by an earlier slot, never a later one. | Unit tests |
 | Completion | `complete_due(now)` marks approved orders finished and resets the twin component. Call it after `POST /sim/step`. | Unit test |
 | Knowledge base | Keyword search over the synthetic task cards in `app/copilot/kb/`. | Unit tests |
@@ -22,10 +23,10 @@ Code: `app/copilot/` (`chat.py`, `tools.py`, `llm.py`, `workorders.py`, `audit.p
 | `POST /copilot/chat` | `ChatRequest` | `ChatResponse`: `answer`, `evidence[]`, `missing_info[]`, `proposed_work_orders[]` |
 | `GET /copilot/quick-prompts` | | `{prompts: [six questions]}` |
 | `GET /workorders` | | `WorkOrder[]` |
-| `POST /workorders/{id}/decision` | `{decision: "approve"\|"reject", user, note}` | `WorkOrder`; errors `{error, detail}` with 404, 409 or 422 |
-| `GET /audit` | | `AuditEntry[]`, oldest first |
+| `POST /workorders/{id}/decision` | `DecisionRequest` from `app/contracts/requests.py`: `{decision: "approve"\|"reject", user, note}` | `WorkOrder`; errors `{error, detail}` with 404, 409 or 422 |
+| `GET /audit` | | `AuditEntry[]`, **newest first** (as the mock API) |
 
-Call `app.copilot.reset_all()` from `POST /scenario/reset` (and `app.twin.state.reset()`).
+Call `app.copilot.reset_all()` and `app.twin.state.reset()` from `POST /scenario/reset`. In database mode the copilot's rows are in the shared tables, so the reset that clears them clears the copilot.
 
 ## Configuration
 
@@ -40,32 +41,30 @@ Call `app.copilot.reset_all()` from `POST /scenario/reset` (and `app.twin.state.
 
 Request shape follows the current model rules: `tool_choice` is left at `auto` (forced tool use is rejected by Sonnet 5.5), `thinking` is not sent (adaptive by default), and no sampling parameters are set.
 
-## For Pardhu: using the LLM loop from the agent runner (piece 11)
+## LLM mode for the agent workflow (piece 12 on top of Pardhu's runner)
 
-```python
-from app.copilot import llm
-from app.copilot.tools import Toolbox, Tool          # Tool(name, description, input_schema, fn, agent)
+Branch **`aashirth/llm-mode`** = Aadhavan's `aadhavan/simulator-integration` + this branch + three small changes. It exists because the LLM mode has to run on Pardhu's registry and run store, which are not on `main` yet.
 
-res = llm.run_agent("health", goal, context_dict, tools={"list_at_risk": ...},
-                    ts_fn=clock.now, start_n=1, template=scripted_summary)
-res.steps   # list[AgentStep], numbers already n=1.. ; res.text ; res.numbers_ok ; res.error
-```
+| File | Change |
+|---|---|
+| `app/agents/llm_mode.py` (new) | `run_llm(run_id, goal, scope)`: the five agents with Claude over `TOOLS`; steps stream into `RUNS`; every summary is number-checked against tool output; finished runs are cached (`data/agent_cache.json`, replay with `scope.replay` or `AGENT_CACHE_REPLAY=1`). Raises `LlmModeError` on anything untrustworthy. |
+| `app/agents/runner.py` | `mode="llm"` calls it when a key is present; on any failure the steps are cleared and the scripted workflow runs on the **same run id**, `mode="scripted"`, with the reason in `missing_info`. No key: scripted plus a note. |
+| `app/agents/workorders.py` | `draft()` delegates to `app.copilot.workorders`, so agent-drafted orders are in the same store the Approve button uses (before this, they lived only on the run and Approve returned 404). |
+| `tests/test_llm_mode.py` (new) | 10 tests with a fake client |
+| `tests/test_simulator_integration.py`, `pytest.ini` | clear `MOCK` for the live-simulator test (Shamit's `tests/conftest.py` sets `MOCK=1` for the whole session, which makes the solver plan on the stand-in fleet); put `tests/` on the path so Pardhu's `solver_helpers` import works next to Shamit's `tests/__init__.py` |
 
-If `res.error` is set, run that agent in scripted mode and record `AgentRun.mode="scripted"`. `llm.state_hash(state)` and `llm.RunCache` implement the "(goal, snapshot) -> finished run" cache. The `Toolbox` in `app/copilot/tools.py` already wraps the twin, the scheduler service and `what_if` for the copilot; his registry can reuse or replace it. Registry tool names in `CONTRACTS.md` section 6 are kept where they exist (`list_at_risk`, `get_component_health`, `get_sensor_trend`, `get_maintenance_history`, `search_kb`, `draft_work_orders`).
+Verified on that branch: **285 tests pass**; 2 fail (see below).
 
-## Integration with the scheduler (verified in a throwaway merge)
+## Known problems that are not in this module
 
-`Toolbox` reads the world through `app.solver.service.get_state()` and `ensure_plans()` and calls `app.whatif.replan.replan` for the facility what-if (pure; it does not change the live plan). With Pardhu's branch merged:
+| Problem | Where | Effect |
+|---|---|---|
+| `app/sim/router.py` does not exist | Aadhavan (Shamit's `app/main.py` loads `app.sim.router.router`) | The `sim` group is marked "mock", so `/fleet` stays on fixtures and `tests/test_db_mode.py` (2 tests) fails. |
+| `scripts/reset_db.py` calls `generate_fleet`, which returns a `FleetState` but does not write the DB | Shamit and Aadhavan | The DB is seeded only when `IntegratedSimulator` is constructed. |
+| Same fixture file names written by two generators | Shamit (mock fixtures) and Pardhu / Aadhavan (generated) | Merging collides on `fleet.json`, `stations.json`, `legs_golden.json`, `plan_*.json`, `replan_result.json`, `agent_run_golden.json`. The generated ones were kept on `aashirth/llm-mode`; Shamit decides. |
+| Global in-memory stores | everyone | Run one API process. |
 
-- The merged test suites pass together (208 tests with the NASA files, 195 passed and 13 skipped without them) **after one change in `app/solver/service.py`**: treat an empty twin as unavailable, so its tests and its source label stay honest.
+## Integration facts that were checked
 
-```python
-    snap = snapshot()
-    if not snap.components:      # the twin exists but holds nothing yet
-        log.warning("twin is empty: using the golden stand-in state")
-        return golden_state(), "golden stand-in (twin is empty)"
-    return snap, "twin.snapshot"
-```
-
-  The twin's `snapshot()` never substitutes another fleet by itself.
-- End to end on real data: held-out C-MAPSS telemetry for SIM-017 engine_2 through the model and twin gave `alert` with RUL p10/p50/p90 = 11.8/18.3/25.1 (NASA's true value 19); the scheduler planned it at DFW against the ATL baseline ($600 vs $2,200 logistics cost); a 12 h DFW kit delay replanned to the next DFW window in 0.03 s. These are stand-in fleet numbers and must be re-run on Aadhavan's real fleet before any slide.
+- Real held-out C-MAPSS telemetry for SIM-017 engine_2 through the model and twin gave `alert` with RUL p10/p50/p90 = 11.8/18.3/25.1 (NASA's true value 19); the scheduler planned it at DFW against the ATL baseline ($600 vs $2,200 logistics cost); a 12 h DFW kit delay replanned to the next DFW window in 0.03 s. Stand-in fleet numbers: re-run on the real fleet before any slide.
+- Aadhavan's branch already treats an empty twin as unavailable inside the solver (`list_aircraft()`), so the change this document used to ask Pardhu for is no longer needed. `twin.state.snapshot()` itself never substitutes another fleet.
