@@ -9,12 +9,11 @@ from pydantic import BaseModel
 
 from app.contracts.models import Comparison, ObjectiveWeights, ReplanResult, Scenario, ScenarioEvent
 from app.solver import service
-from app.solver.store import STORE
 from app.solver.tasks import derive_tasks
 from app.whatif import compare as cmp
-from app.whatif.events import EventError, apply_event
+from app.whatif.events import EventError
 from app.whatif.metrics import plan_block
-from app.whatif.replan import replan
+from app.whatif.runner import replan_and_store
 
 router = APIRouter(tags=["whatif"])
 
@@ -34,23 +33,10 @@ class CompareRequest(BaseModel):
 def post_plan_replan(req: ReplanRequest):
     """Apply the event to the current snapshot, re-plan with CP-SAT (stable versus the current plan), return the diff.
     The new plan becomes the current plan. A malformed event is a 422 and changes nothing."""
-    state, source = service.get_state()
-    if not req.already_applied:
-        try:
-            apply_event(state, req.event)
-        except EventError as exc:
-            return JSONResponse(status_code=422, content={"error": "invalid event", "detail": str(exc)})
-    with service.SOLVE_LOCK:
-        prior, _ = service.ensure_plans(state, source)
-        result = replan(state, prior, req.event, req.weights, already_applied=req.already_applied)
-        STORE.save(result.after)
-        STORE.last_replan_seconds = result.solve_seconds
-        if not req.already_applied:
-            STORE.world_events.append(req.event)    # the snapshot is not written back, so remember the disruption
-        # recompute the baseline in the SAME changed world so "baseline vs optimized" stays an honest comparison
-        changed, _ = service.get_state()
-        service.solve_and_save(changed, source, "static_baseline")
-    return result
+    try:
+        return replan_and_store(req.event, req.already_applied, req.weights)
+    except EventError as exc:
+        return JSONResponse(status_code=422, content={"error": "invalid event", "detail": str(exc)})
 
 
 @router.post("/whatif/compare", response_model=Comparison)

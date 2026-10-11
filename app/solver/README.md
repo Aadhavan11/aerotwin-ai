@@ -1,4 +1,4 @@
-# Scheduler (3.3) and what-if (3.5): `app/solver/` and `app/whatif/`
+# Scheduler (3.3), what-if (3.5) and agent tools (3.4 scripted): `app/solver/`, `app/whatif/`, `app/agents/`
 
 Owner: Pardhu. Everything here is **SIMULATED** and uses synthetic task cards; it is advisory only (a human approves every action).
 
@@ -6,10 +6,11 @@ Owner: Pardhu. Everything here is **SIMULATED** and uses synthetic task cards; i
 
 ```
 pip install ortools simpy pyyaml pydantic fastapi httpx pytest      # tested: Python 3.13, ortools 9.15, simpy 4.1, pydantic 2.13
-python -m pytest tests/test_solver.py tests/test_whatif.py -q        # 113 tests, about 10 s
+python -m pytest tests -q                                           # 135 tests, about 15 s
+python scripts/agent_demo.py [--export] [--replan]                   # runs the 5 scripted agents with the 16 tools; --export writes fixtures/agent_run_golden.json
 python scripts/plan_demo.py                                          # prints the baseline-vs-optimized table, replan, compare, simulation
 python scripts/plan_demo.py --export                                 # also rewrites fixtures/plan_current.json, plan_baseline.json, replan_result.json
-python scripts/mutation_check.py                                     # breaks 21 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
+python scripts/mutation_check.py                                     # breaks 27 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
 ```
 
 Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat exactly; use 4 for big fleets), `SEED` (default 1234),
@@ -30,6 +31,20 @@ Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat e
 | `whatif/events.py` | `apply_event_to_state` (pure), `apply_event` (also returns the effects as text) |
 | `whatif/replan.py`, `compare.py`, `simulate.py`, `router.py`, `metrics.py` | replan + diff, scenarios, analytic + SimPy simulation, `POST /plan/replan`, `POST /whatif/compare`, `GET /metrics/plan` |
 | `solver/golden.py` | deterministic **stand-in** golden `FleetState` until the real simulator/twin exist |
+
+## Agent tools and scripted runner (`app/agents/`, piece 11 in `work/OWNERSHIP.md`)
+
+| File | What |
+|---|---|
+| `tools.py` | `TOOLS`: the 16 tools of CONTRACTS.md section 6 (`name, agent, description, JSON input_schema, fn`); each returns `{data, evidence, missing_info}`; `call_tool(name, args)` turns expected failures into `{"data": None, "error": ...}` |
+| `scripted.py` | Health -> Scheduling -> Logistics -> Operations -> Coordinator; a `thought`, `tool_call`, `tool_result` step per call plus a `summary` per agent; explanation is a template filled only with tool outputs |
+| `runner.py` | `run_workflow(goal, scope, mode, background=False)`; `mode="llm"` runs the scripted workflow and records `mode="scripted"` (LLM mode is piece 12) |
+| `runs.py` | in-memory run store (`RUNS`), `RUNS.add_listener(fn)` for the database/audit layer |
+| `workorders.py`, `kb.py` | work orders (always `pending_approval`, with plan/kb/health/tool_call evidence); keyword search over the task cards |
+| `router.py` | `POST /agents/run` (returns at once with `running`), `GET /agents/runs/{id}` |
+
+The tools read the same state as the planner (`service.get_state()`): the twin snapshot when it exists, otherwise the golden stand-in, plus disruptions already applied.
+`get_sensor_trend` needs the digital twin and says so (in `missing_info`) instead of inventing a trend. A scripted run on the golden fleet takes about 0.6 s.
 
 ## How a plan is made
 

@@ -65,7 +65,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 | `HealthScore` with RUL quantiles | Aashirth | 10:00 PM L1, 12:00 AM L2 | Pardhu uses `fixtures/health_scores.json`; deadlines still computed from p10 |
 | `FleetState` snapshot (`twin.snapshot`) | Aashirth (+ DB from Shamit) | 10:00 PM | Pardhu builds `FleetState` from fixtures |
 | `solve`, `replan`, `compare` | Pardhu | 10:00 PM L1, 12:15 AM L2 | The tool registry calls the greedy stub; plan shape is identical |
-| Tool registry + scripted runner + `/agents/run` | Pardhu | 11:30 PM scripted | Shamit's Agent Activity screen uses `fixtures/agent_run_golden.json` |
+| Tool registry + scripted runner + `/agents/run` (built: `app/agents/`, see `app/solver/README.md`) | Pardhu | 11:30 PM scripted | Shamit's Agent Activity screen uses `fixtures/agent_run_golden.json` |
 | Endpoints for every screen | owners (see `work/OWNERSHIP.md`) | per screen | Shamit builds on `MOCK=1` or static fixtures |
 | ML numbers (MAE, RMSE, precision, recall) | Aashirth | 1:30 AM | Slide says "ML metrics: in progress", never invents numbers |
 
