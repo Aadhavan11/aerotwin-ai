@@ -20,7 +20,7 @@ from collections import deque
 from typing import Optional
 
 from app.contracts.models import ChatRequest, ChatResponse, EvidenceRef
-from app.copilot import llm
+from app.copilot import audit, llm
 from app.copilot.tools import Toolbox, normalize_tail
 
 log = logging.getLogger(__name__)
@@ -250,6 +250,12 @@ def _to_evidence(raw: list[dict], calls: list[tuple[str, dict]]) -> list[Evidenc
 
 def chat(req: ChatRequest, *, toolbox: Optional[Toolbox] = None, client=None, mode: Optional[str] = None) -> ChatResponse:
     """``mode`` None picks llm when credentials exist, else scripted."""
+    resp = _answer(req, toolbox, client, mode)
+    audit.record("agent:coordinator", "copilot_answer", "chat", req.message[:80])
+    return resp
+
+
+def _answer(req: ChatRequest, toolbox: Optional[Toolbox], client, mode: Optional[str]) -> ChatResponse:
     box = toolbox or Toolbox()
     hist = SESSIONS.setdefault(req.session_id, deque(maxlen=HISTORY_TURNS * 2))
     use_llm = mode == "llm" or (mode is None and llm.llm_available())

@@ -12,7 +12,7 @@ from app.contracts.models import (
     Aircraft, Assignment, ChatRequest, ComponentState, DataQuality, FleetState, PartStock, Plan, PlanDiff, PlanMetrics,
     ReplanResult, RulEstimate, Station, TelemetryRow, Technician,
 )
-from app.copilot import audit, chat as chat_mod, kb, llm, tools, workorders
+from app.copilot import audit, chat as chat_mod, kb, llm, persist, tools, workorders
 from app.copilot.router import router
 from app.copilot.tools import Context, Toolbox
 from app.twin import state as twin
@@ -104,6 +104,7 @@ def recording(b: Toolbox):
 
 @pytest.fixture(autouse=True)
 def clean():
+    persist.set_persistence(False)          # memory backend unless a test opts in
     twin.reset()
     twin.set_now_provider(lambda: NOW)
     copilot.reset_all()
@@ -112,6 +113,7 @@ def clean():
     twin.reset()
     twin.set_now_provider(None)
     copilot.reset_all()
+    persist.set_persistence(None)
 
 
 def ask(q, b=None, **kw):
@@ -352,13 +354,13 @@ def test_drafts_are_pending_and_audited():
 
 def test_approve_requires_a_named_person_and_writes_audit():
     wo = draft()[0][0]
-    for bad in ("", "  ", "system", "agent:coordinator"):
+    for bad in ("", "  ", "system", "unknown", "agent:coordinator"):
         with pytest.raises(workorders.WorkOrderError) as e:
             workorders.decide(wo.id, "approve", bad)
         assert e.value.status == 422
     done = workorders.decide(wo.id, "approve", "Aashrith", "looks right")
     assert done.status == "approved" and done.decided_by == "Aashrith" and done.decided_at == NOW
-    last = audit.list_entries()[-1]
+    last = audit.list_entries()[0]                                   # newest first
     assert (last.actor, last.action, last.ref) == ("Aashrith", "work_order_approved", wo.id)
     with pytest.raises(workorders.WorkOrderError) as e:
         workorders.decide(wo.id, "reject", "Aashrith")
@@ -417,7 +419,7 @@ def test_completion_resets_the_twin_component():
     assert [d.id for d in done] == [wo.id]
     c = twin.get_twin("SIM-017").components[0]
     assert c.health == 1.0 and c.last_maintenance == wo.end and c.status == "ok"
-    assert audit.list_entries()[-1].action == "work_order_completed"
+    assert audit.list_entries()[0].action == "work_order_completed"
     assert workorders.complete_due(wo.end + timedelta(hours=1)) == []   # only once
 
 
@@ -441,8 +443,8 @@ def test_http_chat_workorders_decision_audit(client):
     assert [w["id"] for w in client.get("/workorders").json()] == [wid]
     d = client.post(f"/workorders/{wid}/decision", json={"decision": "approve", "user": "Aashrith", "note": "ok"})
     assert d.status_code == 200 and d.json()["status"] == "approved"
-    actions = [a["action"] for a in client.get("/audit").json()]
-    assert actions == ["work_order_drafted", "work_order_approved"]
+    actions = [a["action"] for a in client.get("/audit").json()]      # newest first
+    assert actions == ["work_order_approved", "copilot_answer", "work_order_drafted"]
     again = client.post(f"/workorders/{wid}/decision", json={"decision": "reject", "user": "Aashrith"})
     assert again.status_code == 409 and set(again.json()) == {"error", "detail"}
     agent = client.post(f"/workorders/{wid}/decision", json={"decision": "approve", "user": "agent:coordinator"})
@@ -451,3 +453,76 @@ def test_http_chat_workorders_decision_audit(client):
 
 def test_http_quick_prompts_are_the_six_questions(client):
     assert len(client.get("/copilot/quick-prompts").json()["prompts"]) == 6
+
+
+# ---- agent-drafted orders share this store -----------------------------------------
+def test_draft_matches_the_agent_registry_call_shape_and_enriches_from_tasks():
+    from app.contracts.models import Task
+
+    w = make_world()
+    task = Task(id="T-SIM-017-engine_2-001", tail="SIM-017", component_id="SIM-017/engine_2",
+                title="Engine borescope inspection", duration_h=6.0, earliest=NOW, deadline=NOW + timedelta(days=3),
+                required_skill="engine", required_part="BORESCOPE-KIT", source="rul",
+                basis="engine_2 RUL p10 = 18 cycles (conservative, hard deadline)")
+    orders = workorders.draft(w.current, w.state, [task])           # same call as app.agents.workorders.draft
+    first = next(o for o in orders if o.task_id == task.id)
+    assert "Why: engine_2 RUL p10 = 18 cycles" in first.description
+    assert first.status == "pending_approval"
+    assert {e.kind for e in first.evidence} == {"plan", "health", "kb"}
+    assert workorders.get_order(first.id) is not None               # visible to /workorders and the decision endpoint
+
+
+# ---- database backend ---------------------------------------------------------------
+@pytest.fixture
+def dbmode(tmp_path, monkeypatch):
+    from app import db, settings
+
+    monkeypatch.setattr(settings, "DB_PATH", tmp_path / "t.db")
+    db.init_db(drop=True)
+    db.set_sim_now(NOW)
+    persist.set_persistence(True)
+    yield db
+    persist.set_persistence(False)
+
+
+def test_db_backend_persists_orders_audit_and_survives_a_restart(dbmode):
+    w = make_world()
+    first, _ = workorders.draft_from_plan(w.current)
+    workorders.decide(first[0].id, "approve", "Aashrith", "ok")
+    workorders.reset()                                  # forget process memory: a restart
+    audit.reset()
+    again = workorders.list_orders()
+    assert [o.id for o in again] == [o.id for o in first]
+    assert workorders.get_order(first[0].id).status == "approved"
+    assert [a.action for a in audit.list_entries()][:1] == ["work_order_approved"]
+    assert audit.list_entries()[0].ts == NOW                         # the DB clock
+    nxt, _ = workorders.draft_from_plan(w.current.model_copy(update={
+        "id": "P-9", "assignments": [w.current.assignments[0].model_copy(update={"task_id": "T-SIM-005-hydraulics-001", "tail": "SIM-005"})]}))
+    assert nxt[0].id == "WO-3"                                       # continues after the stored ids
+    with dbmode.conn() as c:
+        assert c.execute("SELECT COUNT(*) FROM work_orders").fetchone()[0] == 3
+
+
+def test_db_backend_completion_is_remembered(dbmode):
+    twin.register_aircraft(Aircraft(tail="SIM-017", type="A320-class", home="ATL", location="DFW", status="ok", cycles=1, hours=1.0))
+    twin.seed_components([comp("SIM-017", "engine_2", "engine", 18, 22, 25, 0.18, "alert", 0.91)])
+    wo = workorders.draft_from_plan(make_world().current)[0][0]
+    workorders.decide(wo.id, "approve", "Aashrith")
+    assert [d.id for d in workorders.complete_due(wo.end + timedelta(minutes=1))] == [wo.id]
+    workorders.reset()
+    assert workorders.complete_due(wo.end + timedelta(hours=2)) == []   # not completed twice after a restart
+
+
+def test_scenario_reset_clearing_the_tables_clears_the_copilot(dbmode):
+    workorders.draft_from_plan(make_world().current)
+    assert workorders.list_orders()
+    with dbmode.conn() as c:                            # what the simulator's reset does
+        c.execute("DELETE FROM work_orders")
+        c.execute("DELETE FROM audit")
+    assert workorders.list_orders() == [] and audit.list_entries() == []
+
+
+def test_metrics_block_has_n_test():
+    from app.ml import health
+
+    assert health.ml_metrics_block()["n_test"] == 100

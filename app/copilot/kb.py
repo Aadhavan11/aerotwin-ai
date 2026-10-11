@@ -36,6 +36,10 @@ def get_card(card_id: str) -> Optional[dict]:
     return next((c for c in load_cards() if c.get("id") == card_id), None)
 
 
+def card_for_title(title: str) -> Optional[dict]:
+    return next((c for c in load_cards() if c.get("title") == title), None)
+
+
 def default_card_for(component_kind: str) -> Optional[dict]:
     """The card the scheduler uses for a low-RUL task on this kind of component."""
     for c in load_cards():
