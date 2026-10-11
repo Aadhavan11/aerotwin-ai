@@ -27,6 +27,7 @@ AeroTwin AI serves the people who make those decisions: maintenance control and 
 - **Plans.** A constraint solver (OR-Tools CP-SAT) finds the maintenance slot that fits flights, ground windows, parts, technicians and hangar space, with the conservative p10 deadline as a hard constraint.
 - **Re-plans.** When the world changes, the plan is recomputed in a fraction of a second and the change is explained.
 - **Coordinates.** Five scripted agents (coordinator, health, logistics, operations, scheduling) call deterministic tools and draft work orders. A copilot answers questions using only numbers returned by those tools.
+- **Fits the job.** One console, five role views (operations control, maintenance planner, pilot, crew and dispatch, administrator): each lands on what that person needs, such as decisions waiting, work orders with technicians and parts, a plain-language readiness brief for one aircraft, departures against maintenance windows, or service health and the audit trail. Only operations and maintenance can approve.
 - **Keeps a person in charge.** Work orders are created "pending approval"; only a named person approves or rejects, and every step is written to an audit log.
 
 ## Results from our golden scenario (simulated)
@@ -42,7 +43,7 @@ Health model (NASA C-MAPSS FD001, 100 held-out test engines that no model was fi
 ## How we built it (ideation and development process)
 The idea came from Aadhavan's concept document ("the self-optimizing aircraft fleet"). We had a 36-hour window and four people, so we worked contracts first: Shamit wrote the shared data models, API contract, database and web shell on day one, with mock data for every endpoint, so everyone could build against the same shapes. Then each person built a module against that contract, and the real modules replaced the mocks one group at a time: the health model and twin (Aashirth), the scheduler, what-if engine and agent tools (Pardhu), the simulator and the aircraft twin screen (Aadhavan), and the platform, front end and integration (Shamit). `GET /health` shows which module groups are real, so a broken module is visible instead of silently mocked. A golden-path script (`make demo-check`) walks the whole story end to end and a mutation check deliberately breaks scheduling rules to confirm the tests catch them.
 
-We used Claude as a coding and writing assistant throughout (see the disclosure below). No language model decides anything: numbers come from the model, the solver and the tools.
+No language model decides anything: numbers come from the health model, the solver and the tools.
 
 ## Challenges
 - Four people and four AI assistants building in parallel: we kept a single written contract (`CONTRACTS.md`) and a single ownership file so branches fit together.
@@ -56,7 +57,7 @@ A closed loop that runs end to end on real modules: fault, remaining-life estima
 Safety-critical advice needs hard constraints, explicit uncertainty and a human in the loop; an LLM is best used to choose tools and phrase answers, not to produce numbers.
 
 ## What's next
-Real airline data connectors (maintenance records, parts, rosters), validation on airline sensor data, a live LLM copilot mode tested against the real service, and role-specific views for pilots, crews and technicians.
+Real airline data connectors (maintenance records, parts, rosters), validation on airline sensor data, a live LLM copilot mode tested against the real service, and real crew rosters and duty data for the crew view, and a way for pilots to report observations.
 
 ## Built with
 Python, FastAPI, pydantic, scikit-learn (random forest, isolation forest), OR-Tools CP-SAT, SimPy, SQLite, React, TypeScript, Vite, Tailwind CSS, Recharts, three.js, openapi-typescript. Optional: the Anthropic API (Claude) for the LLM mode of the copilot and agents.
@@ -68,11 +69,6 @@ NASA C-MAPSS turbofan degradation data (FD001; A. Saxena and K. Goebel, "Turbofa
 - The AeroTwin AI concept document (Aadhavan) and a separate planning document for a different idea (the parked `parked-meridian/` folder): planning text only.
 - Public data and open-source libraries listed above.
 - No application code existed before the event; the repository was created after hacking opened.
-
-## AI assistance
-> This project was built with the help of Claude (Anthropic), used as a coding and writing assistant by team members. Claude helped draft code, tests and documentation; the team reviewed and ran the results. The prototype itself does not rely on a language model for any number or safety decision: the maintenance schedule comes from a constraint solver (OR-Tools CP-SAT), and the agents call deterministic tools. All aircraft, fleet, task-card and degradation data are simulated (NASA C-MAPSS for engine degradation, otherwise synthetic). Results are simulated relative to a stated baseline; they are not verified airline savings and the system is advisory only.
-
-Per-module notes: [`AI-DISCLOSURE-DRAFT.md`](AI-DISCLOSURE-DRAFT.md).
 
 ## Instructions for judges
 Everything is simulated; no login, no keys, no internet needed at demo time. To run it yourself: see the README (about 5 minutes: `make setup`, `make data`, `make reset`, `make api`, `make web`, open http://localhost:5173). The demo uses the scripted agent path; the optional LLM path needs an `ANTHROPIC_API_KEY` and was tested only with a fake client during the build. The system is advisory only and does not certify an aircraft or execute maintenance.

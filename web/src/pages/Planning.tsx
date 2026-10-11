@@ -66,14 +66,15 @@ export default function Planning() {
     ].sort();
     const rows = tails.map((tail, i) => {
       const ls = legs
-        .data!.filter((l) => l.tail === tail)
+        // Only legs still to fly: earlier legs would drag the first ground window left over the row label.
+        .data!.filter((l) => l.tail === tail && new Date(l.sched_arr).getTime() > t0)
         .sort((a, b) => a.sched_dep.localeCompare(b.sched_dep));
       const wins: { station: string; s: number; e: number }[] = [];
       let prev = t0;
       for (const l of ls) {
         const d = new Date(l.sched_dep).getTime();
         if (d > prev) wins.push({ station: l.dep, s: prev, e: d });
-        prev = new Date(l.sched_arr).getTime();
+        prev = Math.max(prev, new Date(l.sched_arr).getTime());
       }
       return { tail, y: 26 + i * ROW_H, ls, wins };
     });

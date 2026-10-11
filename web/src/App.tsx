@@ -1,31 +1,54 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
 import { fmtZ } from "./lib/format";
 import CopilotDrawer from "./components/CopilotDrawer";
+import { ROLES, useRole, type RoleId } from "./lib/role";
 import Fleet from "./pages/Fleet";
 const Aircraft = lazy(() => import("./pages/Aircraft"));
 const Maintenance = lazy(() => import("./pages/Maintenance"));
 const Planning = lazy(() => import("./pages/Planning"));
 const Lab = lazy(() => import("./pages/Lab"));
+const Control = lazy(() => import("./pages/Control"));
+const WorkOrders = lazy(() => import("./pages/WorkOrders"));
+const FlightBrief = lazy(() => import("./pages/FlightBrief"));
+const Dispatch = lazy(() => import("./pages/Dispatch"));
+const Admin = lazy(() => import("./pages/Admin"));
 
-const nav = [
-  { to: "/", label: "Fleet" },
-  { to: "/aircraft/SIM-017", label: "Aircraft", match: "/aircraft" },
-  { to: "/maintenance", label: "Maintenance", match: "/maintenance" },
-  { to: "/planning", label: "Planning" },
-  { to: "/lab", label: "Scenarios" },
-];
+// Short names for the top bar; the role's own longer labels are used as tooltips.
+const SHORT: Record<string, string> = {
+  "/": "Fleet",
+  "/control": "Control room",
+  "/aircraft/SIM-017": "Aircraft",
+  "/maintenance": "Maintenance",
+  "/planning": "Planning",
+  "/lab": "Scenarios",
+  "/workorders": "Work orders",
+  "/brief": "Readiness brief",
+  "/departures": "Departures",
+  "/admin": "System & audit",
+};
 
 export default function App() {
   const [open, setOpen] = useState(false);
   const health = usePoll<HealthInfo>("/health", 4000);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { role, setRole } = useRole();
+  // Land on the role's own home the first time the console opens at "/".
   useEffect(() => {
-    const openCopilot = () => setOpen(true);
-    window.addEventListener("aerotwin:copilot", openCopilot);
-    return () => window.removeEventListener("aerotwin:copilot", openCopilot);
+    if (location.pathname === "/" && role.home !== "/") navigate(role.home, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    const openIt = () => setOpen(true);
+    window.addEventListener("aerotwin:copilot", openIt);
+    window.addEventListener("aerotwin:open-agents", openIt);
+    return () => {
+      window.removeEventListener("aerotwin:copilot", openIt);
+      window.removeEventListener("aerotwin:open-agents", openIt);
+    };
   }, []);
   const h = health.data;
   const modules = h ? Object.entries(h.modules) : [];
@@ -38,18 +61,43 @@ export default function App() {
           AeroTwin <small>maintenance planning</small>
         </NavLink>
         <nav className="app-nav" aria-label="Main">
-          {nav.map((n) => (
+          {role.nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.to === "/"}
-              className={({ isActive }) => (isActive || (n.match && location.pathname.startsWith(n.match)) ? "active" : "")}
+              title={n.label}
+              className={({ isActive }) =>
+                isActive || (n.to.startsWith("/aircraft") && location.pathname.startsWith("/aircraft")) || (n.to === "/maintenance" && location.pathname.startsWith("/maintenance"))
+                  ? "active"
+                  : ""
+              }
             >
-              {n.label}
+              {SHORT[n.to] ?? n.label}
             </NavLink>
           ))}
         </nav>
         <div className="app-status">
+          <label className="sr-only" htmlFor="role-select">
+            Viewing as
+          </label>
+          <select
+            id="role-select"
+            className="select role-select"
+            value={role.id}
+            title={role.blurb}
+            onChange={(e) => {
+              const next = ROLES.find((r) => r.id === (e.target.value as RoleId));
+              setRole(e.target.value as RoleId);
+              if (next) navigate(next.home);
+            }}
+          >
+            {ROLES.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
+          </select>
           <span className="sim-tag" title="All aircraft, telemetry and results are simulated">
             SIMULATED
           </span>
@@ -75,6 +123,11 @@ export default function App() {
             <Route path="/maintenance/:tail" element={<Maintenance />} />
             <Route path="/planning" element={<Planning />} />
             <Route path="/lab" element={<Lab />} />
+            <Route path="/control" element={<Control />} />
+            <Route path="/workorders" element={<WorkOrders />} />
+            <Route path="/brief" element={<FlightBrief />} />
+            <Route path="/departures" element={<Dispatch />} />
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </Suspense>
         <footer className="app-footer">

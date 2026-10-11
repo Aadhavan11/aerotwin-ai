@@ -9,7 +9,7 @@ Time: hacking ends **Sun Oct 11, 9:00 AM ET** (official guide, checked 2026-10-1
 ## 0. Do these first (30 minutes, before anyone builds)
 
 1. **Inventory what already exists.** If anyone has code, data or a UI from the last 25 hours, list it in `docs/INVENTORY.md` (what, who, does it run) and build on it instead of restarting.
-2. **Confirm the event rules** (pre-written code, open-source use, AI-assistance policy, submission format and deadline).
+2. **Confirm the event rules** (pre-written code, open-source use, submission format and deadline). Done: `docs/HACKLANTA-RULES.md`. No AI-use statement in the README or Devpost unless Shamit asks for one or an event rule requires it (then run it by Shamit first). The Hacklanta guide has no such rule (checked 2026-10-10).
 3. Everyone reads their work package in `work/` and sets up their Claude with `CLAUDE-PROMPT.md`.
 4. Freeze the contracts (`CONTRACTS.md`) and bring up the mock API (Shamit, by 9:15 PM).
 
@@ -120,5 +120,5 @@ Health, Scheduling, Logistics, Operations and Coordinator agents, each with dete
 | Four people, one repo, merge pain | Folders per owner; small commits; contracts first; Shamit merges to `main` |
 | Teammates cannot push yet | Add them as collaborators, or they open pull requests from forks |
 | Agent flakiness in the demo | Scripted mode and a cached golden run; backup video |
-| Rules conflict (pre-written code, AI use) | Check in the first 30 minutes; disclose AI use where required |
+| Rules conflict (pre-written code) | Checked on 2026-10-10: see `docs/HACKLANTA-RULES.md` |
 | Tired team | Sleep shifts in pairs; freeze at 3:15 AM |

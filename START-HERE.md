@@ -38,7 +38,7 @@ part, a closed facility) the plan is **recomputed automatically**. A human appro
 - **Everything simulated is labeled SIMULATED**; fictional `SIM-xxx` tail numbers; no real manuals, real telemetry or real airline names attached to faults.
 - **Report results honestly:** the baseline, the dataset and the assumptions. Simulated improvements are not verified airline savings.
 - **Keys never go in chat, issues, commits or screenshots.** `.env` stays out of git.
-- Follow the event's AI policy and disclose AI assistance in the README and Devpost if required.
+- No AI-use statement in the README or Devpost unless Shamit asks for one or an event rule requires it (then run it by Shamit first). The Hacklanta guide has no such rule (checked 2026-10-10).
 - **One working end-to-end loop beats ten half-built features.**
 
 ## How much to trust these docs
