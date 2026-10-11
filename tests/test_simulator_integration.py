@@ -84,3 +84,11 @@ def test_integration_server_mounts_team_routes(monkeypatch):
         assert client.post('/scenario/reset',json={'name':'golden'}).status_code==200
         paths=client.get('/openapi.json').json()['paths']
         assert all(p in paths for p in ('/sim/step','/scenario/inject','/plan','/plan/replan','/agents/run'))
+
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _live_world(monkeypatch):
+    """tests/conftest.py sets MOCK=1 for the API-mock suite; the simulator integration needs the real modules."""
+    monkeypatch.delenv("MOCK", raising=False)
