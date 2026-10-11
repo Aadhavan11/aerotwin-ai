@@ -60,8 +60,22 @@ scheduler, what-if and agent code. Every item below was reproduced; the patches 
 * `get_sensor_trend` uses the twin's `get_telemetry` and says so when there is none.
 * An infeasible task gets a "least-bad" suggestion (earliest slot after the deadline), labelled NOT a plan and never scheduled.
 
-### Shamit (web app): one small thing I saw by rendering the screens against my live API
+### Correction (Pardhu): the Lab "Force service at ATL" scenario is fine as it is
 
-9. The Lab's scenario "Force service at ATL" sends `constraints: {force_station: "ATL"}` without a tail, which forces EVERY aircraft's work to ATL, so it always shows "not feasible".
-   Add `"tail": "SIM-017"` to that constraint (my backend supports it) and it becomes the intended what-if (feasible, about $1,400 logistics on the golden fleet).
-   Planning and Lab otherwise render correctly with the real solver: cost cards ($600 optimized vs $2,200 baseline), the Gantt, the replan diff with its "why", and the compare table.
+I earlier said it needed `"tail": "SIM-017"`. That was based on my stand-in fleet. On the real generated fleet SIM-017 is homed at DFW and only DFW can service it before its
+deadline, so the scenario is infeasible with or without the tail, and the Lab correctly shows the reasons. Nothing to change in the Lab. (Thanks to Shamit's review for catching it.)
+
+### Baseline contrast (agreed approach; answers "the optimized plan does not visibly beat the baseline")
+
+* **Policy unchanged:** baseline = each task at the aircraft's HOME BASE in the LAST ground window before its deadline. It is the honest "fixed schedule" comparison; a weaker straw man would be misleading.
+* **Why costs tie on the real fleet:** SIM-017 is homed at DFW (kits on hand), so both plans cost $0, 0 h downtime, 0 flights delayed. The real difference is TIMING and SAFETY MARGIN, which those metrics cannot show.
+* **New, no model change:** `GET /plan` now has an additive `exposure: {baseline: [...], optimized: [...]}`, and every `compare` row has `exposure`. Per condition-driven task:
+  `hours_to_fix`, `flights_before_fix` (departures flown with the fault open), `slack_to_deadline_h`. On the real fleet with RUL p10 = 18:
+
+  | | baseline | optimized |
+  |---|---|---|
+  | hours until SIM-017 engine_2 is fixed | 92 | 20 |
+  | flights flown with the fault open | 16 | 4 |
+  | margin before the hard deadline | 10 h | 82 h |
+
+* **For Shamit's Planning screen:** add one or two cards from `exposure.baseline[0]` and `exposure.optimized[0]` ("Time to fix", "Margin before deadline"). The scripted agent run and `scripts/plan_demo.py` already print it.

@@ -6,11 +6,11 @@ Owner: Pardhu. Everything here is **SIMULATED** and uses synthetic task cards; i
 
 ```
 pip install ortools simpy pyyaml pydantic fastapi httpx pytest      # tested: Python 3.13, ortools 9.15, simpy 4.1, pydantic 2.13
-python -m pytest tests -q                                           # 290 tests in the merged repo, about 2 min (mine alone: about 20 s)
+python -m pytest tests -q                                           # 299 tests in the merged repo, about 2 min (mine alone: about 20 s)
 python scripts/agent_demo.py [--export] [--replan]                   # runs the 5 scripted agents with the 17 tools; --export writes fixtures/agent_run_golden.json
 python scripts/plan_demo.py                                          # prints the baseline-vs-optimized table, replan, compare, simulation
 python scripts/plan_demo.py --export                                 # also rewrites fixtures/plan_current.json, plan_baseline.json, replan_result.json
-python scripts/mutation_check.py                                     # breaks 28 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
+python scripts/mutation_check.py                                     # breaks 30 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
 ```
 
 Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat exactly; use 4 for big fleets), `SEED` (default 1234),
@@ -26,6 +26,7 @@ Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat e
 | `solver/candidates.py` | the one place the hard constraints live: every feasible (task, window, technician, part source) and its start range |
 | `solver/greedy.py`, `baseline.py`, `cpsat.py` | the three solvers behind one `solve()` (`engine.py`) |
 | `solver/plan_metrics.py` | metrics, `objective_value`, and `validate_plan` (final guard on every plan) |
+| `solver/exposure.py` | risk view: hours to fix, flights flown with the fault open, margin before the hard deadline (additive `exposure` in `GET /plan` and compare rows) |
 | `solver/reasons.py` | the plain-language `Assignment.reason` (all numbers computed, none invented) |
 | `solver/store.py`, `service.py`, `router.py` | in-memory plan store, state source, `GET /plan`, `POST /plan/solve` |
 | `whatif/events.py` | `apply_event_to_state` (pure), `apply_event` (also returns the effects as text) |

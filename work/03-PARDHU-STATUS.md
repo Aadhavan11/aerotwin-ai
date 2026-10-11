@@ -3,6 +3,13 @@
 Branch: `claude/great-albattani-bv8i0b` (not merged to `main`, no pull request opened). Written 2026-10-11.
 Scope of this branch: **only my package** (3.3 scheduler, 3.5 what-if, task cards, their tests). Nothing of Shamit's, Aashirth's or Aadhavan's was built.
 
+## 000. Update 4: baseline contrast (reply to Shamit's review)
+
+* Shamit's integration branch is `integration/full`; it already contains my branch and the stretch goals. **Merge that one, not mine.**
+* On the real fleet baseline and optimized tie on cost ($0, 0 h, 0 flights). I kept the baseline definition and added a **risk view** instead (hours to fix, flights flown with the fault open, margin before the hard deadline): baseline 92 h / 16 flights / 10 h margin vs optimized 20 h / 4 flights / 82 h margin. Details in `docs/INTEGRATION-FINDINGS.md`. Present THIS contrast, not dollars, if the real run also ties on cost.
+* I withdrew my "Force service at ATL needs a tail" claim: on the real fleet it is infeasible either way.
+* Totals: **299 tests pass, 30/30 mutations caught.** The two choices (kit delay held until event time plus delay; 0.05 per hour fix-sooner preference) stay as the defaults; Shamit's review recommends yes to both; they are still waiting for your yes.
+
 ## 00. Update 3: integrated with everyone's branches (read `docs/INTEGRATION-FINDINGS.md`)
 
 * This branch now contains `main`, `aadhavan/simulator-integration` and `aashirth/ml-core`, so it can be merged as the **integration base**. 265 tests pass, 2 fail (Shamit's order-dependent `test_db_mode`).
@@ -13,7 +20,7 @@ Scope of this branch: **only my package** (3.3 scheduler, 3.5 what-if, task card
 
 * Merged `origin/main` (the Shamit/Aadhavan job swap, `work/OWNERSHIP.md`): clean merge. I also read Aashirth's `aashirth/ml-core` branch; nothing there conflicts, and I did not merge it.
 * **New owner of the agent tool registry + scripted runner (piece 11) is me** (marked "proposed" in OWNERSHIP.md; Shamit confirms). **Built and tested:** `app/agents/` (16 tools, five-agent scripted workflow, `POST /agents/run`, `GET /agents/runs/{id}`), `scripts/agent_demo.py`, `fixtures/agent_run_golden.json`, 22 tests. A scripted run takes about 0.6 s.
-* Totals now: **290 tests pass** across the whole merged repo (2 fail: Shamit's order-dependent `test_db_mode`, one of them also on plain `main`); `scripts/mutation_check.py` breaks 28 rules one at a time and all 28 are caught.
+* Totals now: **299 tests pass** across the whole merged repo (2 fail: Shamit's order-dependent `test_db_mode`, one of them also on plain `main`); `scripts/mutation_check.py` breaks 30 rules one at a time and all 30 are caught.
 * The event rules could not be verified (no AI policy found online; `hacklanta.dev` unreachable from here). Draft disclosure text is in `docs/AI-DISCLOSURE-DRAFT.md`; someone must read the real rules.
 * Still impossible without teammates: running on the real snapshot (Aashirth's twin, Aadhavan's fleet), the team decisions (section 4, item 3), the real numbers for slides.
 
@@ -26,7 +33,7 @@ Scope of this branch: **only my package** (3.3 scheduler, 3.5 what-if, task card
 ## 2. Message to paste in the group chat
 
 > **Pardhu: scheduler + what-if + agent tools are pushed** on branch `claude/great-albattani-bv8i0b` (merged with the latest `main`; nothing merged into `main`, no PR).
-> `python -m pytest tests -q` = 290 passing (the 2 `test_db_mode` failures are not mine). `python scripts/plan_demo.py` prints the planner demo tables from a real run; `python scripts/agent_demo.py` runs the 5 scripted agents.
+> `python -m pytest tests -q` = 299 passing (the 2 `test_db_mode` failures are not mine). `python scripts/plan_demo.py` prints the planner demo tables from a real run; `python scripts/agent_demo.py` runs the 5 scripted agents.
 > What works: `GET /plan`, `POST /plan/solve`, `POST /plan/replan`, `POST /whatif/compare`, `GET /metrics/plan`, `POST /agents/run`, `GET /agents/runs/{id}`; `solve()` with static baseline, greedy and CP-SAT; the 16 agent tools (`app/agents/tools.py`); the 10 task cards in `app/copilot/kb/task_cards.yaml`.
 > Golden story: the optimized plan fixes SIM-017's engine at DFW on day 1 with a kit on hand; the baseline (home base, last window) ships a kit to ATL and finishes about 46 h later; a 12 h DFW kit delay replans in under 0.1 s and moves the job to the next DFW window with 0 flights delayed.
 > I built on a stand-in fleet because the real models/fleet/twin were not in the repo. **Small asks that decide whether it works on the real data:**
@@ -55,7 +62,7 @@ Numbers below are from the stand-in golden fleet on 2026-10-11 and **must be ref
 3. **Why this slot (20 s).** Read the `reason` of the SIM-017 assignment: kit on hand at DFW, engine technician DFW-T1 on shift, 14.5 h window for a 6 h job, 0 h extension, 104 h before the deadline, next best alternative.
 4. **Disruption (40 s).** "DFW kit delayed 12 h." Replan takes **0.09 s**; the old plan would now break 1 hard rule (kit arrives after the job starts); SIM-017 moves to the next DFW window (Oct 13 14:40Z); 0 flights delayed; the diff says why. Then the honesty case: "if nothing works it says so, with the reason per window, and never moves a deadline". Example from the tests: an anomaly of severity 0.9 on SIM-012's engine leaves a deadline under a day away, and the plan reports "3 windows too short for the 6 h job, 1 where the kit cannot arrive in time".
 5. **What-if lab (20 s).** 6 scenarios from `POST /whatif/compare` (later, another airport, kit delay, technician gone, hangar closed).
-6. **Trust (20 s).** 290 tests; an independent checker re-verifies deadlines, overlaps, hangar slots, stock; 28 deliberate bugs (`python scripts/mutation_check.py` breaks one rule at a time in a scratch copy) were all caught; every plan is re-validated before it is returned.
+6. **Trust (20 s).** 299 tests; an independent checker re-verifies deadlines, overlaps, hangar slots, stock; 30 deliberate bugs (`python scripts/mutation_check.py` breaks one rule at a time in a scratch copy) were all caught; every plan is re-validated before it is returned.
 
 Honest limits to say (SCOPE.md section 10): synthetic cards and fleet; savings are simulated and relative to the stated baseline; delay cascades are ignored by the plan metrics (the SimPy run shows them: baseline mean downtime 0.003 h, optimized 0, 20 runs, +-15 % durations); utilization looks tiny because 5 tasks run on a 120 h horizon.
 

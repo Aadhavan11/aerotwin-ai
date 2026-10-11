@@ -19,6 +19,7 @@ from app.contracts.models import (
 )
 from app.solver.common import aware
 from app.solver.engine import solve
+from app.solver.exposure import exposure
 from app.solver.plan_metrics import compute_metrics, plan_objective
 from app.solver.tasks import derive_tasks
 from app.whatif.events import EventError, apply_event
@@ -28,12 +29,16 @@ def compare(state: FleetState, plans: dict[str, Plan]) -> Comparison:
     """One row per named plan. Metrics are the ones ``solve`` computed on that scenario's own snapshot
     (re-deriving them against ``state`` would be wrong for scenarios that changed the tasks)."""
     rows = []
+    tasks = derive_tasks(state)
     for name, p in plans.items():
+        known = {t.id for t in tasks}
         rows.append({
             "name": name, "feasible": p.feasible, "mode": p.mode, "plan_id": p.id,
             "metrics": p.metrics.model_dump(), "objective_value": p.objective_value,
             "solve_seconds": p.solve_seconds, "as_of": aware(state.now).isoformat(),
             "infeasible_reasons": list(p.infeasible_reasons),
+            # risk, not just cost: how long the fault stays open and the margin to the hard deadline (only for tasks known in this state)
+            "exposure": exposure(state, tasks, p.model_copy(update={"assignments": [a for a in p.assignments if a.task_id in known]})),
         })
     return Comparison(rows=rows)
 

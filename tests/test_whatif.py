@@ -323,7 +323,7 @@ def test_get_plan_returns_current_baseline_and_compare(client):
     r = client.get("/plan")
     assert r.status_code == 200
     body = r.json()
-    assert set(body) == {"current", "baseline", "compare"}
+    assert set(body) == {"current", "baseline", "compare", "exposure"}
     assert body["current"]["mode"] == "cpsat" and body["baseline"]["mode"] == "static_baseline"
     assert [x["name"] for x in body["compare"]["rows"]] == ["baseline", "greedy", "optimized"]
     assert body["current"]["synthetic"] is True and body["current"]["feasible"] is True
@@ -486,3 +486,13 @@ def test_a_chain_of_disruptions_keeps_every_intermediate_plan_valid_and_consiste
         plan = r.after
     assert not [a for a in plan.assignments if a.station == "LAX" or a.technician_id == "DFW-T1"]
     assert next(a for a in plan.assignments if a.task_id == "T-SIM-017-engine_2-001").start >= T0 + hrs(14)
+
+
+def test_get_plan_and_compare_rows_carry_the_exposure_view(client):
+    body = client.get("/plan").json()
+    assert set(body["exposure"]) == {"baseline", "optimized"}
+    b, o = body["exposure"]["baseline"][0], body["exposure"]["optimized"][0]
+    assert b["task_id"] == o["task_id"] == "T-SIM-017-engine_2-001" and o["hours_to_fix"] < b["hours_to_fix"]
+    rows = {r["name"]: r for r in body["compare"]["rows"]}
+    assert rows["optimized"]["exposure"][0]["hours_to_fix"] == o["hours_to_fix"]
+    assert rows["baseline"]["exposure"][0]["slack_to_deadline_h"] == b["slack_to_deadline_h"]
