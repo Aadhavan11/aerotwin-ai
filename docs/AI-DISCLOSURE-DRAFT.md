@@ -1,10 +1,8 @@
-# AI-assistance disclosure: DRAFT (check the event's real rules before using)
+# AI-assistance disclosure (checked against the official rules)
 
-**Source to check:** the Hacklanta 2026 Hacker Guide (https://aluminum-soprano-222.notion.site/Hacklanta-2026-Hacker-Guide-3b81ccc4ed5c80f4b717c0ccc4b5df54), shared by Pardhu. It could not be opened from the build environment, so its AI policy, pre-written-code rule and deadline are STILL UNVERIFIED here.
-
-**Status:** the Hacklanta '26 rules on AI assistance, pre-written code and the submission deadline are **unverified**. A search on 2026-10-11 found only a
-secondhand listing (Oct 9 to 11, Georgia State University, teams of up to 4, separate application at hacklanta.dev); `hacklanta.dev` was not reachable from the
-build environment. Someone on the team must read the official rules and adjust this text. Nothing here is a claim about what the rules require.
+**Rules checked:** `docs/HACKLANTA-RULES.md` (Shamit read the Hacker Guide on Sat 2026-10-10, 11:35 PM ET). AI tools are allowed; there is no separate AI-disclosure rule.
+Projects that "misrepresent how they were built" are ineligible, and anything that existed before Hacklanta must be disclosed, so we state plainly that Claude was used.
+Deadline: **Sun Oct 11, 9:00 AM ET, no exceptions** (internal target 8:15 AM). Re-read the guide before submitting, it is updated live.
 
 ## Short text for the README and Devpost
 
@@ -20,7 +18,6 @@ build environment. Someone on the team must read the official rules and adjust t
 > 299 automated tests, an independent constraint checker, and a script (`scripts/mutation_check.py`) that deliberately breaks 30 rules one at a time
 > to confirm the tests catch each one.
 
-## Still to confirm
-- Does the event require disclosure, and in which place (README, Devpost field, form)?
-- Is AI-generated code allowed, and is pre-written or open-source code allowed (we use OR-Tools, SimPy, scikit-learn, FastAPI, pydantic; all open source)?
-- Real submission deadline and format.
+## Pre-existing material (my part)
+Nothing in `app/solver`, `app/whatif`, `app/agents` or their tests existed before the event. Open-source libraries only: OR-Tools, SimPy, pydantic, FastAPI, PyYAML.
+The 10 task cards are synthetic and written during the event.
