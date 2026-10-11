@@ -41,20 +41,13 @@ export default function Fleet() {
     <div className="space-y-5">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">FLEET INTELLIGENCE / LIVE OVERVIEW</div>
-          <h1>Every aircraft. One operational picture.</h1>
-          <p>
-            Predict component health, coordinate maintenance, and adapt to
-            disruption.
-          </p>
-        </div>
-        <div className="heading-note">
-          <span className="live-dot" />
-          {fleet.source === "fixture" ? "FIXTURE STREAM" : "SIMULATION STREAM"}
+          <div className="eyebrow">Fleet overview</div>
+          <h1>{k.aircraft} aircraft{k.needing_attention ? `, ${k.needing_attention} ${k.needing_attention === 1 ? "needs" : "need"} attention` : ", all healthy"}</h1>
+          <p>Remaining life is estimated from sensor trends. Open an aircraft to see the evidence behind its status.</p>
         </div>
       </div>
       <ErrorBox error={fleet.error} />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="facts">
         <Kpi
           label="Fleet aircraft"
           value={k.aircraft}

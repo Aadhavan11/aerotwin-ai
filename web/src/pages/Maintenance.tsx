@@ -42,16 +42,14 @@ export default function Maintenance() {
     <div className="space-y-5">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">MAINTENANCE CONTROL / WORK ORDERS AND RESOURCES</div>
-          <h1>Approve the work. Check the people, parts and hangars behind it.</h1>
-          <p>
-            {role.canDecide ? "You can approve or reject work orders; the audit log records who and when." : "Read-only: approval is limited to operations control and maintenance planners."}
-          </p>
+          <div className="eyebrow">Work orders</div>
+          <h1>Work orders, parts and people</h1>
+          <p>{role.canDecide ? "You can approve or reject work orders; the audit log records who and when." : "Read-only: approval is limited to operations control and maintenance planners."}</p>
         </div>
       </div>
       <ErrorBox error={orders.error ?? stations.error ?? plan.error} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="facts">
         <Kpi label="Pending approval" value={count("pending_approval")} tone={count("pending_approval") ? "amber" : "emerald"} hint="Work orders" />
         <Kpi label="Approved" value={count("approved")} tone="emerald" hint="Ready to schedule" />
         <Kpi label="Technicians available" value={`${techFree} of ${techTotal}`} hint="Across all stations" />

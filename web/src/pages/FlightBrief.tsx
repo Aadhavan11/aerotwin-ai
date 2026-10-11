@@ -42,9 +42,9 @@ export default function FlightBrief() {
     <div className="space-y-5">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">FLIGHT CREW / AIRCRAFT READINESS BRIEF</div>
-          <h1>What the twin knows about your aircraft before you fly it.</h1>
-          <p>Plain-language summary of health, planned maintenance and the next legs. Advisory only.</p>
+          <div className="eyebrow">Readiness brief</div>
+          <h1>Readiness brief for {tail}</h1>
+          <p>What the twin knows about this aircraft, in plain language. Advisory only.</p>
         </div>
         <label className="flex items-center gap-2 text-xs text-slate-500">
           Aircraft
@@ -98,6 +98,12 @@ export default function FlightBrief() {
           {!t ? (
             <Loading what="the aircraft" />
           ) : (
+            <>
+              {comps.length > 0 && comps.every((c) => c.data_quality.status !== "ok") && (
+                <p className="mb-3 text-xs text-slate-500">
+                  Data quality is {comps[0].data_quality.status} on every system: {comps[0].data_quality.reasons[0] ?? "see each system"}. Estimates stay conservative.
+                </p>
+              )}
             <div className="grid gap-3 sm:grid-cols-2">
               {comps.map((c) => (
                 <div key={c.component_id} className="rounded-lg border border-slate-200 p-3 text-sm">
@@ -112,7 +118,7 @@ export default function FlightBrief() {
                     Health {Math.round(c.health * 100)}% · anomaly score {c.anomaly_score.toFixed(2)}
                     {c.rul_cycles ? ` · life ${Math.round(c.rul_cycles.p10)} / ${Math.round(c.rul_cycles.p50)} / ${Math.round(c.rul_cycles.p90)} flights` : ""}
                   </div>
-                  {c.data_quality.status !== "ok" && (
+                  {c.data_quality.status !== "ok" && !comps.every((x) => x.data_quality.status !== "ok") && (
                     <div className="mt-1">
                       <Chip tone="amber" title={c.data_quality.reasons.join("; ")}>
                         data quality: {c.data_quality.status}
@@ -122,6 +128,7 @@ export default function FlightBrief() {
                 </div>
               ))}
             </div>
+            </>
           )}
         </Card>
 

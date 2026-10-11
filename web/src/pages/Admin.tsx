@@ -68,14 +68,14 @@ export default function Admin() {
     <div className="space-y-5">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">ADMINISTRATION / SYSTEM, DATA AND AUDIT</div>
-          <h1>Is it healthy. Is it real. Who did what.</h1>
-          <p>Service state, model quality, the full audit trail and scenario controls.</p>
+          <div className="eyebrow">System and audit</div>
+          <h1>System health and the audit trail</h1>
+          <p>Which services run real code, how good the data and models are, who did what, and scenario controls.</p>
         </div>
       </div>
       <ErrorBox error={health.error ?? metrics.error ?? audit.error} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="facts">
         <Kpi label="Services running real code" value={`${real} of ${modules.length}`} tone={real === modules.length ? "emerald" : "amber"} hint={h.mock ? "Fixture mode is on" : "Not in fixture mode"} />
         <Kpi label="Import errors" value={Object.keys(h.errors).length} tone={Object.keys(h.errors).length ? "red" : "emerald"} hint="Modules that failed to load" />
         <Kpi label="Audit entries" value={entries.length} hint="Every decision is recorded" />

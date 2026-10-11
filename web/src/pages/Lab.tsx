@@ -197,14 +197,9 @@ export default function Lab() {
     <div className="space-y-4">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">
-            SCENARIO ENGINE / CONTROLLED DISRUPTIONS
-          </div>
-          <h1>Stress the system. See the response.</h1>
-          <p>
-            Inject a fault, disrupt resources, and inspect how maintenance
-            adapts.
-          </p>
+          <div className="eyebrow">Scenarios</div>
+          <h1>Try a disruption</h1>
+          <p>Inject a fault, delay a part or close a hangar, then compare the plan before and after. Everything here is simulated.</p>
         </div>
       </div>
       <ErrorBox error={err} />

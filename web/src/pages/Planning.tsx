@@ -59,15 +59,16 @@ export default function Planning() {
       ),
     ].sort();
     const rows = tails.map((tail, i) => {
+      // Only legs still to fly: earlier legs would drag the first ground window left over the row label
       const ls = legs
-        .data!.filter((l) => l.tail === tail)
+        .data!.filter((l) => l.tail === tail && new Date(l.sched_arr).getTime() > t0)
         .sort((a, b) => a.sched_dep.localeCompare(b.sched_dep));
       const wins: { station: string; s: number; e: number }[] = [];
       let prev = t0;
       for (const l of ls) {
         const d = new Date(l.sched_dep).getTime();
         if (d > prev) wins.push({ station: l.dep, s: prev, e: d });
-        prev = new Date(l.sched_arr).getTime();
+        prev = Math.max(prev, new Date(l.sched_arr).getTime());
       }
       return { tail, y: 26 + i * ROW_H, ls, wins };
     });
@@ -127,14 +128,9 @@ export default function Planning() {
     <div className="space-y-4">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">
-            CONSTRAINT ENGINE / MAINTENANCE SCHEDULE
-          </div>
-          <h1>The right window. Before the deadline.</h1>
-          <p>
-            Flight rotations, technicians, parts and hangar capacity in one
-            feasible plan.
-          </p>
+          <div className="eyebrow">Maintenance plan</div>
+          <h1>Where and when the work happens</h1>
+          <p>Each job fits around flights, technicians, parts and hangar space, and finishes before its deadline.</p>
         </div>
       </div>
       <ErrorBox error={plan.error} />
@@ -149,7 +145,7 @@ export default function Planning() {
           </div>
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="facts">
         {[
           [
             "Downtime",
@@ -177,21 +173,11 @@ export default function Planning() {
             `${base.solve_seconds.toFixed(2)} s`,
           ],
         ].map(([label, a, b]) => (
-          <div
-            key={label}
-            className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-          >
-            <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-              {label}
-            </div>
-            <div className="mt-1 text-2xl font-semibold text-emerald-700">
-              {a}
-              <span className="ml-1 text-xs font-normal text-slate-500">
-                optimized
-              </span>
-            </div>
-            <div className="text-sm text-slate-500">
-              {b} <span className="text-xs">baseline</span>
+          <div key={label} className="fact">
+            <div className="fact-label">{label}</div>
+            <div className="fact-value text-emerald-700">{a}</div>
+            <div className="fact-hint">
+              optimized · {b} baseline
             </div>
           </div>
         ))}
@@ -256,10 +242,10 @@ export default function Planning() {
                     x2={g.x(d)}
                     y1={18}
                     y2={g.height}
-                    stroke="#2e4d61"
+                    stroke="#34343f"
                     strokeDasharray="3 4"
                   />
-                  <text x={g.x(d) + 3} y={13} fontSize={11} fill="#64748b">
+                  <text x={g.x(d) + 3} y={13} fontSize={11} fill="#8d8d9b">
                     {fmtZ(new Date(d).toISOString()).slice(0, 6)}
                   </text>
                 </g>
@@ -271,7 +257,7 @@ export default function Planning() {
                     y={r.y + 40}
                     fontSize={13}
                     fontWeight={600}
-                    fill="#c4dbe8"
+                    fill="#e3e3ec"
                   >
                     {r.tail}
                   </text>
@@ -282,15 +268,15 @@ export default function Planning() {
                         y={r.y}
                         width={Math.max(0, g.x(w.e) - g.x(w.s))}
                         height={ROW_H - 12}
-                        fill="#14374a"
-                        stroke="#245369"
+                        fill="#15151e"
+                        stroke="#2a2a35"
                       />
                       {g.x(w.e) - g.x(w.s) > 44 && (
                         <text
                           x={g.x(w.s) + 3}
                           y={r.y + 12}
                           fontSize={10}
-                          fill="#77b0c7"
+                          fill="#9d9daa"
                         >
                           {w.station} {((w.e - w.s) / 3.6e6).toFixed(1)}h
                         </text>
@@ -304,7 +290,7 @@ export default function Planning() {
                       y={r.y + ROW_H - 10}
                       width={Math.max(1, g.x(l.sched_arr) - g.x(l.sched_dep))}
                       height={6}
-                      fill="#94a3b8"
+                      fill="#7a7a88"
                     >
                       <title>{`${l.dep}→${l.arr} ${fmtZ(l.sched_dep)}`}</title>
                     </rect>
@@ -327,7 +313,7 @@ export default function Planning() {
                             fill={colorOf(a.station)}
                             stroke={
                               sel?.a.task_id === a.task_id && sel.kind === "opt"
-                                ? "#0f172a"
+                                ? "#f4f4f8"
                                 : "none"
                             }
                             strokeWidth={2}
@@ -337,7 +323,7 @@ export default function Planning() {
                             y={r.y + 32}
                             fontSize={11}
                             fontWeight={600}
-                            fill="#c4dbe8"
+                            fill="#e3e3ec"
                           >
                             {a.station} ·{" "}
                             {taskLabel(a.task_id).split("-").slice(-1)[0]}
@@ -367,7 +353,7 @@ export default function Planning() {
                             x={g.x(a.end) + 5}
                             y={r.y + 58}
                             fontSize={11}
-                            fill="#7f1d1d"
+                            fill="#fca5a5"
                           >
                             {a.station}
                             {a.extension_h > 0
@@ -382,7 +368,7 @@ export default function Planning() {
             <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
               <span>
                 <span className="mr-1 inline-block h-2.5 w-4 rounded-sm bg-blue-600 align-middle" />
-                optimized job (colour = station)
+                optimized job (color = station)
               </span>
               <span>
                 <span className="mr-1 inline-block h-2.5 w-4 rounded-sm border border-red-500 bg-red-100 align-middle" />
@@ -466,7 +452,7 @@ export default function Planning() {
                 <Legend />
                 <Bar
                   dataKey="Optimized"
-                  fill="#059669"
+                  fill="#34d399"
                   isAnimationActive={false}
                 >
                   <LabelList dataKey="Optimized" position="top" fontSize={12} />

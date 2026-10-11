@@ -45,14 +45,14 @@ export default function Dispatch() {
     <div className="space-y-5">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">CREW AND DISPATCH / DEPARTURES AND IMPACT</div>
-          <h1>Which flights go, which aircraft need attention, and where maintenance touches a rotation.</h1>
+          <div className="eyebrow">Departures</div>
+          <h1>Departures and maintenance windows</h1>
           <p>Times are UTC, from the simulation clock. Crew duty and rest data are not part of this prototype.</p>
         </div>
       </div>
       <ErrorBox error={legs.error ?? fleet.error ?? plan.error} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="facts">
         <Kpi label={`Departures, next ${hours} h`} value={window.length} hint={station === "ALL" ? "All stations" : `From ${station}`} />
         <Kpi label="Aircraft needing attention" value={flyingAttention.size} tone={flyingAttention.size ? "amber" : "emerald"} hint="Flying in this window" />
         <Kpi label="Maintenance windows" value={jobs.length} hint="In the current plan" />

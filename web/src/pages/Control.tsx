@@ -31,18 +31,14 @@ export default function Control() {
     <div className="space-y-5">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">OPERATIONS CONTROL / RIGHT NOW</div>
-          <h1>What needs a decision. What to watch. What it costs to wait.</h1>
-          <p>The agents propose; a person decides. Everything here is simulated and advisory.</p>
-        </div>
-        <div className="heading-note">
-          <span className="live-dot" />
-          LIVE
+          <div className="eyebrow">Control room</div>
+          <h1>{pending.length === 0 ? "Nothing is waiting for you" : `${pending.length} work ${pending.length === 1 ? "order is" : "orders are"} waiting for you`}</h1>
+          <p>{f.kpis.needing_attention === 0 ? "Every aircraft is healthy" : `${f.kpis.needing_attention} ${f.kpis.needing_attention === 1 ? "aircraft needs" : "aircraft need"} attention`}, and the plan is {p.current.feasible ? "feasible" : "not feasible"}. The agents propose; a person decides.</p>
         </div>
       </div>
       <ErrorBox error={fleet.error ?? plan.error ?? orders.error} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="facts">
         <Kpi label="Decisions waiting" value={pending.length} tone={pending.length ? "amber" : "emerald"} hint="Work orders pending approval" />
         <Kpi label="Need attention" value={f.kpis.needing_attention} tone={f.kpis.needing_attention ? "amber" : "emerald"} hint="Watch or alert aircraft" />
         <Kpi label="Due within 72 h" value={f.kpis.predicted_maintenance_72h} hint="Conservative deadlines" />

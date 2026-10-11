@@ -75,8 +75,8 @@ function Airframe({
     >
       <path
         d="M200 15 C173 40 173 75 177 135 L40 225 L40 245 L179 200 L183 325 L125 369 L125 385 L194 364 L200 397 L206 364 L275 385 L275 369 L217 325 L221 200 L360 245 L360 225 L223 135 C227 75 227 40 200 15Z"
-        fill="#f1f5f9"
-        stroke="#cbd5e1"
+        fill="#191923"
+        stroke="#3a3a46"
         strokeWidth="2"
       />
       {components.map((c) => {
@@ -107,7 +107,7 @@ function Airframe({
               rx="8"
               fill={color}
               fillOpacity=".75"
-              stroke={selected === c.component_id ? "#0f172a" : color}
+              stroke={selected === c.component_id ? "#f4f4f8" : color}
               strokeWidth={selected === c.component_id ? 4 : 2}
             />
             {c.status === "alert" && (
@@ -288,7 +288,7 @@ function ComponentDetail({
                   data={forecast}
                   margin={{ left: 0, right: 15, top: 10, bottom: 12 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#272730" />
                   <XAxis
                     dataKey="cycle"
                     type="number"
@@ -308,20 +308,20 @@ function ComponentDetail({
                     dataKey="band"
                     name="Lower–upper health (%)"
                     stroke="none"
-                    fill="#276c8f"
+                    fill="#4c8dff"
                     fillOpacity={0.65}
                   />
                   <Area
                     type="monotone"
                     dataKey="median"
                     name="Median health (%)"
-                    stroke="#49c8e5"
+                    stroke="#4c8dff"
                     fill="none"
                     strokeWidth={2}
                   />
                   <ReferenceLine
                     x={component.cycles}
-                    stroke="#64748b"
+                    stroke="#8d8d9b"
                     strokeDasharray="4 4"
                   />
                 </AreaChart>
@@ -387,7 +387,7 @@ function ComponentDetail({
                         >
                           <CartesianGrid
                             strokeDasharray="3 3"
-                            stroke="#e2e8f0"
+                            stroke="#272730"
                           />
                           <XAxis dataKey="cycle" tick={{ fontSize: 10 }} />
                           <YAxis
@@ -400,7 +400,7 @@ function ComponentDetail({
                             type="monotone"
                             dataKey="value"
                             name={key}
-                            stroke={["#49c8e5", "#56d6b1", "#ba9cff"][i]}
+                            stroke={["#4c8dff", "#4ade80", "#c4b5fd"][i]}
                             strokeWidth={2}
                             dot={false}
                             connectNulls={false}
@@ -494,16 +494,14 @@ export default function Aircraft() {
     )[0];
   return (
     <div className="space-y-4">
-      <div className="eyebrow twin-eyebrow">
-        AIRFRAME TELEMETRY / COMPONENT INTELLIGENCE
-      </div>
+      <div className="eyebrow twin-eyebrow">Aircraft twin</div>
       <div className="flex flex-wrap items-center gap-3">
         <Link to="/" className="text-sm text-blue-600 hover:underline">
           ← Fleet
         </Link>
-        <h1 className="text-2xl font-semibold">
+        <h1 className="page-title">
           {a.tail}{" "}
-          <span className="font-normal text-slate-500">Aircraft Twin</span>
+          <span className="font-normal text-slate-500">twin</span>
         </h1>
         <StatusPill status={a.status} />
         {source?.includes("fixture") && <Chip tone="amber">Fixture data</Chip>}

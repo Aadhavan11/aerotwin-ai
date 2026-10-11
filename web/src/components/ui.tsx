@@ -48,14 +48,10 @@ export function Kpi({
     blue: "text-blue-600",
   };
   return (
-    <div className="metric-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
-        {label}
-      </div>
-      <div className={`mt-1 text-3xl font-semibold ${tones[tone]}`}>
-        {value}
-      </div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+    <div className="fact">
+      <div className="fact-label">{label}</div>
+      <div className={`fact-value ${tones[tone]}`}>{value}</div>
+      {hint && <div className="fact-hint">{hint}</div>}
     </div>
   );
 }
@@ -90,10 +86,9 @@ export function Btn({
   title?: string;
 }) {
   const tones = {
-    default:
-      "border border-slate-300 bg-white text-slate-800 hover:bg-slate-100",
+    default: "border border-slate-300 bg-transparent text-slate-800 hover:bg-slate-100",
     primary: "bg-slate-900 text-white hover:bg-slate-700",
-    danger: "bg-red-600 text-white hover:bg-red-500",
+    danger: "border border-red-300 bg-red-100 text-red-800 hover:bg-red-50",
     ghost: "text-slate-600 hover:bg-slate-100",
   };
   return (
@@ -101,7 +96,7 @@ export function Btn({
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${tones[tone]} ${className}`}
+      className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${tones[tone]} ${className}`}
     >
       {children}
     </button>
@@ -118,14 +113,14 @@ export function Chip({
   title?: string;
 }) {
   const tones: Record<string, string> = {
-    slate: "bg-slate-100 text-slate-700",
+    slate: "border border-slate-200 text-slate-700",
     blue: "bg-blue-50 text-blue-700",
     amber: "bg-amber-50 text-amber-800",
   };
   return (
     <span
       title={title}
-      className={`inline-block rounded-md px-1.5 py-0.5 text-xs ${tones[tone] ?? tones.slate}`}
+      className={`inline-block rounded-full px-2.5 py-0.5 font-mono text-xs ${tones[tone] ?? tones.slate}`}
     >
       {children}
     </span>
