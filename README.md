@@ -28,7 +28,7 @@ Check that it works: `GET http://localhost:8000/health` should list all six modu
 **Optional LLM mode:** copy `.env.example` to `.env` and put your own `ANTHROPIC_API_KEY` in it (never commit `.env`). The demo and all numbers use the scripted path and need no key.
 
 ## What you will see
-Fleet map and health of 24 aircraft; a 3D aircraft twin with component health and remaining-life bands; a planning timeline with the optimized plan against a static baseline and the
+Role views for operations control, maintenance planners, pilots, crew and dispatch, and administrators ([`docs/ROLE-VIEWS.md`](docs/ROLE-VIEWS.md)); fleet map and health of 24 aircraft; a 3D aircraft twin with component health and remaining-life bands; a planning timeline with the optimized plan against a static baseline and the
 risk of waiting; a scenario lab (fault, part delay, hangar closed, technician out) with explained re-plans; agent and copilot workspace; human approval and an audit log.
 
 ## Team docs

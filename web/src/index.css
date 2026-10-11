@@ -1221,3 +1221,31 @@ aside.fixed {
     padding: 6px 8px;
   }
 }
+
+/* Role switcher (sidebar): which job the console is arranged for */
+.role-switch {
+  padding: 0 12px 6px;
+}
+.role-switch .sidebar-label {
+  display: block;
+  padding: 14px 11px 8px;
+}
+.role-switch select {
+  width: 100%;
+  background: #0e1b28;
+  color: #d8e7ef;
+  border: 1px solid #263d50;
+  border-radius: 7px;
+  padding: 8px 9px;
+  font-size: 12px;
+}
+.role-switch select:focus-visible {
+  outline: 2px solid #5ddac9;
+  outline-offset: 1px;
+}
+.role-switch p {
+  margin: 8px 3px 4px;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: #6f8ca1;
+}

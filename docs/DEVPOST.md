@@ -27,6 +27,7 @@ AeroTwin AI serves the people who make those decisions: maintenance control and 
 - **Plans.** A constraint solver (OR-Tools CP-SAT) finds the maintenance slot that fits flights, ground windows, parts, technicians and hangar space, with the conservative p10 deadline as a hard constraint.
 - **Re-plans.** When the world changes, the plan is recomputed in a fraction of a second and the change is explained.
 - **Coordinates.** Five scripted agents (coordinator, health, logistics, operations, scheduling) call deterministic tools and draft work orders. A copilot answers questions using only numbers returned by those tools.
+- **Fits the job.** One console, five role views (operations control, maintenance planner, pilot, crew and dispatch, administrator): each lands on what that person needs, such as decisions waiting, work orders with technicians and parts, a plain-language readiness brief for one aircraft, departures against maintenance windows, or service health and the audit trail. Only operations and maintenance can approve.
 - **Keeps a person in charge.** Work orders are created "pending approval"; only a named person approves or rejects, and every step is written to an audit log.
 
 ## Results from our golden scenario (simulated)
@@ -56,7 +57,7 @@ A closed loop that runs end to end on real modules: fault, remaining-life estima
 Safety-critical advice needs hard constraints, explicit uncertainty and a human in the loop; an LLM is best used to choose tools and phrase answers, not to produce numbers.
 
 ## What's next
-Real airline data connectors (maintenance records, parts, rosters), validation on airline sensor data, a live LLM copilot mode tested against the real service, and role-specific views for pilots, crews and technicians.
+Real airline data connectors (maintenance records, parts, rosters), validation on airline sensor data, a live LLM copilot mode tested against the real service, and real crew rosters and duty data for the crew view, and a way for pilots to report observations.
 
 ## Built with
 Python, FastAPI, pydantic, scikit-learn (random forest, isolation forest), OR-Tools CP-SAT, SimPy, SQLite, React, TypeScript, Vite, Tailwind CSS, Recharts, three.js, openapi-typescript. Optional: the Anthropic API (Claude) for the LLM mode of the copilot and agents.

@@ -1,45 +1,56 @@
-import { Suspense, lazy, useState } from "react";
-import { NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
 import { fmtZ } from "./lib/format";
 import CopilotDrawer from "./components/CopilotDrawer";
 import Icon from "./components/Icon";
+import { ROLES, useRole, type RoleId } from "./lib/role";
 import Fleet from "./pages/Fleet";
 const Aircraft = lazy(() => import("./pages/Aircraft"));
 const Planning = lazy(() => import("./pages/Planning"));
 const Lab = lazy(() => import("./pages/Lab"));
-const nav = [
-  { to: "/", label: "Fleet overview", icon: "fleet", code: "01" },
-  {
-    to: "/aircraft/SIM-017",
-    label: "Aircraft twin",
-    icon: "aircraft",
-    code: "02",
-  },
-  { to: "/planning", label: "Maintenance", icon: "planning", code: "03" },
-  { to: "/lab", label: "Simulation lab", icon: "lab", code: "04" },
-];
-
+const Control = lazy(() => import("./pages/Control"));
+const Maintenance = lazy(() => import("./pages/Maintenance"));
+const FlightBrief = lazy(() => import("./pages/FlightBrief"));
+const Dispatch = lazy(() => import("./pages/Dispatch"));
+const Admin = lazy(() => import("./pages/Admin"));
 export default function App() {
   const [open, setOpen] = useState(false);
   const health = usePoll<HealthInfo>("/health", 4000);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { role, setRole } = useRole();
   const h = health.data;
+  // Land on the role's own home the first time the console opens at "/".
+  useEffect(() => {
+    if (location.pathname === "/" && role.home !== "/") navigate(role.home, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Any page can open the agent workspace with window.dispatchEvent(new Event("aerotwin:open-agents")).
+  useEffect(() => {
+    const openIt = () => setOpen(true);
+    window.addEventListener("aerotwin:open-agents", openIt);
+    return () => window.removeEventListener("aerotwin:open-agents", openIt);
+  }, []);
   const modules = h ? Object.entries(h.modules) : [];
   const mocked = modules.filter(([, value]) => value.startsWith("mock"));
   const broken = h ? Object.keys(h.errors) : [];
-  const title = location.pathname.startsWith("/aircraft")
-    ? "Aircraft digital twin"
-    : location.pathname.startsWith("/planning")
-      ? "Maintenance planning"
-      : location.pathname.startsWith("/lab")
-        ? "Scenario simulation"
-        : "Fleet operations";
+  const titles: [string, string][] = [
+    ["/aircraft", "Aircraft digital twin"],
+    ["/planning", "Maintenance planning"],
+    ["/lab", "Scenario simulation"],
+    ["/control", "Control room"],
+    ["/workorders", "Work orders and resources"],
+    ["/brief", "Aircraft readiness brief"],
+    ["/departures", "Departures and impact"],
+    ["/admin", "System and audit"],
+  ];
+  const title = titles.find(([prefix]) => location.pathname.startsWith(prefix))?.[1] ?? "Fleet operations";
   return (
     <div className="console-shell">
       <aside className="console-sidebar">
-        <NavLink to="/" className="console-brand">
+        <NavLink to={role.home} className="console-brand">
           <div className="brand-mark">
             <Icon name="aircraft" size={28} />
           </div>
@@ -47,20 +58,40 @@ export default function App() {
             AEROTWIN<span>INTELLIGENCE SYSTEMS</span>
           </div>
         </NavLink>
-        <div className="sidebar-label">OPERATIONS WORKSPACE</div>
-        <nav className="console-navigation">
-          {nav.map((n) => (
+        <div className="role-switch">
+          <label htmlFor="role-select" className="sidebar-label">
+            VIEWING AS
+          </label>
+          <select
+            id="role-select"
+            value={role.id}
+            onChange={(e) => {
+              const next = ROLES.find((r) => r.id === (e.target.value as RoleId));
+              setRole(e.target.value as RoleId);
+              if (next) navigate(next.home);
+            }}
+          >
+            {ROLES.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+          <p>{role.blurb}</p>
+        </div>
+        <nav className="console-navigation" aria-label={role.label}>
+          {role.nav.map((n, idx) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.to === "/"}
               className={({ isActive }) =>
-                `console-nav ${isActive || (n.icon === "aircraft" && location.pathname.startsWith("/aircraft")) ? "active" : ""}`
+                `console-nav ${isActive || (n.to.startsWith("/aircraft") && location.pathname.startsWith("/aircraft")) ? "active" : ""}`
               }
             >
               <Icon name={n.icon} />
               <span>{n.label}</span>
-              <small>{n.code}</small>
+              <small>{String(idx + 1).padStart(2, "0")}</small>
             </NavLink>
           ))}
         </nav>
@@ -87,7 +118,7 @@ export default function App() {
       <div className="console-workspace">
         <header className="console-header">
           <div className="console-breadcrumb">
-            OPERATIONS <span>/</span> <strong>{title}</strong>
+            {role.label.toUpperCase()} <span>/</span> <strong>{title}</strong>
           </div>
           <div className="header-status">
             <span className="simulation-badge">SIMULATED</span>
@@ -136,6 +167,11 @@ export default function App() {
                 <Route path="/aircraft/:tail" element={<Aircraft />} />
                 <Route path="/planning" element={<Planning />} />
                 <Route path="/lab" element={<Lab />} />
+                <Route path="/control" element={<Control />} />
+                <Route path="/workorders" element={<Maintenance />} />
+                <Route path="/brief" element={<FlightBrief />} />
+                <Route path="/departures" element={<Dispatch />} />
+                <Route path="/admin" element={<Admin />} />
               </Routes>
             </div>
           </Suspense>
