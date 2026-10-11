@@ -195,6 +195,18 @@ export default function Lab() {
 
   return (
     <div className="space-y-4">
+      <div className="page-heading">
+        <div>
+          <div className="eyebrow">
+            SCENARIO ENGINE / CONTROLLED DISRUPTIONS
+          </div>
+          <h1>Stress the system. See the response.</h1>
+          <p>
+            Inject a fault, disrupt resources, and inspect how maintenance
+            adapts.
+          </p>
+        </div>
+      </div>
       <ErrorBox error={err} />
       <Card
         title="Scenario controls"

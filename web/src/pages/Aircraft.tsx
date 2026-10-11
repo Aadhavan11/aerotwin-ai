@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Area,
@@ -16,6 +16,8 @@ import { usePoll } from "../api/client";
 import type { TwinComponent, TwinView } from "../api/types";
 import { Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
 import { fmtZ, STATUS_STYLE } from "../lib/format";
+
+const AircraftScene = lazy(() => import("../components/AircraftScene"));
 
 type Telemetry = { cycle: number; ts: string; values: Record<string, number> };
 const labels: Record<string, string> = {
@@ -306,14 +308,14 @@ function ComponentDetail({
                     dataKey="band"
                     name="Lower–upper health (%)"
                     stroke="none"
-                    fill="#bfdbfe"
+                    fill="#276c8f"
                     fillOpacity={0.65}
                   />
                   <Area
                     type="monotone"
                     dataKey="median"
                     name="Median health (%)"
-                    stroke="#2563eb"
+                    stroke="#49c8e5"
                     fill="none"
                     strokeWidth={2}
                   />
@@ -398,7 +400,7 @@ function ComponentDetail({
                             type="monotone"
                             dataKey="value"
                             name={key}
-                            stroke={["#2563eb", "#059669", "#7c3aed"][i]}
+                            stroke={["#49c8e5", "#56d6b1", "#ba9cff"][i]}
                             strokeWidth={2}
                             dot={false}
                             connectNulls={false}
@@ -492,6 +494,7 @@ export default function Aircraft() {
     )[0];
   return (
     <div className="space-y-4">
+      <div className="eyebrow twin-eyebrow">AIRFRAME TELEMETRY / COMPONENT INTELLIGENCE</div>
       <div className="flex flex-wrap items-center gap-3">
         <Link to="/" className="text-sm text-blue-600 hover:underline">
           ← Fleet
@@ -509,14 +512,29 @@ export default function Aircraft() {
         {a.cycles.toLocaleString()} flights · {number(a.hours)} flight hours
       </p>
       <ErrorBox error={error} />
-      <div className="grid items-start gap-4 lg:grid-cols-[340px_1fr]">
+      <div className="grid items-start gap-4 xl:grid-cols-[1.15fr_1fr]">
         <div className="space-y-4">
-          <Card title="Select a component" right={<Chip>2D twin</Chip>}>
-            <Airframe
-              components={data.components}
-              selected={component?.component_id ?? ""}
-              onSelect={setSelected}
-            />
+          <Card title="Select a component" right={<Chip>3D AIRFRAME</Chip>}>
+            <Suspense
+              fallback={
+                <div className="scene-loading">
+                  Initializing airframe geometry…
+                </div>
+              }
+            >
+              <AircraftScene
+                components={data.components}
+                selected={component?.component_id ?? ""}
+                onSelect={setSelected}
+                fallback={
+                  <Airframe
+                    components={data.components}
+                    selected={component?.component_id ?? ""}
+                    onSelect={setSelected}
+                  />
+                }
+              />
+            </Suspense>
             <div className="grid grid-cols-2 gap-2">
               {data.components.map((c) => (
                 <button
