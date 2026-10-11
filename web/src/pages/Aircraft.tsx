@@ -494,7 +494,9 @@ export default function Aircraft() {
     )[0];
   return (
     <div className="space-y-4">
-      <div className="eyebrow twin-eyebrow">AIRFRAME TELEMETRY / COMPONENT INTELLIGENCE</div>
+      <div className="eyebrow twin-eyebrow">
+        AIRFRAME TELEMETRY / COMPONENT INTELLIGENCE
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <Link to="/" className="text-sm text-blue-600 hover:underline">
           ← Fleet
@@ -514,7 +516,7 @@ export default function Aircraft() {
       <ErrorBox error={error} />
       <div className="grid items-start gap-4 xl:grid-cols-[1.15fr_1fr]">
         <div className="space-y-4">
-          <Card title="Select a component" right={<Chip>3D AIRFRAME</Chip>}>
+          <Card title="Aircraft anatomy" right={<Chip>REFERENCE MODEL</Chip>}>
             <Suspense
               fallback={
                 <div className="scene-loading">
@@ -523,6 +525,7 @@ export default function Aircraft() {
               }
             >
               <AircraftScene
+                aircraftType={a.type}
                 components={data.components}
                 selected={component?.component_id ?? ""}
                 onSelect={setSelected}

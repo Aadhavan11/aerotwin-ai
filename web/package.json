@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc -p . && vite build",
     "preview": "vite preview",
-    "types": "openapi-typescript http://127.0.0.1:8000/openapi.json -o src/api/schema.d.ts"
+    "types": "openapi-typescript http://127.0.0.1:8000/openapi.json -o src/api/schema.d.ts",
+    "test:models": "node scripts/check-aircraft-models.mjs"
   },
   "keywords": [],
   "author": "",

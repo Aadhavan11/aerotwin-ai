@@ -1052,4 +1052,172 @@ aside.fixed {
   }
 }
 
-.twin-eyebrow { color:#5ddac9;font:9px ui-monospace,monospace;letter-spacing:2px;margin-bottom:4px; }
+.twin-eyebrow {
+  color: #5ddac9;
+  font:
+    9px ui-monospace,
+    monospace;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+/* Quiet studio lighting keeps the reference geometry legible without luminous HUD ornament. */
+.aircraft-studio {
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    #f5f2eb,
+    #dcdedb 75%,
+    #c9cecc
+  );
+  border-color: #b6bdbb;
+  height: 460px;
+}
+.study-caption {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #5c6565;
+  pointer-events: none;
+  font-size: 11px;
+}
+.study-caption strong {
+  font-size: 21px;
+  color: #303b3f;
+  font-weight: 550;
+  letter-spacing: -0.5px;
+}
+.study-kicker {
+  font-size: 9px;
+  letter-spacing: 1.3px;
+  color: #737b77;
+}
+.study-variant {
+  position: absolute;
+  right: 17px;
+  top: 23px;
+  text-align: right;
+  font-size: 9px;
+  line-height: 1.6;
+  color: #75807b;
+  pointer-events: none;
+}
+.aircraft-studio .scene-tools button {
+  color: #4c5959;
+  background: #eff0ebeb;
+  border-color: #bac1bc;
+  font-family: inherit;
+  text-transform: none;
+  font-size: 10px;
+  letter-spacing: 0;
+  border-radius: 6px;
+  padding: 7px 11px;
+}
+.aircraft-studio .scene-tools button[aria-pressed="true"] {
+  color: #f3f3ed;
+  background: #465954;
+  border-color: #465954;
+}
+.aircraft-studio .scene-hint {
+  color: #6c7874;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.anatomy-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.anatomy-header span {
+  color: #85969e;
+  font-size: 10px;
+}
+.anatomy-tabs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.anatomy-tabs button {
+  padding: 6px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  color: #9aabb2;
+  border: 1px solid transparent;
+}
+.anatomy-tabs button[aria-pressed="true"] {
+  background: #263b3c;
+  color: #e0e6dd;
+  border-color: #50635c;
+}
+.anatomy-parts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  max-height: 215px;
+  overflow: auto;
+  padding: 1px;
+}
+.anatomy-parts button {
+  text-align: left;
+  padding: 9px 10px;
+  border: 1px solid #2b3a44;
+  border-radius: 6px;
+  background: #12212b;
+  font-size: 11px;
+  color: #c0cbd0;
+}
+.anatomy-parts button:hover {
+  background: #1d3038;
+}
+.anatomy-parts button[aria-pressed="true"] {
+  border-color: #a79877;
+  background: #2d342f;
+}
+.anatomy-parts small {
+  display: block;
+  font-size: 9px;
+  color: #82938f;
+  margin-top: 3px;
+}
+.anatomy-note {
+  padding: 12px 0 15px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #99a9af;
+}
+.anatomy-note strong {
+  color: #d1d9d8;
+  font-weight: 500;
+}
+.anatomy-note p {
+  margin: 3px 0;
+}
+.anatomy-note span {
+  font-size: 10px;
+  color: #7d928e;
+}
+@media (max-width: 600px) {
+  .aircraft-studio {
+    height: 380px;
+  }
+  .study-caption strong {
+    font-size: 17px;
+  }
+  .study-variant {
+    display: none;
+  }
+  .anatomy-parts {
+    grid-template-columns: 1fr;
+  }
+  .aircraft-studio .scene-tools button {
+    padding: 6px 8px;
+  }
+}
