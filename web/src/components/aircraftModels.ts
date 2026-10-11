@@ -115,33 +115,43 @@ export function buildAircraft(type: string) {
     "Airframe",
     "Smooth pressure shell, cabin windows and passenger doors. Geometry reference only.",
   );
-  // Dense sampled radius profile, with a round Airbus nose and longer Boeing nose.
-  const knots = [
-    [-L / 2, 0],
-    [-L / 2 + 0.18, 0.2],
-    [-L / 2 + p.nose / 2.7, 0.82],
-    [-L / 2 + 1.65, 1],
+  // Rounded airliner nose: a superellipse that is vertical at the tip and tangent to the barrel where it ends
+  // (the Airbus nose is shorter and rounder), then a straight barrel and a tapered tail cone.
+  const noseLen = 2.0 * (p.nose / 2.7);
+  const tailKnots = [
     [L / 2 - 3.4, 1],
     [L / 2 - 2, 0.72],
     [L / 2 - 0.5, 0.22],
     [L / 2, 0],
   ];
   function radius(z: number) {
+    const s = z + L / 2;
+    if (s < noseLen) {
+      const u = T.MathUtils.clamp(s / noseLen, 0, 1);
+      return R * Math.pow(1 - Math.pow(1 - u, 2.4), 1 / 2.4);
+    }
+    if (z <= tailKnots[0][0]) return R;
     let i = 0;
-    while (i < knots.length - 2 && z > knots[i + 1][0]) i++;
+    while (i < tailKnots.length - 2 && z > tailKnots[i + 1][0]) i++;
     const t = T.MathUtils.clamp(
-      (z - knots[i][0]) / (knots[i + 1][0] - knots[i][0]),
+      (z - tailKnots[i][0]) / (tailKnots[i + 1][0] - tailKnots[i][0]),
       0,
       1,
     );
     return (
-      R * T.MathUtils.lerp(knots[i][1], knots[i + 1][1], t * t * (3 - 2 * t))
+      R * T.MathUtils.lerp(tailKnots[i][1], tailKnots[i + 1][1], t * t * (3 - 2 * t))
     );
   }
-  const points = Array.from({ length: 161 }, (_, i) => {
-    const z = -L / 2 + (i * L) / 160;
+  // Sample the nose densely near the tip so it stays round instead of becoming a flat cap with a point on it.
+  const nosePoints = Array.from({ length: 56 }, (_, i) => {
+    const z = -L / 2 + noseLen * Math.pow(i / 56, 2);
     return new T.Vector2(radius(z), z);
   });
+  const bodyPoints = Array.from({ length: 120 }, (_, i) => {
+    const z = -L / 2 + noseLen + (i * (L - noseLen)) / 119;
+    return new T.Vector2(radius(z), z);
+  });
+  const points = [...nosePoints, ...bodyPoints];
   const fuselage = mesh(
     new T.LatheGeometry(points, 96),
     paint,
@@ -159,9 +169,9 @@ export function buildAircraft(type: string) {
     "avionics",
   );
   const ring = mesh(
-    new T.TorusGeometry(radius(-L / 2 + 0.8), 0.009, 6, 64),
+    new T.TorusGeometry(radius(-L / 2 + 0.55 * (p.nose / 2.7)), 0.009, 6, 64),
     alloy,
-    [0, 0.25, -L / 2 + 0.8],
+    [0, 0.25, -L / 2 + 0.55 * (p.nose / 2.7)],
     radome,
   );
   ring.scale.y = 1;
@@ -204,15 +214,14 @@ export function buildAircraft(type: string) {
     (o.material as T.MeshStandardMaterial).side = T.DoubleSide;
   }
   for (const s of [-1, 1]) {
-    for (let i = 0; i < 3; i++)
-      patch(
-        -L / 2 + 1.02 + i * 0.28,
-        -L / 2 + 1.26 + i * 0.28,
-        s * (0.48 + i * 0.24),
-        s * (0.69 + i * 0.24),
-        cockpit,
-        glass,
-      );
+    // Flight-deck glazing: a front windscreen pane, a narrow corner pane and a side window on each side.
+    const k = p.nose / 2.7;
+    for (const [s0, s1, a0, a1] of [
+      [1.08, 1.4, 0.3, 0.74],
+      [1.08, 1.4, 0.8, 1.04],
+      [1.48, 1.95, 1.0, 1.26],
+    ])
+      patch(-L / 2 + s0 * k, -L / 2 + s1 * k, s * a0, s * a1, cockpit, glass);
     for (let i = 0; i < p.windows; i++) {
       const z = -L / 2 + 2.15 + (i * (L - 4.7)) / (p.windows - 1);
       patch(z - 0.055, z + 0.055, s * 1.16, s * 1.35, body, glass);
