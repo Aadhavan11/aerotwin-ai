@@ -101,10 +101,10 @@ export default function EngineSection({
     const sel = selected === name;
     return (
       <g key={name} className={`sec-tag ${cls} ${sel ? "sel" : ""}`} onClick={() => onSelect(name)} style={{ cursor: "pointer" }}>
-        <line x1={a.x} y1={a.y + OFF} x2={a.tx + 44} y2={a.row < 0 ? ty + 22 : ty} stroke="#9aa1a7" strokeWidth={0.8} />
+        <line x1={a.x} y1={a.y + OFF} x2={a.tx + 56} y2={a.row < 0 ? ty + 22 : ty} stroke="#9aa1a7" strokeWidth={0.8} />
         <circle cx={a.x} cy={a.y + OFF} r={2.6} fill="#16191d" />
-        <rect x={a.tx} y={ty} width={88} height={22} rx={2} fill={sel ? "#eef3f8" : "#fff"} stroke={sel ? "#2f5d8a" : "#cfcfca"} />
-        <text x={a.tx + 6} y={ty + 15} fontSize={10.5}>
+        <rect x={a.tx} y={ty} width={112} height={22} rx={6} fill={sel ? "#eef3f8" : "#fff"} stroke={sel ? "#2f5d8a" : "#cfcfca"} />
+        <text x={a.tx + 7} y={ty + 15} fontSize={10}>
           <tspan fontWeight={600}>{name}</tspan>
           <tspan dx={5} className="mono">{v == null ? "-" : fmt(v)}</tspan>
           <tspan dx={3} fill="#6b717a">{z == null ? "" : `${z >= 0 ? "+" : ""}${z.toFixed(1)}σ`}</tspan>

@@ -2,10 +2,10 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { usePoll } from "../api/client";
-import type { TwinComponent, TwinView } from "../api/types";
+import type { Leg, Plan, TwinComponent, TwinView, WorkOrder } from "../api/types";
 import { Card, ErrorBox, Loading, StatusPill } from "../components/ui";
 import EngineSection, { deviation, deviationClass, unitLabel, type GenericSpec, type SensorCatalog } from "../components/EngineSection";
-import { profileFor } from "../components/aircraftModels";
+import { profileFor, type Profile } from "../components/aircraftModels";
 import { fmtZ } from "../lib/format";
 
 const AircraftScene = lazy(() => import("../components/AircraftScene"));
@@ -17,6 +17,14 @@ const NAMES: Record<string, string> = {
   brakes: "Wheel brakes",
   landing_gear: "Landing gear",
   hydraulics: "Hydraulic systems",
+  avionics: "Avionics",
+};
+const SHORT: Record<string, string> = {
+  engine_1: "Engine 1",
+  engine_2: "Engine 2",
+  brakes: "Brakes",
+  landing_gear: "Landing gear",
+  hydraulics: "Hydraulics",
   avionics: "Avionics",
 };
 const short = (c: TwinComponent) => c.component_id.split("/").pop() ?? c.component_id;
@@ -283,10 +291,203 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
   );
 }
 
+
+/** Every monitored system of the aircraft in one table; a row selects the component everywhere else on the page. */
+function SystemsTable({ components, selected, onSelect }: { components: TwinComponent[]; selected: string; onSelect: (id: string) => void }) {
+  const rows = [...components].sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
+  return (
+    <Card title="Monitored systems">
+      <div style={{ overflowX: "auto" }}>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>System</th>
+              <th>Status</th>
+              <th>Health</th>
+              <th>Anomaly</th>
+              <th style={{ textAlign: "right" }}>RUL p10 / p50 / p90</th>
+              <th style={{ textAlign: "right" }}>Cycles</th>
+              <th style={{ textAlign: "right" }}>Hours</th>
+              <th>Last service</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((c) => (
+              <tr key={c.component_id} className={c.component_id === selected ? "picked" : ""} onClick={() => onSelect(c.component_id)}>
+                <td style={{ fontWeight: 500, whiteSpace: "nowrap" }}>{SHORT[short(c)] ?? nameOf(c)}</td>
+                <td>
+                  <StatusPill status={c.status} />
+                </td>
+                <td style={{ minWidth: 110 }}>
+                  <div className="mono" style={{ fontSize: 12 }}>
+                    {pct(c.health)}%
+                  </div>
+                  <div className={`bar s-${c.status}`} style={{ marginTop: 3 }}>
+                    <span style={{ width: `${c.health * 100}%` }} />
+                  </div>
+                </td>
+                <td className="mono">{c.anomaly_score.toFixed(2)}</td>
+                <td className="mono" style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                  {c.rul_cycles ? `${n1(c.rul_cycles.p10)} / ${n1(c.rul_cycles.p50)} / ${n1(c.rul_cycles.p90)}` : "-"}
+                </td>
+                <td className="mono" style={{ textAlign: "right" }}>
+                  {c.cycles.toLocaleString()}
+                </td>
+                <td className="mono" style={{ textAlign: "right" }}>
+                  {n1(c.hours)}
+                </td>
+                <td className="mono muted" style={{ whiteSpace: "nowrap" }}>{c.last_maintenance ? fmtZ(c.last_maintenance) : "none"}</td>
+                <td className="muted">{c.data_quality.status === "degraded" ? "partial" : c.data_quality.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
+        RUL is in flights. Select a row to show that system on the model and in the panels.
+      </p>
+    </Card>
+  );
+}
+
+function Specs({ profile, type }: { profile: Profile | null; type: string }) {
+  const rows: [string, string][] = profile
+    ? [
+        ["Type", profile.label],
+        ["Engines", `2 × ${profile.engine}`],
+        ["Fan diameter", `${(profile.nacelle.fanR * 2).toFixed(2)} m, ${profile.nacelle.blades} blades`],
+        ["Length", `${profile.length} m`],
+        ["Wingspan", `${profile.span} m`],
+        ["Height", `${profile.height} m`],
+        ["Fuselage", `${profile.fusW} m wide, ${profile.fusH} m high`],
+        ["Wing", `${profile.wing.leSweep}° sweep, ${profile.wing.dihedral}° dihedral`],
+        ["Wing tip", profile.winglet.kind === "sharklet" ? "Sharklet" : "Blended winglet"],
+        ["Landing gear", `track ${profile.gear.track} m, main tyres ⌀ ${profile.gear.mainTire} m`],
+        ["Hydraulics", profile.hydraulics.join(", ")],
+      ]
+    : [["Type", type]];
+  return (
+    <Card title="Specification">
+      <dl className="spec-list">
+        {rows.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
+        Published type dimensions; the aircraft model is a reference, not manufacturer CAD.
+      </p>
+    </Card>
+  );
+}
+
+/** What is planned for this aircraft: assigned maintenance, the work orders raised for it, and its next flights. */
+function Operations({ tail, now }: { tail: string; now?: string }) {
+  const plan = usePoll<{ current: Plan; baseline: Plan }>("/plan", 5000).data;
+  const orders = usePoll<WorkOrder[]>("/workorders", 5000).data;
+  const legs = usePoll<Leg[]>(`/legs?tail=${encodeURIComponent(tail)}`, 15000).data;
+  const mine = (plan?.current.assignments ?? []).filter((a) => a.tail === tail);
+  const wos = (orders ?? []).filter((w) => w.tail === tail);
+  const t0 = now ? Date.parse(now) : 0;
+  const next = (legs ?? []).filter((l) => Date.parse(l.sched_arr) > t0).sort((a, b) => Date.parse(a.sched_dep) - Date.parse(b.sched_dep)).slice(0, 6);
+  return (
+    <Card title="Maintenance and operations">
+      <h3 className="sub">Planned maintenance</h3>
+      {mine.length === 0 ? (
+        <p className="muted" style={{ fontSize: 13, margin: "4px 0 12px" }}>
+          No task is scheduled for this aircraft.
+        </p>
+      ) : (
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Station</th>
+              <th>Window (UTC)</th>
+              <th>Technician</th>
+              <th>Part</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mine.map((a) => (
+              <tr key={a.task_id}>
+                <td className="mono">{a.task_id.replace(/^T-/, "")}</td>
+                <td className="mono">{a.station}</td>
+                <td className="mono">
+                  {fmtZ(a.start)} to {fmtZ(a.end)}
+                </td>
+                <td className="mono">{a.technician_id ?? "-"}</td>
+                <td className="muted">{a.part_source ? `from ${a.part_source}` : "on hand"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {mine[0] && (
+        <p className="muted" style={{ fontSize: 12.5, margin: "8px 0 12px", lineHeight: 1.5 }}>
+          {mine[0].reason}
+        </p>
+      )}
+      <h3 className="sub">Work orders</h3>
+      {wos.length === 0 ? (
+        <p className="muted" style={{ fontSize: 13, margin: "4px 0 12px" }}>
+          None yet. Run the agents from the Copilot to draft them.
+        </p>
+      ) : (
+        <ul className="plain-list">
+          {wos.map((w) => {
+            const now = mine.find((a) => a.task_id === w.task_id);
+            const moved = w.status === "approved" && now && (now.station !== w.station || Math.abs(Date.parse(now.start) - Date.parse(w.start)) > 60_000);
+            return (
+              <li key={w.id} style={{ flexWrap: "wrap" }}>
+                <span className="mono">{w.id}</span>
+                <span className="muted">
+                  {w.station} · {fmtZ(w.start)}
+                </span>
+                <span className={`status s-${w.status === "approved" ? "ok" : w.status === "rejected" ? "alert" : "watch"}`}>
+                  {w.status === "pending_approval" ? "Waiting for approval" : w.status === "approved" ? `Approved by ${w.decided_by ?? "a person"}` : `Rejected by ${w.decided_by ?? "a person"}`}
+                </span>
+                {moved && now && (
+                  <span className="reasons" style={{ flexBasis: "100%", margin: "4px 0 0" }}>
+                    The plan now schedules this task at {now.station} on {fmtZ(now.start)}, not the approved slot. Review it before work starts.
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <h3 className="sub">Next flights</h3>
+      {next.length === 0 ? (
+        <p className="muted" style={{ fontSize: 13, margin: "4px 0 0" }}>
+          No further scheduled flights in the loaded horizon.
+        </p>
+      ) : (
+        <ul className="plain-list">
+          {next.map((l) => (
+            <li key={l.id}>
+              <span className="mono">
+                {l.dep} to {l.arr}
+              </span>
+              <span className="muted">
+                {fmtZ(l.sched_dep)} to {fmtZ(l.sched_arr)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
 export default function Aircraft() {
   const { tail = "" } = useParams();
   const { data, error, reload } = usePoll<TwinView>(`/aircraft/${encodeURIComponent(tail)}`, 3000);
   const catalog = usePoll<SensorCatalog>("/ml/sensors", 600_000).data;
+  const health = usePoll<{ sim_now: string }>("/health", 5000);
   const [selected, setSelected] = useState("");
   const [sensor, setSensor] = useState("T50");
   useEffect(() => setSelected(""), [tail]);
@@ -355,6 +556,8 @@ export default function Aircraft() {
               }
             />
           </Suspense>
+
+          <SystemsTable components={data.components} selected={component?.component_id ?? ""} onSelect={setSelected} />
 
           {component && component.kind === "engine" && catalog && (
             <Card title={`${nameOf(component)} · ${profile?.engine ?? "turbofan"} sensor stations`}>
@@ -426,13 +629,17 @@ export default function Aircraft() {
             )}
           </Card>
         </div>
-        {component ? (
-          <ComponentPanel key={component.component_id} component={component} tail={tail} sensor={sensor} catalog={catalog} />
-        ) : (
-          <Card title="Components">
-            <p className="muted">This aircraft has no registered components.</p>
-          </Card>
-        )}
+        <div className="space-y-4">
+          {component ? (
+            <ComponentPanel key={component.component_id} component={component} tail={tail} sensor={sensor} catalog={catalog} />
+          ) : (
+            <Card title="Components">
+              <p className="muted">This aircraft has no registered components.</p>
+            </Card>
+          )}
+          <Operations tail={tail} now={health.data?.sim_now} />
+          <Specs profile={profile} type={a.type} />
+        </div>
       </div>
     </div>
   );

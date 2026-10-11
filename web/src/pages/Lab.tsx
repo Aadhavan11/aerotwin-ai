@@ -208,21 +208,24 @@ export default function Lab() {
           <span className="text-xs text-slate-500">sim time {fmtZ(now)}</span>
         }
       >
-        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="divide-y divide-[rgba(0,0,0,0.08)]">
           {actions.map((a) => (
-            <div key={a.id} className="rounded-lg border border-slate-200 p-3">
+            <li key={a.id} className="flex items-center justify-between gap-4 py-3">
+              <div className="min-w-0">
+                <div className="text-[14px] font-medium text-slate-900">{a.label}</div>
+                <p className="mt-0.5 text-[12.5px] text-slate-500">{a.hint}</p>
+              </div>
               <Btn
-                tone={a.id === "reset" ? "default" : "primary"}
+                tone={a.id === "reset" ? "danger" : "default"}
                 disabled={!!busy}
                 onClick={() => run(a.id, a.go)}
-                className="w-full"
+                className="shrink-0"
               >
-                {busy === a.id ? "Working…" : a.label}
+                {busy === a.id ? "Working…" : a.id === "reset" ? "Reset" : a.id === "step" ? "Advance" : "Run"}
               </Btn>
-              <p className="mt-1.5 text-xs text-slate-500">{a.hint}</p>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </Card>
 
       {result && (

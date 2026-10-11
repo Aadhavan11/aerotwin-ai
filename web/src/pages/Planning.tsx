@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -39,6 +39,12 @@ export default function Planning() {
   const [sel, setSel] = useState<Sel>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Show the reasoning for the first optimized job straight away instead of an empty panel.
+  const firstOpt = plan.data?.current.assignments[0];
+  useEffect(() => {
+    if (firstOpt) setSel((cur) => cur ?? { kind: "opt", a: firstOpt });
+  }, [firstOpt?.task_id]);
 
   const data = plan.data,
     simNow = health.data?.sim_now;
@@ -452,6 +458,43 @@ export default function Planning() {
           </p>
         </Card>
       </div>
+
+      <Card title="Assignments" right={<span className="muted" style={{ fontSize: 12 }}>{cur.assignments.length} in plan {cur.id}, {base.assignments.length} in the baseline</span>}>
+        <div style={{ overflowX: "auto" }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Plan</th>
+                <th>Task</th>
+                <th>Aircraft</th>
+                <th>Station</th>
+                <th>Window (UTC)</th>
+                <th>Technician</th>
+                <th>Part</th>
+                <th style={{ textAlign: "right" }}>Extension</th>
+                <th>Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...cur.assignments.map((a) => ({ a, k: "opt" as const })), ...base.assignments.map((a) => ({ a, k: "base" as const }))].map(({ a, k }) => (
+                <tr key={k + a.task_id} onClick={() => setSel({ kind: k, a })} className={sel?.a.task_id === a.task_id && sel.kind === k ? "picked" : ""}>
+                  <td className="muted">{k === "opt" ? "Optimized" : "Baseline"}</td>
+                  <td className="mono">{a.task_id.replace(/^T-/, "")}</td>
+                  <td className="mono">{a.tail}</td>
+                  <td className="mono">{a.station}</td>
+                  <td className="mono" style={{ whiteSpace: "nowrap" }}>
+                    {fmtZ(a.start)} to {fmtZ(a.end)}
+                  </td>
+                  <td className="mono">{a.technician_id ?? "-"}</td>
+                  <td className="muted">{a.part_source ? `from ${a.part_source}` : "on hand"}</td>
+                  <td className="mono" style={{ textAlign: "right" }}>{a.extension_h > 0 ? `${a.extension_h.toFixed(1)} h` : "none"}</td>
+                  <td className="muted" style={{ minWidth: 260, lineHeight: 1.45 }}>{a.reason}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 }

@@ -78,19 +78,19 @@ export function Btn({
   className?: string;
   title?: string;
 }) {
+  // Pills, as on Apple surfaces: one filled blue action at most; everything else is a quiet grey pill.
   const tones = {
-    default:
-      "border border-slate-300 bg-white text-slate-800 hover:bg-slate-100",
-    primary: "bg-[#16191d] text-white hover:bg-[#2f3338]",
-    danger: "bg-red-600 text-white hover:bg-red-500",
-    ghost: "text-slate-600 hover:bg-slate-100",
+    default: "bg-[#e8e8ed] text-[#1d1d1f] hover:bg-[#dcdce1]",
+    primary: "bg-[#0066cc] text-white hover:bg-[#0058b0]",
+    danger: "bg-[#fbe9ea] text-[#d70015] hover:bg-[#f7d7da]",
+    ghost: "text-[#0066cc] hover:bg-[#f0f0f2]",
   };
   return (
     <button
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded px-3 py-1.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${tones[tone]} ${className}`}
+      className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${tones[tone]} ${className}`}
     >
       {children}
     </button>

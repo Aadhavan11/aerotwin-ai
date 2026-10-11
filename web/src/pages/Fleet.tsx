@@ -126,6 +126,61 @@ export default function Fleet() {
           </p>
         </div>
       </div>
+
+      <div className="instrument-card" style={{ padding: 16, marginTop: 16 }}>
+        <div className="comp-head" style={{ marginBottom: 8 }}>
+          <h2 style={{ fontSize: 15 }}>Maintenance stations</h2>
+          <span className="muted" style={{ fontSize: 12 }}>
+            hangar bays, technicians on shift and the parts held
+          </span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Station</th>
+                <th style={{ textAlign: "right" }}>Hangar bays</th>
+                <th style={{ textAlign: "right" }}>On ground</th>
+                <th>Technicians</th>
+                <th>Parts in stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...data.stations]
+                .sort((a, b) => a.iata.localeCompare(b.iata))
+                .map((s) => {
+                  const here = data.aircraft.filter((a) => a.location === s.iata).length;
+                  const skills = s.technicians.reduce<Record<string, number>>((m, t) => {
+                    t.skills.forEach((k) => (m[k] = (m[k] ?? 0) + (t.available === false ? 0 : 1)));
+                    return m;
+                  }, {});
+                  return (
+                    <tr key={s.iata} style={{ cursor: "default" }}>
+                      <td className="mono" style={{ fontWeight: 600 }}>{s.iata}</td>
+                      <td className="mono" style={{ textAlign: "right", color: s.hangar_slots === 0 ? "var(--alert)" : undefined }}>
+                        {s.hangar_slots === 0 ? "closed" : s.hangar_slots}
+                      </td>
+                      <td className="mono" style={{ textAlign: "right" }}>{here}</td>
+                      <td>
+                        <span className="mono">{s.technicians.filter((t) => t.available !== false).length}</span>{" "}
+                        <span className="muted">
+                          {Object.entries(skills)
+                            .map(([k, n]) => `${k} ${n}`)
+                            .join(", ")}
+                        </span>
+                      </td>
+                      <td className="muted">
+                        {s.parts
+                          .map((p) => `${p.part} ${p.qty}${p.eta_hours > 0 ? ` (+${p.eta_hours} h)` : ""}`)
+                          .join(" · ")}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,30 +1,45 @@
 @import "tailwindcss";
-@import "@fontsource/ibm-plex-sans/400.css";
-@import "@fontsource/ibm-plex-sans/500.css";
-@import "@fontsource/ibm-plex-sans/600.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
 
 /* Clean white engineering UI. One accent (steel blue), muted status colours, hairline rules, no glow. */
 @theme {
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "IBM Plex Mono", Menlo, monospace;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --color-slate-50: #f5f5f7;
+  --color-slate-100: #f0f0f2;
+  --color-slate-200: #e5e5ea;
+  --color-slate-300: #d2d2d7;
+  --color-slate-400: #a1a1a6;
+  --color-slate-500: #86868b;
+  --color-slate-600: #6e6e73;
+  --color-slate-700: #424245;
+  --color-slate-800: #2c2c2e;
+  --color-slate-900: #1d1d1f;
 }
 
 :root {
   --paper: #ffffff;
-  --ground: #f7f7f5;
-  --ink: #16191d;
-  --ink-2: #4a5058;
-  --ink-3: #6b717a;
-  --rule: #e4e4e0;
-  --rule-strong: #cfcfca;
-  --accent: #2f5d8a;
-  --accent-soft: #eef3f8;
-  --ok: #2f7a4f;
-  --watch: #a8650c;
-  --alert: #b3261e;
-  --maint: #2f5d8a;
+  --ground: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-2: #424245;
+  --ink-3: #6e6e73;
+  --rule: rgba(0, 0, 0, 0.08);
+  --rule-strong: rgba(0, 0, 0, 0.16);
+  --fill: #f2f2f4;
+  --fill-2: #e8e8ed;
+  --accent: #0066cc;
+  --accent-soft: #eaf2fc;
+  --ok: #248a3d;
+  --watch: #b25000;
+  --alert: #d70015;
+  --maint: #0066cc;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
   color-scheme: light;
   color: var(--ink);
   background: var(--ground);
@@ -32,6 +47,7 @@
   font-size: 14px;
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.003em;
 }
 body {
   margin: 0;
@@ -74,10 +90,12 @@ textarea {
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 28px;
-  height: 56px;
+  gap: 24px;
+  height: 52px;
   padding: 0 24px;
-  background: var(--paper);
+  background: rgba(255, 255, 255, 0.78);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--rule);
 }
 .app-brand {
@@ -97,25 +115,25 @@ textarea {
 }
 .app-nav {
   display: flex;
-  height: 100%;
-  gap: 4px;
+  gap: 2px;
 }
 .app-nav a {
   display: flex;
   align-items: center;
+  height: 30px;
   padding: 0 12px;
-  color: var(--ink-2);
+  border-radius: 8px;
+  color: var(--ink-3);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  font-size: 13.5px;
 }
 .app-nav a:hover {
   color: var(--ink);
 }
 .app-nav a.active {
   color: var(--ink);
+  background: var(--fill-2);
   font-weight: 500;
-  border-bottom-color: var(--ink);
 }
 .app-status {
   margin-left: auto;
@@ -126,12 +144,13 @@ textarea {
   color: var(--ink-3);
 }
 .sim-tag {
-  border: 1px solid var(--ink);
-  color: var(--ink);
-  padding: 2px 6px;
+  background: var(--fill-2);
+  color: var(--ink-2);
+  padding: 3px 9px;
+  border-radius: 980px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 .app-clock {
   font-family: var(--font-mono);
@@ -142,15 +161,21 @@ textarea {
   color: var(--alert);
 }
 .app-agents {
-  border: 1px solid var(--rule-strong);
-  background: var(--paper);
+  border: 0;
+  background: var(--fill-2);
   color: var(--ink);
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border-radius: 980px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
 }
 .app-agents:hover {
-  border-color: var(--ink-3);
+  background: #dcdce1;
+}
+.app-agents[aria-expanded="true"] {
+  background: var(--ink);
+  color: #fff;
 }
 .app-main {
   flex: 1;
@@ -205,9 +230,9 @@ textarea {
 }
 .page-head h1 {
   margin: 0;
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.03em;
 }
 .page-head p {
   margin: 4px 0 0;
@@ -220,9 +245,9 @@ textarea {
 /* ------------------------------------------------------------ panels */
 .instrument-card {
   background: var(--paper);
-  border: 1px solid var(--rule) !important;
-  border-radius: 6px !important;
-  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
 }
 .instrument-card > header h2 {
   font-size: 13px;
@@ -236,11 +261,12 @@ textarea {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
 .figures > div {
-  padding: 14px 16px;
+  padding: 16px 18px;
   border-left: 1px solid var(--rule);
 }
 .figures > div:first-child {
@@ -253,9 +279,9 @@ textarea {
 .figures dd {
   margin: 4px 0 0;
   font-family: var(--font-mono);
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--ink);
 }
 .figures dd small {
@@ -339,9 +365,9 @@ textarea {
 .fleet-map {
   position: relative;
   background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  padding: 12px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
 }
 .fleet-map svg {
   display: block;
@@ -389,10 +415,10 @@ textarea {
 .search {
   width: 100%;
   box-sizing: border-box;
-  border: 1px solid var(--rule-strong);
-  border-radius: 4px;
-  padding: 7px 10px;
-  background: var(--paper);
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: var(--fill);
   color: var(--ink);
 }
 
@@ -422,14 +448,14 @@ textarea {
 }
 .study {
   background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 .study-stage {
   position: relative;
   height: 500px;
-  background: linear-gradient(180deg, #ffffff 0%, #f4f4f1 100%);
+  background: radial-gradient(120% 90% at 50% 20%, #ffffff 0%, #f5f5f7 100%);
   border-bottom: 1px solid var(--rule);
 }
 .study-canvas {
@@ -464,32 +490,33 @@ textarea {
   top: 12px;
   display: flex;
   align-items: center;
-  background: var(--paper);
-  border: 1px solid var(--rule-strong);
-  border-radius: 4px;
-  overflow: hidden;
+  padding: 2px;
+  gap: 2px;
+  background: rgba(232, 232, 237, 0.82);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-radius: 9px;
 }
 .study-views button {
   border: 0;
-  border-left: 1px solid var(--rule);
   background: transparent;
   color: var(--ink-2);
-  padding: 5px 10px;
-  font-size: 12px;
+  padding: 4px 11px;
+  font-size: 12.5px;
+  border-radius: 7px;
   cursor: pointer;
 }
-.study-views button:first-child {
-  border-left: 0;
-}
 .study-views button[aria-pressed="true"] {
-  background: var(--ink);
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
 }
 .study-sep {
-  width: 6px;
+  width: 1px;
   align-self: stretch;
-  background: var(--ground);
-  border-left: 1px solid var(--rule);
+  margin: 4px 3px;
+  background: var(--rule-strong);
 }
 .study-hint {
   position: absolute;
@@ -554,7 +581,6 @@ textarea {
 }
 .parts-list button[aria-pressed="true"] {
   background: var(--accent-soft);
-  box-shadow: inset 2px 0 0 var(--accent);
 }
 .parts-health {
   font-family: var(--font-mono);
@@ -614,35 +640,35 @@ textarea {
   margin: 10px 0 4px;
 }
 .reasons {
-  margin: 10px 0 0;
-  padding: 8px 10px;
-  background: #fbf7ec;
-  border-left: 2px solid var(--watch);
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  background: #fff6e5;
+  border-radius: 10px;
   font-size: 12px;
-  color: #5d4307;
+  color: #7a4300;
   list-style: none;
 }
 .seg {
   display: inline-flex;
-  border: 1px solid var(--rule-strong);
-  border-radius: 4px;
-  overflow: hidden;
+  padding: 2px;
+  gap: 2px;
+  background: var(--fill-2);
+  border-radius: 9px;
 }
 .seg button {
   border: 0;
-  border-left: 1px solid var(--rule);
-  background: var(--paper);
+  background: transparent;
   color: var(--ink-2);
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 4px 12px;
+  font-size: 12.5px;
+  border-radius: 7px;
   cursor: pointer;
 }
-.seg button:first-child {
-  border-left: 0;
-}
 .seg button[aria-pressed="true"] {
-  background: var(--ink);
-  color: #fff;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
 }
 
 /* engine section */
@@ -783,4 +809,75 @@ textarea {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ------------------------------------------------------------ data tables and lists */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rule-strong);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+.data-table tbody tr {
+  cursor: pointer;
+}
+.data-table tbody tr:hover td {
+  background: var(--ground);
+}
+.data-table tr.picked td {
+  background: var(--accent-soft);
+}
+.sub {
+  margin: 16px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+.sub:first-of-type {
+  margin-top: 0;
+}
+.plain-list {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+}
+.plain-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.spec-list {
+  margin: 0;
+}
+.spec-list > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+}
+.spec-list dt {
+  color: var(--ink-3);
+}
+.spec-list dd {
+  margin: 0;
+  text-align: right;
+  font-feature-settings: "tnum";
 }

@@ -22,3 +22,8 @@ web/dist/
 
 # keep the template, ignore real env files
 !.env.example
+
+# third-party 3D model: licence not yet confirmed, so it is not committed (see web/public/models/README.md)
+web/public/models/*.glb
+web/public/models/*.gltf
+!web/public/models/README.md
