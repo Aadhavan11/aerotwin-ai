@@ -23,4 +23,17 @@ Run instructions: [`docs/SIMULATOR-INTEGRATION.md`](docs/SIMULATOR-INTEGRATION.m
 | [`GLOSSARY.md`](GLOSSARY.md) | Plain-English terms |
 | [`parked-meridian/`](parked-meridian/) | Parked: a separate climate-routing idea. **Not part of this build** |
 
+## Run it (works today on mock data)
+
+```
+make setup        # pip install -r requirements.txt  +  cd web && npm install       (Python 3.11+, Node 20+)
+make reset        # builds the golden database (< 10 s)
+make api          # http://localhost:8000   (open /docs for the API, /health for which modules are real)
+make web          # http://localhost:5173   (second terminal)
+make test         # 30+ tests
+make demo-check   # the golden path end to end against the running API
+```
+
+`MOCK=1 make api` serves fixtures for everything. Replacing a mock with your real module: **`INTEGRATION.md` section 13**. Who owns what: `work/OWNERSHIP.md`.
+
 Independent student project. Not affiliated with or endorsed by any airline, aircraft manufacturer or event organizer.

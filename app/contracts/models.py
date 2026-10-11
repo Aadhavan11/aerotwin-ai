@@ -1,3 +1,7 @@
+"""AeroTwin AI data contracts. SINGLE SOURCE OF TRUTH (copied from CONTRACTS.md, tested with pydantic 2.14).
+
+Do not redefine these models elsewhere. To change one: edit CONTRACTS.md, note it in CONTRACTS-CHANGELOG.md, tell the group.
+"""
 from __future__ import annotations
 from datetime import datetime
 from typing import Literal, Optional

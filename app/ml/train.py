@@ -233,6 +233,7 @@ def evaluate_and_write(seed: int = SEED) -> dict:
         "data_source": source,
         "seed": seed,
         "n_test_engines": int(idx["unit"].nunique()),
+        "n_test": int(idx["unit"].nunique()),                    # key named in CONTRACTS.md MetricsBundle.ml
         "n_test_windows": int(full.sum()),
         "n_fit_units": len(bundle.meta["fit_units"]),
         "n_calib_units": len(bundle.meta["calib_units"]),

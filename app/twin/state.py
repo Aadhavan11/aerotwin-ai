@@ -395,6 +395,13 @@ def get_telemetry(tail: str, component_id: Optional[str] = None, last: int = 60)
         return rows[-last * 6:] if last else rows
 
 
+def top_signals(component_id: str) -> list[str]:
+    """The sensors that drove the latest score of a component (explainability)."""
+    with _LOCK:
+        c = _comps.get(component_id)
+        return list(c.score.top_signals) if c is not None and c.score is not None else []
+
+
 def list_aircraft() -> list[Aircraft]:
     with _LOCK:
         return [_aircraft_view(t) for t in sorted(_aircraft)]  # type: ignore[misc]
@@ -424,20 +431,20 @@ def now() -> datetime:
     return _newest_ts or SIM_START
 
 
+def is_empty() -> bool:
+    with _LOCK:
+        return not _aircraft and not _comps
+
+
 def snapshot() -> FleetState:
     """Immutable view for the scheduler and what-if.
 
     Aircraft and components come from the twin. Legs and stations come from
-    the ops provider (fleet generator / DB). If the twin is empty and
-    Pardhu's stand-in fleet is importable, that is returned instead so the
-    rest of the system keeps working before the simulator is wired; it is
-    logged and not mixed with live twin data.
+    the ops provider (fleet generator / DB). An empty twin returns an empty
+    state: it never substitutes another fleet, so a plan can always be traced
+    to what the twin really holds.
     """
     with _LOCK:
-        if not _aircraft and not _comps:
-            fallback = _stand_in()
-            if fallback is not None:
-                return fallback
         legs: list[Leg] = []
         stations: list[Station] = []
         if _ops_provider is not None:
@@ -450,10 +457,13 @@ def snapshot() -> FleetState:
         )
 
 
-def _stand_in() -> Optional[FleetState]:
+def stand_in_state() -> Optional[FleetState]:
+    """Explicit opt-in: the scheduler's golden stand-in fleet (Pardhu's ``app.solver.golden``), or None.
+
+    For scripts and demos only; ``snapshot()`` never calls this.
+    """
     try:
         from app.solver.golden import golden_state  # type: ignore[import-not-found]
     except Exception:
         return None
-    log.warning("twin is empty: snapshot() is returning the scheduler's golden stand-in fleet")
     return golden_state()

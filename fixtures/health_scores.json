@@ -1,0 +1,572 @@
+[
+ {
+  "synthetic": true,
+  "tail": "SIM-001",
+  "component_id": "SIM-001/engine_1",
+  "health": 0.77,
+  "anomaly_score": 0.19,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-001",
+  "component_id": "SIM-001/engine_2",
+  "health": 0.57,
+  "anomaly_score": 0.11,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-001",
+  "component_id": "SIM-001/brakes",
+  "health": 0.82,
+  "anomaly_score": 0.12,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-002",
+  "component_id": "SIM-002/engine_1",
+  "health": 0.71,
+  "anomaly_score": 0.12,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-002",
+  "component_id": "SIM-002/engine_2",
+  "health": 0.8,
+  "anomaly_score": 0.14,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-002",
+  "component_id": "SIM-002/brakes",
+  "health": 0.81,
+  "anomaly_score": 0.18,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-003",
+  "component_id": "SIM-003/engine_1",
+  "health": 0.69,
+  "anomaly_score": 0.06,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-003",
+  "component_id": "SIM-003/engine_2",
+  "health": 0.76,
+  "anomaly_score": 0.06,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-003",
+  "component_id": "SIM-003/brakes",
+  "health": 0.59,
+  "anomaly_score": 0.07,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-004",
+  "component_id": "SIM-004/engine_1",
+  "health": 0.58,
+  "anomaly_score": 0.03,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-004",
+  "component_id": "SIM-004/engine_2",
+  "health": 0.67,
+  "anomaly_score": 0.13,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-004",
+  "component_id": "SIM-004/brakes",
+  "health": 0.8,
+  "anomaly_score": 0.13,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-005",
+  "component_id": "SIM-005/engine_1",
+  "health": 0.72,
+  "anomaly_score": 0.16,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-005",
+  "component_id": "SIM-005/engine_2",
+  "health": 0.71,
+  "anomaly_score": 0.04,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-005",
+  "component_id": "SIM-005/brakes",
+  "health": 0.58,
+  "anomaly_score": 0.14,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-006",
+  "component_id": "SIM-006/engine_1",
+  "health": 0.69,
+  "anomaly_score": 0.08,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-006",
+  "component_id": "SIM-006/engine_2",
+  "health": 0.59,
+  "anomaly_score": 0.04,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-006",
+  "component_id": "SIM-006/brakes",
+  "health": 0.73,
+  "anomaly_score": 0.15,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-007",
+  "component_id": "SIM-007/engine_1",
+  "health": 0.6,
+  "anomaly_score": 0.03,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-007",
+  "component_id": "SIM-007/engine_2",
+  "health": 0.78,
+  "anomaly_score": 0.03,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-007",
+  "component_id": "SIM-007/brakes",
+  "health": 0.69,
+  "anomaly_score": 0.13,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-008",
+  "component_id": "SIM-008/engine_1",
+  "health": 0.79,
+  "anomaly_score": 0.11,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-008",
+  "component_id": "SIM-008/engine_2",
+  "health": 0.93,
+  "anomaly_score": 0.1,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-008",
+  "component_id": "SIM-008/brakes",
+  "health": 0.69,
+  "anomaly_score": 0.02,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-009",
+  "component_id": "SIM-009/engine_1",
+  "health": 0.92,
+  "anomaly_score": 0.05,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-009",
+  "component_id": "SIM-009/engine_2",
+  "health": 0.62,
+  "anomaly_score": 0.17,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-009",
+  "component_id": "SIM-009/brakes",
+  "health": 0.64,
+  "anomaly_score": 0.1,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-010",
+  "component_id": "SIM-010/engine_1",
+  "health": 0.8,
+  "anomaly_score": 0.15,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-010",
+  "component_id": "SIM-010/engine_2",
+  "health": 0.81,
+  "anomaly_score": 0.09,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ },
+ {
+  "synthetic": true,
+  "tail": "SIM-010",
+  "component_id": "SIM-010/brakes",
+  "health": 0.82,
+  "anomaly_score": 0.15,
+  "is_anomaly": false,
+  "rul_cycles": {
+   "p10": 70.0,
+   "p50": 85.0,
+   "p90": 100.0
+  },
+  "data_quality": {
+   "status": "ok",
+   "reasons": []
+  },
+  "model_version": "fixture-v0",
+  "top_signals": []
+ }
+]
