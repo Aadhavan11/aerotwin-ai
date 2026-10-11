@@ -17,6 +17,7 @@ import type {
   Leg,
   Plan,
   PlanBundle,
+  Exposure,
   PlanMetrics,
 } from "../api/types";
 import { Btn, Card, Chip, ErrorBox, Loading } from "../components/ui";
@@ -487,6 +488,68 @@ export default function Planning() {
           </p>
         </Card>
       </div>
+
+      {(data.exposure?.optimized?.length ?? 0) > 0 && (
+        <RiskCard
+          optimized={data.exposure!.optimized}
+          baseline={data.exposure!.baseline ?? []}
+        />
+      )}
     </div>
+  );
+}
+
+const num = (v: number | null | undefined, unit = "") =>
+  v === null || v === undefined ? "n/a" : `${v}${unit}`;
+
+/** Cost metrics can tie while the risk differs: how long the fault stays open, how many flights fly with it open, how much margin is left. */
+function RiskCard({ optimized, baseline }: { optimized: Exposure[]; baseline: Exposure[] }) {
+  const base = new Map(baseline.map((e) => [e.task_id, e]));
+  return (
+    <Card title="Risk while the fault is open">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-slate-500">
+              <th className="py-1 pr-3 font-medium">Task</th>
+              <th className="py-1 pr-3 font-medium">Hours until fixed</th>
+              <th className="py-1 pr-3 font-medium">Flights flown with the fault open</th>
+              <th className="py-1 font-medium">Margin before the deadline</th>
+            </tr>
+          </thead>
+          <tbody>
+            {optimized.map((o) => {
+              const b = base.get(o.task_id);
+              return (
+                <tr key={o.task_id} className="border-t border-slate-200 align-top">
+                  <td className="py-2 pr-3">
+                    <div className="font-medium text-slate-700">{o.tail}</div>
+                    <div className="text-xs text-slate-500">{o.component_id.split("/").pop()}</div>
+                  </td>
+                  <td className="py-2 pr-3 tabular-nums">
+                    <span className="font-semibold text-emerald-600">{num(o.hours_to_fix, " h")}</span>
+                    <span className="text-slate-500"> optimized</span>
+                    <div className="text-slate-500">{num(b?.hours_to_fix, " h")} baseline</div>
+                  </td>
+                  <td className="py-2 pr-3 tabular-nums">
+                    <span className="font-semibold text-emerald-600">{num(o.flights_before_fix)}</span>
+                    <span className="text-slate-500"> optimized</span>
+                    <div className="text-slate-500">{num(b?.flights_before_fix)} baseline</div>
+                  </td>
+                  <td className="py-2 tabular-nums">
+                    <span className="font-semibold text-emerald-600">{num(o.slack_to_deadline_h, " h")}</span>
+                    <span className="text-slate-500"> optimized</span>
+                    <div className="text-slate-500">{num(b?.slack_to_deadline_h, " h")} baseline</div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-slate-500">
+        Computed from the two plans above (simulated data). Deadlines are hard constraints taken from the conservative p10 remaining life; margin is the time between the end of the job and that deadline.
+      </p>
+    </Card>
   );
 }
