@@ -4,12 +4,14 @@ I merged `main` (Shamit), `aadhavan/simulator-integration` (Aadhavan) and `aashi
 including `python -m scripts.golden` against a live `app.main`. This branch is therefore **a complete integration base**: it contains all three branches plus the
 scheduler, what-if and agent code. Every item below was reproduced; the patches were tested in a scratch copy and are NOT applied to anyone's files.
 
-## Where things stand
+## Where things stand (updated after merging `integration/backend`)
 
-* Full suite on this branch: **265 passed, 13 skipped, 2 failed** (both in `tests/test_db_mode.py`, see item 7; one also fails on plain `main`).
-* `python -m scripts.golden` against `app.main`:
-  * today (no `app/sim/router.py`): sim is still MOCK, **15/16** pass, the one failure is `GET /aircraft/SIM-017` (the twin is never fed because the simulator is not mounted);
-  * with items 1 and 2 below applied: **all six groups real, 13/16**, work order approved and audited end to end. The 3 failures are items 3 and 4.
+* Whole repo on this branch: **292 passed, 13 skipped, 0 failed**. Everything below under "Items" that was about wiring is now fixed upstream
+  (simulator mounted, telemetry ids aligned, order-dependent test fixed); items 3 to 6 are still open.
+* `python -m scripts.golden` against a live `app.main`: **all six groups real, 14/16**. The two failures ("Agents: plan feasible" and
+  "Replan: plan changed") have ONE cause: the injected anomaly comes back from the real model as **RUL p10 = 0** (p50 4, p90 10.8) when the NASA files are absent
+  (synthetic fallback), so the deadline is hours away and the planner correctly says "no feasible slot ... too short for the 6 h job". Nothing is force-fitted.
+  With RUL about 18 to 25 as in the concept doc the plan is feasible (that is what the golden fleet and the tests use).
 
 ## Items, by owner
 
