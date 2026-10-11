@@ -9,6 +9,8 @@ order. Built in 36 hours at Hacklanta 2026 by Shamit, Aashirth, Pardhu and Aadha
 **Everything about aircraft health is simulated and labeled SIMULATED. The system is advisory only; it certifies nothing.**
 Devpost text: [`docs/DEVPOST.md`](docs/DEVPOST.md). Event rules and checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md). Demo script: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md).
 
+**Live demo:** https://shamitbasu.com/hacklanta (a shared public instance on simulated data: every visitor shares one simulation, so reset it under System if it looks different).
+
 ## Run it (about 5 minutes, no keys, no internet at demo time)
 
 You need **Python 3.13** (the version we tested; slightly older 3.x should work but is untested) and **Node 20+**. Internet is needed once, to download the NASA data. We tested on Linux (Raspberry Pi); Windows and macOS are untested.

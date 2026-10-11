@@ -15,7 +15,7 @@ import {
 import { usePoll } from "../api/client";
 import type { TwinComponent, TwinView } from "../api/types";
 import { Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
-import { fmtZ, STATUS_STYLE } from "../lib/format";
+import { fmtZ, STATUS_ORDER, STATUS_STYLE } from "../lib/format";
 
 const AircraftScene = lazy(() => import("../components/AircraftScene"));
 
@@ -488,8 +488,10 @@ export default function Aircraft() {
   const a = data.aircraft;
   const component =
     data.components.find((c) => c.component_id === selected) ??
+    // Open on the system that needs attention: worst status first, then the shortest conservative remaining life.
     [...data.components].sort(
       (x, y) =>
+        (STATUS_ORDER[x.status] ?? 9) - (STATUS_ORDER[y.status] ?? 9) ||
         (x.rul_cycles?.p10 ?? Infinity) - (y.rul_cycles?.p10 ?? Infinity),
     )[0];
   return (
