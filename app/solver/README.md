@@ -14,7 +14,7 @@ python scripts/mutation_check.py                                     # breaks 27
 ```
 
 Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat exactly; use 4 for big fleets), `SEED` (default 1234),
-`MOCK_SOLVER=1` (use the greedy stub instead of CP-SAT, and the golden stand-in state), `MOCK=1` (golden stand-in state).
+`MOCK_SOLVER=1` (use the greedy stub instead of CP-SAT, and the golden stand-in state). `MOCK=1` is Shamit's flag: it mounts his mock routers instead of ours.
 
 ## Files
 

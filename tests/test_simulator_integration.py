@@ -100,3 +100,11 @@ def test_platform_sqlite_schema(monkeypatch,tmp_path):
         assert conn.execute('SELECT COUNT(*) FROM telemetry').fetchone()[0]==152
         assert isinstance(conn.execute('SELECT id FROM audit').fetchone()[0],int)
         assert conn.execute('SELECT COUNT(*) FROM aircraft').fetchone()[0]==24
+
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _live_world(monkeypatch):
+    """tests/conftest.py sets MOCK=1 for the API-mock suite; the simulator integration needs the real modules."""
+    monkeypatch.delenv("MOCK", raising=False)

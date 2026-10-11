@@ -429,8 +429,8 @@ def test_polling_get_plan_is_stable_and_does_not_churn_plan_ids(client):
 
 def test_already_applied_replan_does_not_store_the_event_but_still_refreshes_the_baseline(client):
     first = client.get("/plan").json()
-    r = client.post("/plan/replan", json={"already_applied": True, "event": {"type": "part_delay", "at": "2026-10-12T14:00:00Z",
-                                                                             "station": "DFW", "part": "BORESCOPE-KIT", "delay_hours": 12}})
+    r = client.post("/plan/replan?already_applied=true", json={"event": {"type": "part_delay", "at": "2026-10-12T14:00:00Z",
+                                                                              "station": "DFW", "part": "BORESCOPE-KIT", "delay_hours": 12}})
     assert r.status_code == 200
     from app.solver.store import STORE as store
     assert store.world_events == []                                                # the platform owns that event

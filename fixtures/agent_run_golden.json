@@ -1,621 +1,2950 @@
 {
- "synthetic": true,
- "id": "R-1",
- "goal": "Plan maintenance for the aircraft that need attention",
- "mode": "scripted",
- "status": "done",
- "steps": [
-  {
-   "n": 1,
-   "agent": "health",
-   "kind": "thought",
-   "tool": null,
-   "input": null,
-   "output": null,
-   "text": "Scan the fleet for components with low RUL or anomalies.",
-   "ts": "2026-10-12T12:00:03Z"
-  },
-  {
-   "n": 2,
-   "agent": "health",
-   "kind": "tool_call",
-   "tool": "list_at_risk",
-   "input": {
-    "horizon_cycles": 60
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:06Z"
-  },
-  {
-   "n": 3,
-   "agent": "health",
-   "kind": "tool_result",
-   "tool": "list_at_risk",
-   "input": null,
-   "output": {
-    "count": 3,
-    "top": [
-     {
-      "component_id": "SIM-017/engine_2",
-      "health": 0.18,
-      "rul_p10": 18,
-      "is_anomaly": true
-     }
-    ]
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:09Z"
-  },
-  {
-   "n": 4,
-   "agent": "health",
-   "kind": "tool_call",
-   "tool": "get_sensor_trend",
-   "input": {
-    "component_id": "SIM-017/engine_2",
-    "last": 30
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:12Z"
-  },
-  {
-   "n": 5,
-   "agent": "health",
-   "kind": "tool_result",
-   "tool": "get_sensor_trend",
-   "input": null,
-   "output": {
-    "T50_change": "+29",
-    "Nc_change": "+15",
-    "note": "rising LPT outlet temperature (T50)"
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:15Z"
-  },
-  {
-   "n": 6,
-   "agent": "health",
-   "kind": "summary",
-   "tool": null,
-   "input": null,
-   "output": null,
-   "text": "SIM-017 engine 2 shows an abnormal T50 (LPT outlet temperature) trend. RUL p10/p50/p90 = 18/22/25 cycles; deadline is set from p10.",
-   "ts": "2026-10-12T12:00:18Z"
-  },
-  {
-   "n": 7,
-   "agent": "scheduling",
-   "kind": "tool_call",
-   "tool": "derive_tasks",
-   "input": {},
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:21Z"
-  },
-  {
-   "n": 8,
-   "agent": "scheduling",
-   "kind": "tool_result",
-   "tool": "derive_tasks",
-   "input": null,
-   "output": {
-    "tasks": 5,
-    "first": "T-SIM-017-engine_2-001",
-    "deadline": "2026-10-17T00:00:00Z"
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:24Z"
-  },
-  {
-   "n": 9,
-   "agent": "scheduling",
-   "kind": "tool_call",
-   "tool": "find_ground_windows",
-   "input": {
-    "tail": "SIM-017",
-    "horizon_h": 108
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:27Z"
-  },
-  {
-   "n": 10,
-   "agent": "scheduling",
-   "kind": "tool_result",
-   "tool": "find_ground_windows",
-   "input": null,
-   "output": {
-    "windows": [
-     {
-      "station": "DFW",
-      "start": "2026-10-12T19:23:00Z",
-      "hours": 11.1
-     },
-     {
-      "station": "DFW",
-      "start": "2026-10-13T19:23:00Z",
-      "hours": 11.1
-     }
-    ]
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:30Z"
-  },
-  {
-   "n": 11,
-   "agent": "scheduling",
-   "kind": "tool_call",
-   "tool": "solve_schedule",
-   "input": {
-    "mode": "cpsat"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:33Z"
-  },
-  {
-   "n": 12,
-   "agent": "scheduling",
-   "kind": "tool_result",
-   "tool": "solve_schedule",
-   "input": null,
-   "output": {
-    "plan_id": "P-2",
-    "feasible": true,
-    "solve_seconds": 0.8
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:36Z"
-  },
-  {
-   "n": 13,
-   "agent": "scheduling",
-   "kind": "tool_call",
-   "tool": "solve_schedule",
-   "input": {
-    "mode": "static_baseline"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:39Z"
-  },
-  {
-   "n": 14,
-   "agent": "scheduling",
-   "kind": "tool_result",
-   "tool": "solve_schedule",
-   "input": null,
-   "output": {
-    "plan_id": "P-1",
-    "feasible": true,
-    "downtime_h": 13.43
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:42Z"
-  },
-  {
-   "n": 15,
-   "agent": "scheduling",
-   "kind": "summary",
-   "tool": null,
-   "input": null,
-   "output": null,
-   "text": "Best window for the engine job: DFW 2026-10-12T20:30:00Z; baseline would delay 5 flights.",
-   "ts": "2026-10-12T12:00:45Z"
-  },
-  {
-   "n": 16,
-   "agent": "logistics",
-   "kind": "tool_call",
-   "tool": "check_parts",
-   "input": {
-    "station": "DFW",
-    "part": "BORESCOPE-KIT"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:48Z"
-  },
-  {
-   "n": 17,
-   "agent": "logistics",
-   "kind": "tool_result",
-   "tool": "check_parts",
-   "input": null,
-   "output": {
-    "on_hand": 2,
-    "eta_hours": 8.0,
-    "ship_from": null
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:51Z"
-  },
-  {
-   "n": 18,
-   "agent": "logistics",
-   "kind": "tool_call",
-   "tool": "match_technicians",
-   "input": {
-    "station": "DFW",
-    "skill": "engine"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:00:54Z"
-  },
-  {
-   "n": 19,
-   "agent": "logistics",
-   "kind": "tool_result",
-   "tool": "match_technicians",
-   "input": null,
-   "output": {
-    "technicians": [
-     "DFW-T2",
-     "DFW-T3"
-    ]
-   },
-   "text": "",
-   "ts": "2026-10-12T12:00:57Z"
-  },
-  {
-   "n": 20,
-   "agent": "logistics",
-   "kind": "summary",
-   "tool": null,
-   "input": null,
-   "output": null,
-   "text": "DFW has 2 borescope kits arriving in 8 h and two engine technicians; ATL has none on hand (ship from DFW, $800).",
-   "ts": "2026-10-12T12:01:00Z"
-  },
-  {
-   "n": 21,
-   "agent": "operations",
-   "kind": "tool_call",
-   "tool": "simulate_plan",
-   "input": {
-    "plan_id": "P-2"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:01:03Z"
-  },
-  {
-   "n": 22,
-   "agent": "operations",
-   "kind": "tool_result",
-   "tool": "simulate_plan",
-   "input": null,
-   "output": {
-    "downtime_h": 0.0,
-    "flights_affected": 0,
-    "logistics_cost_usd": 0.0,
-    "tech_utilization": 0.011,
-    "hangar_utilization": 0.012,
-    "schedule_changes": 0,
-    "tasks_total": 5,
-    "tasks_scheduled": 5,
-    "late_or_unscheduled": 0
-   },
-   "text": "",
-   "ts": "2026-10-12T12:01:06Z"
-  },
-  {
-   "n": 23,
-   "agent": "operations",
-   "kind": "summary",
-   "tool": null,
-   "input": null,
-   "output": null,
-   "text": "Plan P-2: downtime 0.0 h, flights affected 0, logistics $0.",
-   "ts": "2026-10-12T12:01:09Z"
-  },
-  {
-   "n": 24,
-   "agent": "coordinator",
-   "kind": "tool_call",
-   "tool": "search_kb",
-   "input": {
-    "query": "engine borescope inspection"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:01:12Z"
-  },
-  {
-   "n": 25,
-   "agent": "coordinator",
-   "kind": "tool_result",
-   "tool": "search_kb",
-   "input": null,
-   "output": {
-    "results": [
-     {
-      "doc_id": "TC-ENG-001",
-      "title": "Engine borescope inspection (synthetic task card)"
-     }
-    ]
-   },
-   "text": "",
-   "ts": "2026-10-12T12:01:15Z"
-  },
-  {
-   "n": 26,
-   "agent": "coordinator",
-   "kind": "tool_call",
-   "tool": "draft_work_orders",
-   "input": {
-    "plan_id": "P-2"
-   },
-   "output": null,
-   "text": "",
-   "ts": "2026-10-12T12:01:18Z"
-  },
-  {
-   "n": 27,
-   "agent": "coordinator",
-   "kind": "tool_result",
-   "tool": "draft_work_orders",
-   "input": null,
-   "output": {
-    "work_orders": [
-     "WO-1",
-     "WO-2",
-     "WO-3",
-     "WO-4",
-     "WO-5"
-    ],
-    "status": "pending_approval"
-   },
-   "text": "",
-   "ts": "2026-10-12T12:01:21Z"
-  },
-  {
-   "n": 28,
-   "agent": "coordinator",
-   "kind": "summary",
-   "tool": null,
-   "input": null,
-   "output": null,
-   "text": "Recommend engine 2 borescope inspection on SIM-017 at DFW, Oct 12 20:30Z to 02:30Z: the first window with an engine technician and the kit on hand, 11.12 h ground time, no flight delay. Waiting for the static home-base policy would delay 5 flights and cost $800 in shipping. Work orders are drafted for human approval.",
-   "ts": "2026-10-12T12:01:24Z"
-  }
- ],
- "plan": {
   "synthetic": true,
-  "id": "P-2",
-  "created": "2026-10-12T12:05:00Z",
-  "mode": "cpsat",
-  "feasible": true,
-  "infeasible_reasons": [],
-  "assignments": [
-   {
-    "task_id": "T-SIM-017-engine_2-001",
-    "tail": "SIM-017",
-    "station": "DFW",
-    "start": "2026-10-12T20:30:00Z",
-    "end": "2026-10-13T02:30:00Z",
-    "technician_id": "DFW-T2",
-    "part_source": null,
-    "window_hours": 11.12,
-    "extension_h": 0.0,
-    "reason": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT on hand (ready 8.0 h after now); 0 h of extension; finishes 93.5 h before the deadline."
-   },
-   {
-    "task_id": "T-SIM-004-brakes-001",
-    "tail": "SIM-004",
-    "station": "DEN",
-    "start": "2026-10-12T19:42:00Z",
-    "end": "2026-10-12T22:42:00Z",
-    "technician_id": "DEN-T1",
-    "part_source": null,
-    "window_hours": 10.8,
-    "extension_h": 0.0,
-    "reason": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on hand (in stock); 0 h of extension; finishes 61.3 h before the deadline."
-   },
-   {
-    "task_id": "T-SIM-011-hydraulics-001",
-    "tail": "SIM-011",
-    "station": "LAX",
-    "start": "2026-10-12T19:39:00Z",
-    "end": "2026-10-13T00:39:00Z",
-    "technician_id": "LAX-T2",
-    "part_source": null,
-    "window_hours": 10.85,
-    "extension_h": 0.0,
-    "reason": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP on hand (in stock); 0 h of extension; finishes 71.3 h before the deadline."
-   },
-   {
-    "task_id": "T-SIM-020-avionics-001",
-    "tail": "SIM-020",
-    "station": "SEA",
-    "start": "2026-10-12T19:50:00Z",
-    "end": "2026-10-12T21:50:00Z",
-    "technician_id": "SEA-T1",
-    "part_source": null,
-    "window_hours": 10.67,
-    "extension_h": 0.0,
-    "reason": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU on hand (in stock); 0 h of extension; finishes 38.2 h before the deadline."
-   },
-   {
-    "task_id": "T-SIM-008-landing_gear-001",
-    "tail": "SIM-008",
-    "station": "MIA",
-    "start": "2026-10-12T19:07:00Z",
-    "end": "2026-10-12T23:07:00Z",
-    "technician_id": "MIA-T1",
-    "part_source": null,
-    "window_hours": 11.38,
-    "extension_h": 0.0,
-    "reason": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; finishes 84.9 h before the deadline."
-   }
+  "id": "R-1",
+  "goal": "Plan maintenance for aircraft needing attention",
+  "mode": "scripted",
+  "status": "done",
+  "steps": [
+    {
+      "n": 1,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Looking for components whose conservative RUL (p10) is below 60 cycles, or that are in alert.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 2,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "list_at_risk",
+      "input": {
+        "horizon_cycles": 60
+      },
+      "output": null,
+      "text": "call list_at_risk",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 3,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "list_at_risk",
+      "input": {
+        "horizon_cycles": 60
+      },
+      "output": {
+        "data": [
+          {
+            "tail": "SIM-017",
+            "component_id": "SIM-017/engine_2",
+            "health": 0.18,
+            "rul_p10": 18.0,
+            "is_anomaly": true,
+            "status": "alert"
+          },
+          {
+            "tail": "SIM-005",
+            "component_id": "SIM-005/hydraulics",
+            "health": 0.4,
+            "rul_p10": 35.0,
+            "is_anomaly": false,
+            "status": "watch"
+          },
+          {
+            "tail": "SIM-012",
+            "component_id": "SIM-012/engine_1",
+            "health": 0.46,
+            "rul_p10": 47.0,
+            "is_anomaly": false,
+            "status": "watch"
+          },
+          {
+            "tail": "SIM-021",
+            "component_id": "SIM-021/avionics",
+            "health": 0.52,
+            "rul_p10": 52.0,
+            "is_anomaly": false,
+            "status": "watch"
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "list_at_risk",
+          "note": "RUL p10 < 60 cycles or alert"
+        },
+        "missing_info": []
+      },
+      "text": "4 component(s) at risk; most urgent SIM-017/engine_2 (RUL p10 18 cycles, health 0.18)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 4,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking SIM-017/engine_2 in detail.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 5,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_component_health",
+      "input": {
+        "component_id": "SIM-017/engine_2"
+      },
+      "output": null,
+      "text": "call get_component_health",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 6,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_component_health",
+      "input": {
+        "component_id": "SIM-017/engine_2"
+      },
+      "output": {
+        "data": {
+          "synthetic": true,
+          "tail": "SIM-017",
+          "component_id": "SIM-017/engine_2",
+          "kind": "engine",
+          "cycles": 231,
+          "hours": 408.9,
+          "health": 0.18,
+          "anomaly_score": 0.91,
+          "rul_cycles": {
+            "p10": 18.0,
+            "p50": 22.0,
+            "p90": 25.0
+          },
+          "data_quality": {
+            "status": "ok",
+            "reasons": []
+          },
+          "last_maintenance": "2026-10-08T20:15:25.040604Z",
+          "status": "alert",
+          "updated": "2026-10-12T12:00:00Z"
+        },
+        "evidence": {
+          "kind": "health",
+          "ref": "SIM-017/engine_2",
+          "note": "health 0.18, status alert"
+        },
+        "missing_info": []
+      },
+      "text": "SIM-017/engine_2: health 0.18, anomaly score 0.91, RUL p10/p50/p90 18/22/25",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 7,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Fetching the recent sensor trend of SIM-017/engine_2.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 8,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_sensor_trend",
+      "input": {
+        "component_id": "SIM-017/engine_2",
+        "last": 30
+      },
+      "output": null,
+      "text": "call get_sensor_trend",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 9,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_sensor_trend",
+      "input": {
+        "component_id": "SIM-017/engine_2",
+        "last": 30
+      },
+      "output": {
+        "data": [],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "get_sensor_trend",
+          "note": "twin not available"
+        },
+        "missing_info": [
+          "sensor trend for SIM-017/engine_2: the digital twin is not available yet"
+        ]
+      },
+      "text": "no sensor trend available",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 10,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking SIM-005/hydraulics in detail.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 11,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_component_health",
+      "input": {
+        "component_id": "SIM-005/hydraulics"
+      },
+      "output": null,
+      "text": "call get_component_health",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 12,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_component_health",
+      "input": {
+        "component_id": "SIM-005/hydraulics"
+      },
+      "output": {
+        "data": {
+          "synthetic": true,
+          "tail": "SIM-005",
+          "component_id": "SIM-005/hydraulics",
+          "kind": "hydraulics",
+          "cycles": 1298,
+          "hours": 2297.5,
+          "health": 0.4,
+          "anomaly_score": 0.22,
+          "rul_cycles": {
+            "p10": 35.0,
+            "p50": 42.0,
+            "p90": 50.0
+          },
+          "data_quality": {
+            "status": "ok",
+            "reasons": []
+          },
+          "last_maintenance": "2026-10-08T02:26:06.141563Z",
+          "status": "watch",
+          "updated": "2026-10-12T12:00:00Z"
+        },
+        "evidence": {
+          "kind": "health",
+          "ref": "SIM-005/hydraulics",
+          "note": "health 0.4, status watch"
+        },
+        "missing_info": []
+      },
+      "text": "SIM-005/hydraulics: health 0.4, anomaly score 0.22, RUL p10/p50/p90 35/42/50",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 13,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Fetching the recent sensor trend of SIM-005/hydraulics.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 14,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_sensor_trend",
+      "input": {
+        "component_id": "SIM-005/hydraulics",
+        "last": 30
+      },
+      "output": null,
+      "text": "call get_sensor_trend",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 15,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_sensor_trend",
+      "input": {
+        "component_id": "SIM-005/hydraulics",
+        "last": 30
+      },
+      "output": {
+        "data": [],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "get_sensor_trend",
+          "note": "twin not available"
+        },
+        "missing_info": [
+          "sensor trend for SIM-005/hydraulics: the digital twin is not available yet"
+        ]
+      },
+      "text": "no sensor trend available",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 16,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking SIM-012/engine_1 in detail.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 17,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_component_health",
+      "input": {
+        "component_id": "SIM-012/engine_1"
+      },
+      "output": null,
+      "text": "call get_component_health",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 18,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_component_health",
+      "input": {
+        "component_id": "SIM-012/engine_1"
+      },
+      "output": {
+        "data": {
+          "synthetic": true,
+          "tail": "SIM-012",
+          "component_id": "SIM-012/engine_1",
+          "kind": "engine",
+          "cycles": 1597,
+          "hours": 2826.7,
+          "health": 0.46,
+          "anomaly_score": 0.3,
+          "rul_cycles": {
+            "p10": 47.0,
+            "p50": 55.0,
+            "p90": 63.0
+          },
+          "data_quality": {
+            "status": "ok",
+            "reasons": []
+          },
+          "last_maintenance": "2026-10-06T15:49:18.277845Z",
+          "status": "watch",
+          "updated": "2026-10-12T12:00:00Z"
+        },
+        "evidence": {
+          "kind": "health",
+          "ref": "SIM-012/engine_1",
+          "note": "health 0.46, status watch"
+        },
+        "missing_info": []
+      },
+      "text": "SIM-012/engine_1: health 0.46, anomaly score 0.3, RUL p10/p50/p90 47/55/63",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 19,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Fetching the recent sensor trend of SIM-012/engine_1.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 20,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_sensor_trend",
+      "input": {
+        "component_id": "SIM-012/engine_1",
+        "last": 30
+      },
+      "output": null,
+      "text": "call get_sensor_trend",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 21,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_sensor_trend",
+      "input": {
+        "component_id": "SIM-012/engine_1",
+        "last": 30
+      },
+      "output": {
+        "data": [],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "get_sensor_trend",
+          "note": "twin not available"
+        },
+        "missing_info": [
+          "sensor trend for SIM-012/engine_1: the digital twin is not available yet"
+        ]
+      },
+      "text": "no sensor trend available",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 22,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Retrieving the maintenance history of SIM-005.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 23,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_maintenance_history",
+      "input": {
+        "tail": "SIM-005"
+      },
+      "output": null,
+      "text": "call get_maintenance_history",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 24,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_maintenance_history",
+      "input": {
+        "tail": "SIM-005"
+      },
+      "output": {
+        "data": [
+          {
+            "ts": "2026-10-06T06:06:53.989576Z",
+            "kind": "maintenance",
+            "summary": "SIM-005/avionics last maintained",
+            "ref": "SIM-005/avionics"
+          },
+          {
+            "ts": "2026-10-07T11:53:04.673808Z",
+            "kind": "maintenance",
+            "summary": "SIM-005/engine_2 last maintained",
+            "ref": "SIM-005/engine_2"
+          },
+          {
+            "ts": "2026-10-08T02:26:06.141563Z",
+            "kind": "maintenance",
+            "summary": "SIM-005/hydraulics last maintained",
+            "ref": "SIM-005/hydraulics"
+          },
+          {
+            "ts": "2026-10-08T08:31:22.058826Z",
+            "kind": "maintenance",
+            "summary": "SIM-005/engine_1 last maintained",
+            "ref": "SIM-005/engine_1"
+          },
+          {
+            "ts": "2026-10-09T11:55:10.764445Z",
+            "kind": "maintenance",
+            "summary": "SIM-005/landing_gear last maintained",
+            "ref": "SIM-005/landing_gear"
+          },
+          {
+            "ts": "2026-10-10T18:42:07.726561Z",
+            "kind": "maintenance",
+            "summary": "SIM-005/brakes last maintained",
+            "ref": "SIM-005/brakes"
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "get_maintenance_history",
+          "note": "SIM-005"
+        },
+        "missing_info": []
+      },
+      "text": "6 maintenance record(s)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 25,
+      "agent": "health",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Retrieving the maintenance history of SIM-012.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 26,
+      "agent": "health",
+      "kind": "tool_call",
+      "tool": "get_maintenance_history",
+      "input": {
+        "tail": "SIM-012"
+      },
+      "output": null,
+      "text": "call get_maintenance_history",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 27,
+      "agent": "health",
+      "kind": "tool_result",
+      "tool": "get_maintenance_history",
+      "input": {
+        "tail": "SIM-012"
+      },
+      "output": {
+        "data": [
+          {
+            "ts": "2026-10-06T15:49:18.277845Z",
+            "kind": "maintenance",
+            "summary": "SIM-012/engine_1 last maintained",
+            "ref": "SIM-012/engine_1"
+          },
+          {
+            "ts": "2026-10-08T04:56:23.462592Z",
+            "kind": "maintenance",
+            "summary": "SIM-012/engine_2 last maintained",
+            "ref": "SIM-012/engine_2"
+          },
+          {
+            "ts": "2026-10-09T23:01:38.674542Z",
+            "kind": "maintenance",
+            "summary": "SIM-012/landing_gear last maintained",
+            "ref": "SIM-012/landing_gear"
+          },
+          {
+            "ts": "2026-10-10T06:08:14.827600Z",
+            "kind": "maintenance",
+            "summary": "SIM-012/hydraulics last maintained",
+            "ref": "SIM-012/hydraulics"
+          },
+          {
+            "ts": "2026-10-11T01:32:10.041837Z",
+            "kind": "maintenance",
+            "summary": "SIM-012/avionics last maintained",
+            "ref": "SIM-012/avionics"
+          },
+          {
+            "ts": "2026-10-11T07:18:52.709561Z",
+            "kind": "maintenance",
+            "summary": "SIM-012/brakes last maintained",
+            "ref": "SIM-012/brakes"
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "get_maintenance_history",
+          "note": "SIM-012"
+        },
+        "missing_info": []
+      },
+      "text": "6 maintenance record(s)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 28,
+      "agent": "health",
+      "kind": "summary",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "4 component(s) need attention: SIM-017/engine_2, SIM-005/hydraulics, SIM-012/engine_1, SIM-021/avionics.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 29,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Turning the risks into maintenance tasks with hard deadlines (conservative p10).",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 30,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "derive_tasks",
+      "input": {},
+      "output": null,
+      "text": "call derive_tasks",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 31,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "derive_tasks",
+      "input": {},
+      "output": {
+        "data": [
+          {
+            "synthetic": true,
+            "id": "T-SIM-008-brakes-002",
+            "tail": "SIM-008",
+            "component_id": "SIM-008/brakes",
+            "title": "Tire and wheel change",
+            "duration_h": 1.5,
+            "earliest": "2026-10-12T12:00:00Z",
+            "deadline": "2026-10-15T12:00:00Z",
+            "required_skill": "gear",
+            "required_part": null,
+            "part_qty": 1,
+            "source": "scheduled",
+            "basis": "Tire and wheel change every 40 days after the last maintenance (Sep 05 12:00Z): due Oct 15 12:00Z, in about 3.0 days (synthetic interval)"
+          },
+          {
+            "synthetic": true,
+            "id": "T-SIM-017-engine_2-001",
+            "tail": "SIM-017",
+            "component_id": "SIM-017/engine_2",
+            "title": "Engine borescope inspection",
+            "duration_h": 6.0,
+            "earliest": "2026-10-12T12:00:00Z",
+            "deadline": "2026-10-17T04:40:00Z",
+            "required_skill": "engine",
+            "required_part": "BORESCOPE-KIT",
+            "part_qty": 1,
+            "source": "rul",
+            "basis": "engine_2 RUL p10 = 18 cycles = about 4.7 days at this aircraft's rotation (arrival of its 18th scheduled flight); deadline Oct 17 04:40Z (conservative p10, hard constraint)"
+          },
+          {
+            "synthetic": true,
+            "id": "T-SIM-005-hydraulics-001",
+            "tail": "SIM-005",
+            "component_id": "SIM-005/hydraulics",
+            "title": "Hydraulic pump replacement",
+            "duration_h": 5.0,
+            "earliest": "2026-10-12T12:00:00Z",
+            "deadline": "2026-10-22T01:15:00Z",
+            "required_skill": "hydraulics",
+            "required_part": "HYD-PUMP",
+            "part_qty": 1,
+            "source": "rul",
+            "basis": "hydraulics RUL p10 = 35 cycles = about 9.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 22 01:15Z (conservative p10, hard constraint)"
+          },
+          {
+            "synthetic": true,
+            "id": "T-SIM-012-engine_1-001",
+            "tail": "SIM-012",
+            "component_id": "SIM-012/engine_1",
+            "title": "Engine borescope inspection",
+            "duration_h": 6.0,
+            "earliest": "2026-10-12T12:00:00Z",
+            "deadline": "2026-10-25T02:19:39Z",
+            "required_skill": "engine",
+            "required_part": "BORESCOPE-KIT",
+            "part_qty": 1,
+            "source": "rul",
+            "basis": "engine_1 RUL p10 = 47 cycles = about 12.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 25 02:19Z (conservative p10, hard constraint)"
+          },
+          {
+            "synthetic": true,
+            "id": "T-SIM-021-avionics-001",
+            "tail": "SIM-021",
+            "component_id": "SIM-021/avionics",
+            "title": "Avionics LRU swap",
+            "duration_h": 2.0,
+            "earliest": "2026-10-12T12:00:00Z",
+            "deadline": "2026-10-25T20:45:12Z",
+            "required_skill": "avionics",
+            "required_part": "AVIONICS-LRU",
+            "part_qty": 1,
+            "source": "rul",
+            "basis": "avionics RUL p10 = 52 cycles = about 13.4 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.9 legs/day (its own average legs/day)); deadline Oct 25 20:45Z (conservative p10, hard constraint)"
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "derive_tasks",
+          "note": "5 tasks from RUL p10 and routine checks"
+        },
+        "missing_info": []
+      },
+      "text": "5 task(s); earliest deadline Oct 15 12:00Z (T-SIM-008-brakes-002)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 32,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Finding the ground windows of SIM-005.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 33,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "find_ground_windows",
+      "input": {
+        "tail": "SIM-005",
+        "horizon_h": 120.0
+      },
+      "output": null,
+      "text": "call find_ground_windows",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 34,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "find_ground_windows",
+      "input": {
+        "tail": "SIM-005",
+        "horizon_h": 120.0
+      },
+      "output": {
+        "data": [
+          {
+            "tail": "SIM-005",
+            "station": "LAX",
+            "start": "2026-10-12T12:00:00Z",
+            "end": "2026-10-12T15:35:00Z",
+            "before_leg": "L-005-01",
+            "hours": 3.583
+          },
+          {
+            "tail": "SIM-005",
+            "station": "DFW",
+            "start": "2026-10-12T18:35:00Z",
+            "end": "2026-10-12T20:15:00Z",
+            "before_leg": "L-005-02",
+            "hours": 1.667
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ATL",
+            "start": "2026-10-12T22:15:00Z",
+            "end": "2026-10-13T00:30:00Z",
+            "before_leg": "L-005-03",
+            "hours": 2.25
+          },
+          {
+            "tail": "SIM-005",
+            "station": "SEA",
+            "start": "2026-10-13T05:25:00Z",
+            "end": "2026-10-13T07:50:00Z",
+            "before_leg": "L-005-04",
+            "hours": 2.417
+          },
+          {
+            "tail": "SIM-005",
+            "station": "LAX",
+            "start": "2026-10-13T10:15:00Z",
+            "end": "2026-10-13T18:55:00Z",
+            "before_leg": "L-005-05",
+            "hours": 8.667
+          },
+          {
+            "tail": "SIM-005",
+            "station": "DFW",
+            "start": "2026-10-13T21:55:00Z",
+            "end": "2026-10-13T23:40:00Z",
+            "before_leg": "L-005-06",
+            "hours": 1.75
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ORD",
+            "start": "2026-10-14T01:45:00Z",
+            "end": "2026-10-14T03:20:00Z",
+            "before_leg": "L-005-07",
+            "hours": 1.583
+          },
+          {
+            "tail": "SIM-005",
+            "station": "DFW",
+            "start": "2026-10-14T05:25:00Z",
+            "end": "2026-10-14T07:30:00Z",
+            "before_leg": "L-005-08",
+            "hours": 2.083
+          },
+          {
+            "tail": "SIM-005",
+            "station": "LAX",
+            "start": "2026-10-14T10:30:00Z",
+            "end": "2026-10-14T19:40:00Z",
+            "before_leg": "L-005-09",
+            "hours": 9.167
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ATL",
+            "start": "2026-10-15T00:05:00Z",
+            "end": "2026-10-15T02:15:00Z",
+            "before_leg": "L-005-10",
+            "hours": 2.167
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ORD",
+            "start": "2026-10-15T04:00:00Z",
+            "end": "2026-10-15T05:50:00Z",
+            "before_leg": "L-005-11",
+            "hours": 1.833
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ATL",
+            "start": "2026-10-15T07:35:00Z",
+            "end": "2026-10-15T09:45:00Z",
+            "before_leg": "L-005-12",
+            "hours": 2.167
+          },
+          {
+            "tail": "SIM-005",
+            "station": "LAX",
+            "start": "2026-10-15T14:10:00Z",
+            "end": "2026-10-15T22:10:00Z",
+            "before_leg": "L-005-13",
+            "hours": 8.0
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ATL",
+            "start": "2026-10-16T02:35:00Z",
+            "end": "2026-10-16T04:15:00Z",
+            "before_leg": "L-005-14",
+            "hours": 1.667
+          },
+          {
+            "tail": "SIM-005",
+            "station": "DEN",
+            "start": "2026-10-16T07:10:00Z",
+            "end": "2026-10-16T08:55:00Z",
+            "before_leg": "L-005-15",
+            "hours": 1.75
+          },
+          {
+            "tail": "SIM-005",
+            "station": "ATL",
+            "start": "2026-10-16T11:50:00Z",
+            "end": "2026-10-16T14:00:00Z",
+            "before_leg": "L-005-16",
+            "hours": 2.167
+          },
+          {
+            "tail": "SIM-005",
+            "station": "LAX",
+            "start": "2026-10-16T18:25:00Z",
+            "end": "2026-10-17T04:50:00Z",
+            "before_leg": "L-005-17",
+            "hours": 10.417
+          },
+          {
+            "tail": "SIM-005",
+            "station": "JFK",
+            "start": "2026-10-17T10:20:00Z",
+            "end": "2026-10-17T12:15:00Z",
+            "before_leg": "L-005-18",
+            "hours": 1.917
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "find_ground_windows",
+          "note": "SIM-005, 18 windows"
+        },
+        "missing_info": []
+      },
+      "text": "18 ground window(s)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 35,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Finding the ground windows of SIM-012.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 36,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "find_ground_windows",
+      "input": {
+        "tail": "SIM-012",
+        "horizon_h": 120.0
+      },
+      "output": null,
+      "text": "call find_ground_windows",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 37,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "find_ground_windows",
+      "input": {
+        "tail": "SIM-012",
+        "horizon_h": 120.0
+      },
+      "output": {
+        "data": [
+          {
+            "tail": "SIM-012",
+            "station": "DEN",
+            "start": "2026-10-12T12:00:00Z",
+            "end": "2026-10-12T15:54:00Z",
+            "before_leg": "L-012-01",
+            "hours": 3.9
+          },
+          {
+            "tail": "SIM-012",
+            "station": "DFW",
+            "start": "2026-10-12T17:39:00Z",
+            "end": "2026-10-12T19:54:00Z",
+            "before_leg": "L-012-02",
+            "hours": 2.25
+          },
+          {
+            "tail": "SIM-012",
+            "station": "ATL",
+            "start": "2026-10-12T21:54:00Z",
+            "end": "2026-10-13T00:04:00Z",
+            "before_leg": "L-012-03",
+            "hours": 2.167
+          },
+          {
+            "tail": "SIM-012",
+            "station": "DEN",
+            "start": "2026-10-13T02:59:00Z",
+            "end": "2026-10-13T05:14:00Z",
+            "before_leg": "L-012-04",
+            "hours": 2.25
+          },
+          {
+            "tail": "SIM-012",
+            "station": "JFK",
+            "start": "2026-10-13T08:59:00Z",
+            "end": "2026-10-13T18:04:00Z",
+            "before_leg": "L-012-05",
+            "hours": 9.083
+          },
+          {
+            "tail": "SIM-012",
+            "station": "LAX",
+            "start": "2026-10-13T23:34:00Z",
+            "end": "2026-10-14T01:39:00Z",
+            "before_leg": "L-012-06",
+            "hours": 2.083
+          },
+          {
+            "tail": "SIM-012",
+            "station": "ATL",
+            "start": "2026-10-14T06:04:00Z",
+            "end": "2026-10-14T07:54:00Z",
+            "before_leg": "L-012-07",
+            "hours": 1.833
+          },
+          {
+            "tail": "SIM-012",
+            "station": "SEA",
+            "start": "2026-10-14T12:49:00Z",
+            "end": "2026-10-14T14:34:00Z",
+            "before_leg": "L-012-08",
+            "hours": 1.75
+          },
+          {
+            "tail": "SIM-012",
+            "station": "DEN",
+            "start": "2026-10-14T17:09:00Z",
+            "end": "2026-10-15T02:54:00Z",
+            "before_leg": "L-012-09",
+            "hours": 9.75
+          },
+          {
+            "tail": "SIM-012",
+            "station": "DFW",
+            "start": "2026-10-15T04:39:00Z",
+            "end": "2026-10-15T06:59:00Z",
+            "before_leg": "L-012-10",
+            "hours": 2.333
+          },
+          {
+            "tail": "SIM-012",
+            "station": "JFK",
+            "start": "2026-10-15T10:19:00Z",
+            "end": "2026-10-15T12:44:00Z",
+            "before_leg": "L-012-11",
+            "hours": 2.417
+          },
+          {
+            "tail": "SIM-012",
+            "station": "DEN",
+            "start": "2026-10-15T16:29:00Z",
+            "end": "2026-10-15T18:39:00Z",
+            "before_leg": "L-012-12",
+            "hours": 2.167
+          },
+          {
+            "tail": "SIM-012",
+            "station": "LAX",
+            "start": "2026-10-15T20:54:00Z",
+            "end": "2026-10-16T04:59:00Z",
+            "before_leg": "L-012-13",
+            "hours": 8.083
+          },
+          {
+            "tail": "SIM-012",
+            "station": "DEN",
+            "start": "2026-10-16T07:14:00Z",
+            "end": "2026-10-16T09:14:00Z",
+            "before_leg": "L-012-14",
+            "hours": 2.0
+          },
+          {
+            "tail": "SIM-012",
+            "station": "ATL",
+            "start": "2026-10-16T12:09:00Z",
+            "end": "2026-10-16T14:04:00Z",
+            "before_leg": "L-012-15",
+            "hours": 1.917
+          },
+          {
+            "tail": "SIM-012",
+            "station": "MIA",
+            "start": "2026-10-16T15:44:00Z",
+            "end": "2026-10-16T17:19:00Z",
+            "before_leg": "L-012-16",
+            "hours": 1.583
+          },
+          {
+            "tail": "SIM-012",
+            "station": "ORD",
+            "start": "2026-10-16T20:14:00Z",
+            "end": "2026-10-17T04:24:00Z",
+            "before_leg": "L-012-17",
+            "hours": 8.167
+          },
+          {
+            "tail": "SIM-012",
+            "station": "MIA",
+            "start": "2026-10-17T07:19:00Z",
+            "end": "2026-10-17T09:49:00Z",
+            "before_leg": "L-012-18",
+            "hours": 2.5
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "find_ground_windows",
+          "note": "SIM-012, 18 windows"
+        },
+        "missing_info": []
+      },
+      "text": "18 ground window(s)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 38,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Finding the ground windows of SIM-017.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 39,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "find_ground_windows",
+      "input": {
+        "tail": "SIM-017",
+        "horizon_h": 120.0
+      },
+      "output": null,
+      "text": "call find_ground_windows",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 40,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "find_ground_windows",
+      "input": {
+        "tail": "SIM-017",
+        "horizon_h": 120.0
+      },
+      "output": {
+        "data": [
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-12T12:00:00Z",
+            "end": "2026-10-12T12:30:00Z",
+            "before_leg": "L-017-01",
+            "hours": 0.5
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DFW",
+            "start": "2026-10-12T14:30:00Z",
+            "end": "2026-10-13T05:00:00Z",
+            "before_leg": "L-017-02",
+            "hours": 14.5
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ORD",
+            "start": "2026-10-13T07:05:00Z",
+            "end": "2026-10-13T08:40:00Z",
+            "before_leg": "L-017-03",
+            "hours": 1.583
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-13T10:25:00Z",
+            "end": "2026-10-13T12:40:00Z",
+            "before_leg": "L-017-04",
+            "hours": 2.25
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DFW",
+            "start": "2026-10-13T14:40:00Z",
+            "end": "2026-10-13T22:50:00Z",
+            "before_leg": "L-017-05",
+            "hours": 8.167
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ORD",
+            "start": "2026-10-14T00:55:00Z",
+            "end": "2026-10-14T03:05:00Z",
+            "before_leg": "L-017-06",
+            "hours": 2.167
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DFW",
+            "start": "2026-10-14T05:10:00Z",
+            "end": "2026-10-14T06:55:00Z",
+            "before_leg": "L-017-07",
+            "hours": 1.75
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ORD",
+            "start": "2026-10-14T09:00:00Z",
+            "end": "2026-10-14T10:40:00Z",
+            "before_leg": "L-017-08",
+            "hours": 1.667
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-14T12:25:00Z",
+            "end": "2026-10-14T21:50:00Z",
+            "before_leg": "L-017-09",
+            "hours": 9.417
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DFW",
+            "start": "2026-10-14T23:50:00Z",
+            "end": "2026-10-15T01:25:00Z",
+            "before_leg": "L-017-10",
+            "hours": 1.583
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ORD",
+            "start": "2026-10-15T03:30:00Z",
+            "end": "2026-10-15T05:55:00Z",
+            "before_leg": "L-017-11",
+            "hours": 2.417
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-15T07:40:00Z",
+            "end": "2026-10-15T09:20:00Z",
+            "before_leg": "L-017-12",
+            "hours": 1.667
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DFW",
+            "start": "2026-10-15T11:20:00Z",
+            "end": "2026-10-15T21:30:00Z",
+            "before_leg": "L-017-13",
+            "hours": 10.167
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-15T23:30:00Z",
+            "end": "2026-10-16T01:05:00Z",
+            "before_leg": "L-017-14",
+            "hours": 1.583
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ORD",
+            "start": "2026-10-16T02:50:00Z",
+            "end": "2026-10-16T04:30:00Z",
+            "before_leg": "L-017-15",
+            "hours": 1.667
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-16T06:15:00Z",
+            "end": "2026-10-16T07:45:00Z",
+            "before_leg": "L-017-16",
+            "hours": 1.5
+          },
+          {
+            "tail": "SIM-017",
+            "station": "JFK",
+            "start": "2026-10-16T09:45:00Z",
+            "end": "2026-10-16T20:00:00Z",
+            "before_leg": "L-017-17",
+            "hours": 10.25
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DEN",
+            "start": "2026-10-16T23:45:00Z",
+            "end": "2026-10-17T01:45:00Z",
+            "before_leg": "L-017-18",
+            "hours": 2.0
+          },
+          {
+            "tail": "SIM-017",
+            "station": "ATL",
+            "start": "2026-10-17T04:40:00Z",
+            "end": "2026-10-17T07:05:00Z",
+            "before_leg": "L-017-19",
+            "hours": 2.417
+          },
+          {
+            "tail": "SIM-017",
+            "station": "DEN",
+            "start": "2026-10-17T10:00:00Z",
+            "end": "2026-10-17T11:50:00Z",
+            "before_leg": "L-017-20",
+            "hours": 1.833
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "find_ground_windows",
+          "note": "SIM-017, 20 windows"
+        },
+        "missing_info": []
+      },
+      "text": "20 ground window(s)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 41,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Solving with the constraint solver (CP-SAT).",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 42,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "solve_schedule",
+      "input": {
+        "mode": "cpsat"
+      },
+      "output": null,
+      "text": "call solve_schedule",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 43,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "solve_schedule",
+      "input": {
+        "mode": "cpsat"
+      },
+      "output": {
+        "data": {
+          "synthetic": true,
+          "id": "P-1",
+          "created": "2026-10-12T12:00:00Z",
+          "mode": "cpsat",
+          "feasible": true,
+          "infeasible_reasons": [],
+          "assignments": [
+            {
+              "task_id": "T-SIM-017-engine_2-001",
+              "tail": "SIM-017",
+              "station": "DFW",
+              "start": "2026-10-12T14:30:00Z",
+              "end": "2026-10-12T20:30:00Z",
+              "technician_id": "DFW-T1",
+              "part_source": null,
+              "window_hours": 14.5,
+              "extension_h": 0.0,
+              "reason": "Lowest-cost feasible slot: DFW, Oct 12 14:30Z to Oct 12 20:30Z. BORESCOPE-KIT on hand at DFW; technician DFW-T1 (engine) on shift. Ground window 14.5 h for a 6 h job: 0 h extension. Finishes 104.2 h before the Oct 17 04:40Z deadline. 4 other feasible slot(s); best alternative: DFW Oct 13 14:40Z (BORESCOPE-KIT on hand at DFW; 0.0 h extension)."
+            },
+            {
+              "task_id": "T-SIM-008-brakes-002",
+              "tail": "SIM-008",
+              "station": "DFW",
+              "start": "2026-10-12T17:16:00Z",
+              "end": "2026-10-12T18:46:00Z",
+              "technician_id": "DFW-T3",
+              "part_source": null,
+              "window_hours": 1.8333,
+              "extension_h": 0.0,
+              "reason": "Lowest-cost feasible slot: DFW, Oct 12 17:16Z to Oct 12 18:46Z. No part needed; technician DFW-T3 (gear) on shift. Ground window 1.8 h for a 1.5 h job: 0 h extension. Finishes 65.2 h before the Oct 15 12:00Z deadline. 11 other feasible slot(s); best alternative: ORD Oct 12 21:11Z (no part needed; 0.0 h extension)."
+            },
+            {
+              "task_id": "T-SIM-021-avionics-001",
+              "tail": "SIM-021",
+              "station": "ATL",
+              "start": "2026-10-12T22:52:00Z",
+              "end": "2026-10-13T00:52:00Z",
+              "technician_id": "ATL-T2",
+              "part_source": null,
+              "window_hours": 2.4167,
+              "extension_h": 0.0,
+              "reason": "Lowest-cost feasible slot: ATL, Oct 12 22:52Z to Oct 13 00:52Z. AVIONICS-LRU on hand at ATL; technician ATL-T2 (avionics) on shift. Ground window 2.4 h for a 2 h job: 0 h extension. Finishes 307.9 h before the Oct 25 20:45Z deadline. 19 other feasible slot(s); best alternative: DEN Oct 13 07:12Z (AVIONICS-LRU on hand at DEN; 0.0 h extension)."
+            },
+            {
+              "task_id": "T-SIM-005-hydraulics-001",
+              "tail": "SIM-005",
+              "station": "LAX",
+              "start": "2026-10-13T10:15:00Z",
+              "end": "2026-10-13T15:15:00Z",
+              "technician_id": "LAX-T2",
+              "part_source": "ATL",
+              "window_hours": 8.6667,
+              "extension_h": 0.0,
+              "reason": "Lowest-cost feasible slot: LAX, Oct 13 10:15Z to Oct 13 15:15Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 8.7 h for a 5 h job: 0 h extension. Finishes 202.0 h before the Oct 22 01:15Z deadline. 9 other feasible slot(s); best alternative: LAX Oct 14 10:30Z (HYD-PUMP shipped from ATL (+$600, ready in 12 h); 0.0 h extension)."
+            },
+            {
+              "task_id": "T-SIM-012-engine_1-001",
+              "tail": "SIM-012",
+              "station": "ORD",
+              "start": "2026-10-16T20:14:00Z",
+              "end": "2026-10-17T02:14:00Z",
+              "technician_id": "ORD-T1",
+              "part_source": null,
+              "window_hours": 8.1667,
+              "extension_h": 0.0,
+              "reason": "Lowest-cost feasible slot: ORD, Oct 16 20:14Z to Oct 17 02:14Z. BORESCOPE-KIT on hand at ORD; technician ORD-T1 (engine) on shift. Ground window 8.2 h for a 6 h job: 0 h extension. Finishes 192.1 h before the Oct 25 02:19Z deadline. 3 other feasible slot(s); best alternative: JFK Oct 13 12:00Z (BORESCOPE-KIT shipped from DFW (+$800, ready in 24 h); 0.0 h extension)."
+            }
+          ],
+          "metrics": {
+            "downtime_h": 0.0,
+            "flights_affected": 0,
+            "logistics_cost_usd": 600.0,
+            "tech_utilization": 0.0108,
+            "hangar_utilization": 0.0142,
+            "schedule_changes": 0,
+            "tasks_total": 5,
+            "tasks_scheduled": 5,
+            "late_or_unscheduled": 0
+          },
+          "objective_value": 14.2808,
+          "solve_seconds": 0.3847,
+          "evidence": [
+            {
+              "kind": "plan",
+              "ref": "P-1",
+              "note": "CP-SAT: proven optimal"
+            },
+            {
+              "kind": "plan",
+              "ref": "P-1",
+              "note": "state source: golden stand-in (twin snapshot not available)"
+            }
+          ]
+        },
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "cpsat, feasible=True"
+        },
+        "missing_info": []
+      },
+      "text": "plan P-1 (cpsat), feasible=True, 5/5 tasks scheduled",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 44,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Solving the baseline: home base, last window before the deadline.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 45,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "solve_schedule",
+      "input": {
+        "mode": "static_baseline"
+      },
+      "output": null,
+      "text": "call solve_schedule",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 46,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "solve_schedule",
+      "input": {
+        "mode": "static_baseline"
+      },
+      "output": {
+        "data": {
+          "synthetic": true,
+          "id": "P-2",
+          "created": "2026-10-12T12:00:00Z",
+          "mode": "static_baseline",
+          "feasible": true,
+          "infeasible_reasons": [],
+          "assignments": [
+            {
+              "task_id": "T-SIM-017-engine_2-001",
+              "tail": "SIM-017",
+              "station": "ATL",
+              "start": "2026-10-14T12:25:00Z",
+              "end": "2026-10-14T18:25:00Z",
+              "technician_id": "ATL-T1",
+              "part_source": "DFW",
+              "window_hours": 9.4167,
+              "extension_h": 0.0,
+              "reason": "Baseline policy: last ground window at home base ATL that fits before the deadline: ATL, Oct 14 12:25Z to Oct 14 18:25Z. BORESCOPE-KIT shipped from DFW (+$800, ready in 18 h); technician ATL-T1 (engine) on shift. Ground window 9.4 h for a 6 h job: 0 h extension. Finishes 58.2 h before the Oct 17 04:40Z deadline."
+            },
+            {
+              "task_id": "T-SIM-012-engine_1-001",
+              "tail": "SIM-012",
+              "station": "DEN",
+              "start": "2026-10-14T17:09:00Z",
+              "end": "2026-10-14T23:09:00Z",
+              "technician_id": "DEN-T1",
+              "part_source": "DFW",
+              "window_hours": 9.75,
+              "extension_h": 0.0,
+              "reason": "Baseline policy: last ground window at home base DEN that fits before the deadline: DEN, Oct 14 17:09Z to Oct 14 23:09Z. BORESCOPE-KIT shipped from DFW (+$800, ready in 24 h); technician DEN-T1 (engine) on shift. Ground window 9.8 h for a 6 h job: 0 h extension. Finishes 243.2 h before the Oct 25 02:19Z deadline."
+            },
+            {
+              "task_id": "T-SIM-008-brakes-002",
+              "tail": "SIM-008",
+              "station": "SEA",
+              "start": "2026-10-15T04:51:00Z",
+              "end": "2026-10-15T06:21:00Z",
+              "technician_id": "SEA-T1",
+              "part_source": null,
+              "window_hours": 1.6667,
+              "extension_h": 0.0,
+              "reason": "Baseline policy: last ground window at home base SEA that fits before the deadline: SEA, Oct 15 04:51Z to Oct 15 06:21Z. No part needed; technician SEA-T1 (gear) on shift. Ground window 1.7 h for a 1.5 h job: 0 h extension. Finishes 5.7 h before the Oct 15 12:00Z deadline."
+            },
+            {
+              "task_id": "T-SIM-021-avionics-001",
+              "tail": "SIM-021",
+              "station": "LAX",
+              "start": "2026-10-16T13:47:00Z",
+              "end": "2026-10-16T15:47:00Z",
+              "technician_id": "LAX-T2",
+              "part_source": null,
+              "window_hours": 8.6667,
+              "extension_h": 0.0,
+              "reason": "Baseline policy: last ground window at home base LAX that fits before the deadline: LAX, Oct 16 13:47Z to Oct 16 15:47Z. AVIONICS-LRU on hand at LAX; technician LAX-T2 (avionics) on shift. Ground window 8.7 h for a 2 h job: 0 h extension. Finishes 221.0 h before the Oct 25 20:45Z deadline."
+            },
+            {
+              "task_id": "T-SIM-005-hydraulics-001",
+              "tail": "SIM-005",
+              "station": "LAX",
+              "start": "2026-10-16T18:25:00Z",
+              "end": "2026-10-16T23:25:00Z",
+              "technician_id": "LAX-T2",
+              "part_source": "ATL",
+              "window_hours": 10.4167,
+              "extension_h": 0.0,
+              "reason": "Baseline policy: last ground window at home base LAX that fits before the deadline: LAX, Oct 16 18:25Z to Oct 16 23:25Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 10.4 h for a 5 h job: 0 h extension. Finishes 121.8 h before the Oct 22 01:15Z deadline."
+            }
+          ],
+          "metrics": {
+            "downtime_h": 0.0,
+            "flights_affected": 0,
+            "logistics_cost_usd": 2200.0,
+            "tech_utilization": 0.0108,
+            "hangar_utilization": 0.0142,
+            "schedule_changes": 0,
+            "tasks_total": 5,
+            "tasks_scheduled": 5,
+            "late_or_unscheduled": 0
+          },
+          "objective_value": 41.3558,
+          "solve_seconds": 0.0048,
+          "evidence": [
+            {
+              "kind": "plan",
+              "ref": "P-2",
+              "note": "state source: golden stand-in (twin snapshot not available)"
+            }
+          ]
+        },
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-2",
+          "note": "static_baseline, feasible=True"
+        },
+        "missing_info": []
+      },
+      "text": "baseline P-2, feasible=True",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 47,
+      "agent": "scheduling",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Comparing baseline, greedy and optimized on the same snapshot.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 48,
+      "agent": "scheduling",
+      "kind": "tool_call",
+      "tool": "compare_plans",
+      "input": {
+        "names": [
+          "baseline",
+          "greedy",
+          "optimized"
+        ]
+      },
+      "output": null,
+      "text": "call compare_plans",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 49,
+      "agent": "scheduling",
+      "kind": "tool_result",
+      "tool": "compare_plans",
+      "input": {
+        "names": [
+          "baseline",
+          "greedy",
+          "optimized"
+        ]
+      },
+      "output": {
+        "data": {
+          "rows": [
+            {
+              "name": "baseline",
+              "feasible": true,
+              "mode": "static_baseline",
+              "plan_id": "P-2",
+              "metrics": {
+                "downtime_h": 0.0,
+                "flights_affected": 0,
+                "logistics_cost_usd": 2200.0,
+                "tech_utilization": 0.0108,
+                "hangar_utilization": 0.0142,
+                "schedule_changes": 0,
+                "tasks_total": 5,
+                "tasks_scheduled": 5,
+                "late_or_unscheduled": 0
+              },
+              "objective_value": 41.3558,
+              "solve_seconds": 0.0048,
+              "as_of": "2026-10-12T12:00:00+00:00",
+              "infeasible_reasons": []
+            },
+            {
+              "name": "greedy",
+              "feasible": true,
+              "mode": "greedy",
+              "plan_id": "P-3",
+              "metrics": {
+                "downtime_h": 0.0,
+                "flights_affected": 0,
+                "logistics_cost_usd": 1400.0,
+                "tech_utilization": 0.0108,
+                "hangar_utilization": 0.0142,
+                "schedule_changes": 0,
+                "tasks_total": 5,
+                "tasks_scheduled": 5,
+                "late_or_unscheduled": 0
+              },
+              "objective_value": 18.2692,
+              "solve_seconds": 0.0044,
+              "as_of": "2026-10-12T12:00:00+00:00",
+              "infeasible_reasons": []
+            },
+            {
+              "name": "optimized",
+              "feasible": true,
+              "mode": "cpsat",
+              "plan_id": "P-1",
+              "metrics": {
+                "downtime_h": 0.0,
+                "flights_affected": 0,
+                "logistics_cost_usd": 600.0,
+                "tech_utilization": 0.0108,
+                "hangar_utilization": 0.0142,
+                "schedule_changes": 0,
+                "tasks_total": 5,
+                "tasks_scheduled": 5,
+                "late_or_unscheduled": 0
+              },
+              "objective_value": 14.2808,
+              "solve_seconds": 0.3847,
+              "as_of": "2026-10-12T12:00:00+00:00",
+              "infeasible_reasons": []
+            }
+          ]
+        },
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "comparison: baseline, greedy, optimized"
+        },
+        "missing_info": []
+      },
+      "text": "baseline: logistics $2200; greedy: logistics $1400; optimized: logistics $600",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 50,
+      "agent": "scheduling",
+      "kind": "summary",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Optimized plan P-1 is feasible; baseline P-2 compared.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 51,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking BORESCOPE-KIT at DFW.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 52,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "check_parts",
+      "input": {
+        "station": "DFW",
+        "part": "BORESCOPE-KIT"
+      },
+      "output": null,
+      "text": "call check_parts",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 53,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "check_parts",
+      "input": {
+        "station": "DFW",
+        "part": "BORESCOPE-KIT"
+      },
+      "output": {
+        "data": {
+          "on_hand": 2,
+          "in_transit": 0,
+          "eta_hours": 0.0,
+          "ship_from": null,
+          "ship_hours": 24.0,
+          "ship_cost": 800.0
+        },
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "check_parts",
+          "note": "DFW BORESCOPE-KIT"
+        },
+        "missing_info": []
+      },
+      "text": "on hand 2",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 54,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Matching a engine technician at DFW.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 55,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "match_technicians",
+      "input": {
+        "station": "DFW",
+        "skill": "engine",
+        "start": "2026-10-12T14:30:00+00:00",
+        "end": "2026-10-12T20:30:00+00:00"
+      },
+      "output": null,
+      "text": "call match_technicians",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 56,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "match_technicians",
+      "input": {
+        "station": "DFW",
+        "skill": "engine",
+        "start": "2026-10-12T14:30:00+00:00",
+        "end": "2026-10-12T20:30:00+00:00"
+      },
+      "output": {
+        "data": [
+          {
+            "id": "DFW-T1",
+            "skills": [
+              "engine"
+            ],
+            "shift_start": "2026-10-12T06:00:00Z",
+            "shift_end": "2026-10-18T12:00:00Z",
+            "available": true,
+            "busy_in_current_plan": true
+          },
+          {
+            "id": "DFW-T2",
+            "skills": [
+              "engine",
+              "avionics"
+            ],
+            "shift_start": "2026-10-12T06:00:00Z",
+            "shift_end": "2026-10-18T12:00:00Z",
+            "available": true,
+            "busy_in_current_plan": false
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "match_technicians",
+          "note": "DFW engine"
+        },
+        "missing_info": []
+      },
+      "text": "2 technician(s) match",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 57,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Matching a gear technician at DFW.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 58,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "match_technicians",
+      "input": {
+        "station": "DFW",
+        "skill": "gear",
+        "start": "2026-10-12T17:16:00+00:00",
+        "end": "2026-10-12T18:46:00+00:00"
+      },
+      "output": null,
+      "text": "call match_technicians",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 59,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "match_technicians",
+      "input": {
+        "station": "DFW",
+        "skill": "gear",
+        "start": "2026-10-12T17:16:00+00:00",
+        "end": "2026-10-12T18:46:00+00:00"
+      },
+      "output": {
+        "data": [
+          {
+            "id": "DFW-T3",
+            "skills": [
+              "gear",
+              "hydraulics"
+            ],
+            "shift_start": "2026-10-12T06:00:00Z",
+            "shift_end": "2026-10-18T12:00:00Z",
+            "available": true,
+            "busy_in_current_plan": true
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "match_technicians",
+          "note": "DFW gear"
+        },
+        "missing_info": []
+      },
+      "text": "1 technician(s) match",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 60,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking AVIONICS-LRU at ATL.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 61,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "check_parts",
+      "input": {
+        "station": "ATL",
+        "part": "AVIONICS-LRU"
+      },
+      "output": null,
+      "text": "call check_parts",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 62,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "check_parts",
+      "input": {
+        "station": "ATL",
+        "part": "AVIONICS-LRU"
+      },
+      "output": {
+        "data": {
+          "on_hand": 1,
+          "in_transit": 0,
+          "eta_hours": 0.0,
+          "ship_from": "DFW",
+          "ship_hours": 12.0,
+          "ship_cost": 500.0
+        },
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "check_parts",
+          "note": "ATL AVIONICS-LRU"
+        },
+        "missing_info": []
+      },
+      "text": "on hand 1, ship from DFW",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 63,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Matching a avionics technician at ATL.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 64,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "match_technicians",
+      "input": {
+        "station": "ATL",
+        "skill": "avionics",
+        "start": "2026-10-12T22:52:00+00:00",
+        "end": "2026-10-13T00:52:00+00:00"
+      },
+      "output": null,
+      "text": "call match_technicians",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 65,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "match_technicians",
+      "input": {
+        "station": "ATL",
+        "skill": "avionics",
+        "start": "2026-10-12T22:52:00+00:00",
+        "end": "2026-10-13T00:52:00+00:00"
+      },
+      "output": {
+        "data": [
+          {
+            "id": "ATL-T2",
+            "skills": [
+              "hydraulics",
+              "avionics"
+            ],
+            "shift_start": "2026-10-12T06:00:00Z",
+            "shift_end": "2026-10-18T12:00:00Z",
+            "available": true,
+            "busy_in_current_plan": true
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "match_technicians",
+          "note": "ATL avionics"
+        },
+        "missing_info": []
+      },
+      "text": "1 technician(s) match",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 66,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking HYD-PUMP at LAX.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 67,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "check_parts",
+      "input": {
+        "station": "LAX",
+        "part": "HYD-PUMP"
+      },
+      "output": null,
+      "text": "call check_parts",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 68,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "check_parts",
+      "input": {
+        "station": "LAX",
+        "part": "HYD-PUMP"
+      },
+      "output": {
+        "data": {
+          "on_hand": 0,
+          "in_transit": 0,
+          "eta_hours": 0.0,
+          "ship_from": "ATL",
+          "ship_hours": 12.0,
+          "ship_cost": 600.0
+        },
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "check_parts",
+          "note": "LAX HYD-PUMP"
+        },
+        "missing_info": []
+      },
+      "text": "on hand 0, ship from ATL",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 69,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Matching a hydraulics technician at LAX.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 70,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "match_technicians",
+      "input": {
+        "station": "LAX",
+        "skill": "hydraulics",
+        "start": "2026-10-13T10:15:00+00:00",
+        "end": "2026-10-13T15:15:00+00:00"
+      },
+      "output": null,
+      "text": "call match_technicians",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 71,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "match_technicians",
+      "input": {
+        "station": "LAX",
+        "skill": "hydraulics",
+        "start": "2026-10-13T10:15:00+00:00",
+        "end": "2026-10-13T15:15:00+00:00"
+      },
+      "output": {
+        "data": [
+          {
+            "id": "LAX-T2",
+            "skills": [
+              "hydraulics",
+              "avionics"
+            ],
+            "shift_start": "2026-10-12T06:00:00Z",
+            "shift_end": "2026-10-18T12:00:00Z",
+            "available": true,
+            "busy_in_current_plan": true
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "match_technicians",
+          "note": "LAX hydraulics"
+        },
+        "missing_info": []
+      },
+      "text": "1 technician(s) match",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 72,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Checking BORESCOPE-KIT at ORD.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 73,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "check_parts",
+      "input": {
+        "station": "ORD",
+        "part": "BORESCOPE-KIT"
+      },
+      "output": null,
+      "text": "call check_parts",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 74,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "check_parts",
+      "input": {
+        "station": "ORD",
+        "part": "BORESCOPE-KIT"
+      },
+      "output": {
+        "data": {
+          "on_hand": 1,
+          "in_transit": 0,
+          "eta_hours": 0.0,
+          "ship_from": "DFW",
+          "ship_hours": 24.0,
+          "ship_cost": 800.0
+        },
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "check_parts",
+          "note": "ORD BORESCOPE-KIT"
+        },
+        "missing_info": []
+      },
+      "text": "on hand 1, ship from DFW",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 75,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Matching a engine technician at ORD.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 76,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "match_technicians",
+      "input": {
+        "station": "ORD",
+        "skill": "engine",
+        "start": "2026-10-16T20:14:00+00:00",
+        "end": "2026-10-17T02:14:00+00:00"
+      },
+      "output": null,
+      "text": "call match_technicians",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 77,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "match_technicians",
+      "input": {
+        "station": "ORD",
+        "skill": "engine",
+        "start": "2026-10-16T20:14:00+00:00",
+        "end": "2026-10-17T02:14:00+00:00"
+      },
+      "output": {
+        "data": [
+          {
+            "id": "ORD-T1",
+            "skills": [
+              "engine",
+              "gear"
+            ],
+            "shift_start": "2026-10-12T06:00:00Z",
+            "shift_end": "2026-10-18T12:00:00Z",
+            "available": true,
+            "busy_in_current_plan": true
+          }
+        ],
+        "evidence": {
+          "kind": "tool_call",
+          "ref": "match_technicians",
+          "note": "ORD engine"
+        },
+        "missing_info": []
+      },
+      "text": "1 technician(s) match",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 78,
+      "agent": "logistics",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Listing shortages and parts that must be shipped.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 79,
+      "agent": "logistics",
+      "kind": "tool_call",
+      "tool": "shortage_report",
+      "input": {},
+      "output": null,
+      "text": "call shortage_report",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 80,
+      "agent": "logistics",
+      "kind": "tool_result",
+      "tool": "shortage_report",
+      "input": {},
+      "output": {
+        "data": [
+          {
+            "task_id": "T-SIM-005-hydraulics-001",
+            "missing": "part",
+            "detail": "HYD-PUMP not on hand at LAX; shipped from ATL (+$600, 12 h)"
+          }
+        ],
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "1 shortage(s)"
+        },
+        "missing_info": []
+      },
+      "text": "1 shortage item(s)",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 81,
+      "agent": "logistics",
+      "kind": "summary",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "1 shortage item(s).",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 82,
+      "agent": "operations",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Evaluating the plan's operational impact.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 83,
+      "agent": "operations",
+      "kind": "tool_call",
+      "tool": "simulate_plan",
+      "input": {
+        "plan_id": "P-1"
+      },
+      "output": null,
+      "text": "call simulate_plan",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 84,
+      "agent": "operations",
+      "kind": "tool_result",
+      "tool": "simulate_plan",
+      "input": {
+        "plan_id": "P-1"
+      },
+      "output": {
+        "data": {
+          "downtime_h": 0.0,
+          "flights_affected": 0,
+          "logistics_cost_usd": 600.0,
+          "tech_utilization": 0.0108,
+          "hangar_utilization": 0.0142,
+          "schedule_changes": 0,
+          "tasks_total": 5,
+          "tasks_scheduled": 5,
+          "late_or_unscheduled": 0
+        },
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "analytic metrics"
+        },
+        "missing_info": []
+      },
+      "text": "downtime 0 h, flights affected 0, logistics $600",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 85,
+      "agent": "operations",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Listing the flights the plan delays.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 86,
+      "agent": "operations",
+      "kind": "tool_call",
+      "tool": "flights_affected",
+      "input": {
+        "plan_id": "P-1"
+      },
+      "output": null,
+      "text": "call flights_affected",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 87,
+      "agent": "operations",
+      "kind": "tool_result",
+      "tool": "flights_affected",
+      "input": {
+        "plan_id": "P-1"
+      },
+      "output": {
+        "data": [],
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "0 flight(s) delayed by an extension"
+        },
+        "missing_info": []
+      },
+      "text": "0 flight(s) delayed",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 88,
+      "agent": "operations",
+      "kind": "summary",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Plan P-1: 0 flight(s) affected, downtime 0 h.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 89,
+      "agent": "coordinator",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Drafting work orders for human approval.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 90,
+      "agent": "coordinator",
+      "kind": "tool_call",
+      "tool": "draft_work_orders",
+      "input": {
+        "plan_id": "P-1"
+      },
+      "output": null,
+      "text": "call draft_work_orders",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 91,
+      "agent": "coordinator",
+      "kind": "tool_result",
+      "tool": "draft_work_orders",
+      "input": {
+        "plan_id": "P-1"
+      },
+      "output": {
+        "data": [
+          {
+            "synthetic": true,
+            "id": "WO-1",
+            "tail": "SIM-017",
+            "task_id": "T-SIM-017-engine_2-001",
+            "station": "DFW",
+            "start": "2026-10-12T14:30:00Z",
+            "end": "2026-10-12T20:30:00Z",
+            "description": "Engine borescope inspection on SIM-017 at DFW, Oct 12 14:30Z to Oct 12 20:30Z. Why: engine_2 RUL p10 = 18 cycles = about 4.7 days at this aircraft's rotation (arrival of its 18th scheduled flight); deadline Oct 17 04:40Z (conservative p10, hard constraint). Technician DFW-T1. Advisory only; needs human approval.",
+            "status": "pending_approval",
+            "plan_id": "P-1",
+            "evidence": [
+              {
+                "kind": "plan",
+                "ref": "P-1",
+                "note": "cpsat plan, objective 14.2808"
+              },
+              {
+                "kind": "kb",
+                "ref": "TC-ENG-BORESCOPE",
+                "note": "synthetic task card"
+              },
+              {
+                "kind": "health",
+                "ref": "SIM-017/engine_2",
+                "note": "engine_2 RUL p10 = 18 cycles = about 4.7 days at this aircraft's rotation (arrival of its 18th scheduled flight); deadline Oct 17 04:40Z (conservative p10, hard constraint)"
+              }
+            ],
+            "decided_by": null,
+            "decided_at": null,
+            "note": ""
+          },
+          {
+            "synthetic": true,
+            "id": "WO-2",
+            "tail": "SIM-008",
+            "task_id": "T-SIM-008-brakes-002",
+            "station": "DFW",
+            "start": "2026-10-12T17:16:00Z",
+            "end": "2026-10-12T18:46:00Z",
+            "description": "Tire and wheel change on SIM-008 at DFW, Oct 12 17:16Z to Oct 12 18:46Z. Why: Tire and wheel change every 40 days after the last maintenance (Sep 05 12:00Z): due Oct 15 12:00Z, in about 3.0 days (synthetic interval). Technician DFW-T3. Advisory only; needs human approval.",
+            "status": "pending_approval",
+            "plan_id": "P-1",
+            "evidence": [
+              {
+                "kind": "plan",
+                "ref": "P-1",
+                "note": "cpsat plan, objective 14.2808"
+              },
+              {
+                "kind": "kb",
+                "ref": "TC-WHEEL",
+                "note": "synthetic task card"
+              },
+              {
+                "kind": "health",
+                "ref": "SIM-008/brakes",
+                "note": "Tire and wheel change every 40 days after the last maintenance (Sep 05 12:00Z): due Oct 15 12:00Z, in about 3.0 days (synthetic interval)"
+              }
+            ],
+            "decided_by": null,
+            "decided_at": null,
+            "note": ""
+          },
+          {
+            "synthetic": true,
+            "id": "WO-3",
+            "tail": "SIM-021",
+            "task_id": "T-SIM-021-avionics-001",
+            "station": "ATL",
+            "start": "2026-10-12T22:52:00Z",
+            "end": "2026-10-13T00:52:00Z",
+            "description": "Avionics LRU swap on SIM-021 at ATL, Oct 12 22:52Z to Oct 13 00:52Z. Why: avionics RUL p10 = 52 cycles = about 13.4 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.9 legs/day (its own average legs/day)); deadline Oct 25 20:45Z (conservative p10, hard constraint). Technician ATL-T2. Advisory only; needs human approval.",
+            "status": "pending_approval",
+            "plan_id": "P-1",
+            "evidence": [
+              {
+                "kind": "plan",
+                "ref": "P-1",
+                "note": "cpsat plan, objective 14.2808"
+              },
+              {
+                "kind": "kb",
+                "ref": "TC-AVI-LRU",
+                "note": "synthetic task card"
+              },
+              {
+                "kind": "health",
+                "ref": "SIM-021/avionics",
+                "note": "avionics RUL p10 = 52 cycles = about 13.4 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.9 legs/day (its own average legs/day)); deadline Oct 25 20:45Z (conservative p10, hard constraint)"
+              }
+            ],
+            "decided_by": null,
+            "decided_at": null,
+            "note": ""
+          },
+          {
+            "synthetic": true,
+            "id": "WO-4",
+            "tail": "SIM-005",
+            "task_id": "T-SIM-005-hydraulics-001",
+            "station": "LAX",
+            "start": "2026-10-13T10:15:00Z",
+            "end": "2026-10-13T15:15:00Z",
+            "description": "Hydraulic pump replacement on SIM-005 at LAX, Oct 13 10:15Z to Oct 13 15:15Z. Why: hydraulics RUL p10 = 35 cycles = about 9.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 22 01:15Z (conservative p10, hard constraint). Technician LAX-T2; part shipped from ATL. Advisory only; needs human approval.",
+            "status": "pending_approval",
+            "plan_id": "P-1",
+            "evidence": [
+              {
+                "kind": "plan",
+                "ref": "P-1",
+                "note": "cpsat plan, objective 14.2808"
+              },
+              {
+                "kind": "kb",
+                "ref": "TC-HYD-PUMP",
+                "note": "synthetic task card"
+              },
+              {
+                "kind": "health",
+                "ref": "SIM-005/hydraulics",
+                "note": "hydraulics RUL p10 = 35 cycles = about 9.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 22 01:15Z (conservative p10, hard constraint)"
+              }
+            ],
+            "decided_by": null,
+            "decided_at": null,
+            "note": ""
+          },
+          {
+            "synthetic": true,
+            "id": "WO-5",
+            "tail": "SIM-012",
+            "task_id": "T-SIM-012-engine_1-001",
+            "station": "ORD",
+            "start": "2026-10-16T20:14:00Z",
+            "end": "2026-10-17T02:14:00Z",
+            "description": "Engine borescope inspection on SIM-012 at ORD, Oct 16 20:14Z to Oct 17 02:14Z. Why: engine_1 RUL p10 = 47 cycles = about 12.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 25 02:19Z (conservative p10, hard constraint). Technician ORD-T1. Advisory only; needs human approval.",
+            "status": "pending_approval",
+            "plan_id": "P-1",
+            "evidence": [
+              {
+                "kind": "plan",
+                "ref": "P-1",
+                "note": "cpsat plan, objective 14.2808"
+              },
+              {
+                "kind": "kb",
+                "ref": "TC-ENG-BORESCOPE",
+                "note": "synthetic task card"
+              },
+              {
+                "kind": "health",
+                "ref": "SIM-012/engine_1",
+                "note": "engine_1 RUL p10 = 47 cycles = about 12.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 25 02:19Z (conservative p10, hard constraint)"
+              }
+            ],
+            "decided_by": null,
+            "decided_at": null,
+            "note": ""
+          }
+        ],
+        "evidence": {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "5 work order(s), pending approval"
+        },
+        "missing_info": []
+      },
+      "text": "5 work order(s) pending approval",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 92,
+      "agent": "coordinator",
+      "kind": "thought",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Looking up the task card for the most urgent job.",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 93,
+      "agent": "coordinator",
+      "kind": "tool_call",
+      "tool": "search_kb",
+      "input": {
+        "query": "Engine borescope inspection"
+      },
+      "output": null,
+      "text": "call search_kb",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 94,
+      "agent": "coordinator",
+      "kind": "tool_result",
+      "tool": "search_kb",
+      "input": {
+        "query": "Engine borescope inspection"
+      },
+      "output": {
+        "data": [
+          {
+            "doc_id": "TC-ENG-BORESCOPE",
+            "title": "Engine borescope inspection",
+            "excerpt": "Inspect the hot section with a borescope probe after an abnormal temperature trend (SYNTHETIC card). 6 h, skill engine, part BORESCOPE-KIT (SYNTHETIC task card)"
+          },
+          {
+            "doc_id": "TC-ENG-SCHED",
+            "title": "Generic scheduled engine inspection",
+            "excerpt": "Generic scheduled inspection slot (SYNTHETIC card, made-up interval). 3 h, skill engine (SYNTHETIC task card)"
+          },
+          {
+            "doc_id": "TC-ENG-OILCHIP",
+            "title": "Engine oil and chip detector check",
+            "excerpt": "Routine oil and chip detector check (SYNTHETIC card, made-up interval). 2 h, skill engine (SYNTHETIC task card)"
+          }
+        ],
+        "evidence": {
+          "kind": "kb",
+          "ref": "TC-ENG-BORESCOPE",
+          "note": "query: Engine borescope inspection"
+        },
+        "missing_info": []
+      },
+      "text": "3 card(s): TC-ENG-BORESCOPE, TC-ENG-SCHED, TC-ENG-OILCHIP",
+      "ts": "2026-10-12T12:00:00Z"
+    },
+    {
+      "n": 95,
+      "agent": "coordinator",
+      "kind": "summary",
+      "tool": null,
+      "input": null,
+      "output": null,
+      "text": "Plan P-1 (cpsat) is feasible: 5 of 5 tasks scheduled, 0 late or unscheduled. Most urgent: SIM-017 engine_2, RUL p10 18 cycles, hard deadline Oct 17 04:40Z. Scheduled at DFW Oct 12 14:30Z to Oct 12 20:30Z with technician DFW-T1, extension 0 h, part on hand or not needed. Baseline (home base, last window before the deadline): logistics $2200, downtime 0 h, flights affected 0. Optimized: logistics $600, downtime 0 h, flights affected 0. Savings are simulated relative to that baseline. Logistics flags: HYD-PUMP not on hand at LAX; shipped from ATL (+$600, 12 h). 5 work order(s) drafted, all pending human approval. Advisory only; this does not replace approved procedures.",
+      "ts": "2026-10-12T12:00:00Z"
+    }
   ],
-  "metrics": {
-   "downtime_h": 0.0,
-   "flights_affected": 0,
-   "logistics_cost_usd": 0.0,
-   "tech_utilization": 0.011,
-   "hangar_utilization": 0.012,
-   "schedule_changes": 0,
-   "tasks_total": 5,
-   "tasks_scheduled": 5,
-   "late_or_unscheduled": 0
+  "plan": {
+    "synthetic": true,
+    "id": "P-1",
+    "created": "2026-10-12T12:00:00Z",
+    "mode": "cpsat",
+    "feasible": true,
+    "infeasible_reasons": [],
+    "assignments": [
+      {
+        "task_id": "T-SIM-017-engine_2-001",
+        "tail": "SIM-017",
+        "station": "DFW",
+        "start": "2026-10-12T14:30:00Z",
+        "end": "2026-10-12T20:30:00Z",
+        "technician_id": "DFW-T1",
+        "part_source": null,
+        "window_hours": 14.5,
+        "extension_h": 0.0,
+        "reason": "Lowest-cost feasible slot: DFW, Oct 12 14:30Z to Oct 12 20:30Z. BORESCOPE-KIT on hand at DFW; technician DFW-T1 (engine) on shift. Ground window 14.5 h for a 6 h job: 0 h extension. Finishes 104.2 h before the Oct 17 04:40Z deadline. 4 other feasible slot(s); best alternative: DFW Oct 13 14:40Z (BORESCOPE-KIT on hand at DFW; 0.0 h extension)."
+      },
+      {
+        "task_id": "T-SIM-008-brakes-002",
+        "tail": "SIM-008",
+        "station": "DFW",
+        "start": "2026-10-12T17:16:00Z",
+        "end": "2026-10-12T18:46:00Z",
+        "technician_id": "DFW-T3",
+        "part_source": null,
+        "window_hours": 1.8333,
+        "extension_h": 0.0,
+        "reason": "Lowest-cost feasible slot: DFW, Oct 12 17:16Z to Oct 12 18:46Z. No part needed; technician DFW-T3 (gear) on shift. Ground window 1.8 h for a 1.5 h job: 0 h extension. Finishes 65.2 h before the Oct 15 12:00Z deadline. 11 other feasible slot(s); best alternative: ORD Oct 12 21:11Z (no part needed; 0.0 h extension)."
+      },
+      {
+        "task_id": "T-SIM-021-avionics-001",
+        "tail": "SIM-021",
+        "station": "ATL",
+        "start": "2026-10-12T22:52:00Z",
+        "end": "2026-10-13T00:52:00Z",
+        "technician_id": "ATL-T2",
+        "part_source": null,
+        "window_hours": 2.4167,
+        "extension_h": 0.0,
+        "reason": "Lowest-cost feasible slot: ATL, Oct 12 22:52Z to Oct 13 00:52Z. AVIONICS-LRU on hand at ATL; technician ATL-T2 (avionics) on shift. Ground window 2.4 h for a 2 h job: 0 h extension. Finishes 307.9 h before the Oct 25 20:45Z deadline. 19 other feasible slot(s); best alternative: DEN Oct 13 07:12Z (AVIONICS-LRU on hand at DEN; 0.0 h extension)."
+      },
+      {
+        "task_id": "T-SIM-005-hydraulics-001",
+        "tail": "SIM-005",
+        "station": "LAX",
+        "start": "2026-10-13T10:15:00Z",
+        "end": "2026-10-13T15:15:00Z",
+        "technician_id": "LAX-T2",
+        "part_source": "ATL",
+        "window_hours": 8.6667,
+        "extension_h": 0.0,
+        "reason": "Lowest-cost feasible slot: LAX, Oct 13 10:15Z to Oct 13 15:15Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 8.7 h for a 5 h job: 0 h extension. Finishes 202.0 h before the Oct 22 01:15Z deadline. 9 other feasible slot(s); best alternative: LAX Oct 14 10:30Z (HYD-PUMP shipped from ATL (+$600, ready in 12 h); 0.0 h extension)."
+      },
+      {
+        "task_id": "T-SIM-012-engine_1-001",
+        "tail": "SIM-012",
+        "station": "ORD",
+        "start": "2026-10-16T20:14:00Z",
+        "end": "2026-10-17T02:14:00Z",
+        "technician_id": "ORD-T1",
+        "part_source": null,
+        "window_hours": 8.1667,
+        "extension_h": 0.0,
+        "reason": "Lowest-cost feasible slot: ORD, Oct 16 20:14Z to Oct 17 02:14Z. BORESCOPE-KIT on hand at ORD; technician ORD-T1 (engine) on shift. Ground window 8.2 h for a 6 h job: 0 h extension. Finishes 192.1 h before the Oct 25 02:19Z deadline. 3 other feasible slot(s); best alternative: JFK Oct 13 12:00Z (BORESCOPE-KIT shipped from DFW (+$800, ready in 24 h); 0.0 h extension)."
+      }
+    ],
+    "metrics": {
+      "downtime_h": 0.0,
+      "flights_affected": 0,
+      "logistics_cost_usd": 600.0,
+      "tech_utilization": 0.0108,
+      "hangar_utilization": 0.0142,
+      "schedule_changes": 0,
+      "tasks_total": 5,
+      "tasks_scheduled": 5,
+      "late_or_unscheduled": 0
+    },
+    "objective_value": 14.2808,
+    "solve_seconds": 0.3847,
+    "evidence": [
+      {
+        "kind": "plan",
+        "ref": "P-1",
+        "note": "CP-SAT: proven optimal"
+      },
+      {
+        "kind": "plan",
+        "ref": "P-1",
+        "note": "state source: golden stand-in (twin snapshot not available)"
+      }
+    ]
   },
-  "objective_value": 0.0,
-  "solve_seconds": 0.8,
-  "evidence": [
-   {
-    "kind": "health",
-    "ref": "SIM-017/engine_2",
-    "note": "RUL p10 18 cycles, anomaly 0.91"
-   },
-   {
-    "kind": "tool_call",
-    "ref": "TC-3",
-    "note": "solve_schedule(cpsat)"
-   }
+  "work_orders": [
+    {
+      "synthetic": true,
+      "id": "WO-1",
+      "tail": "SIM-017",
+      "task_id": "T-SIM-017-engine_2-001",
+      "station": "DFW",
+      "start": "2026-10-12T14:30:00Z",
+      "end": "2026-10-12T20:30:00Z",
+      "description": "Engine borescope inspection on SIM-017 at DFW, Oct 12 14:30Z to Oct 12 20:30Z. Why: engine_2 RUL p10 = 18 cycles = about 4.7 days at this aircraft's rotation (arrival of its 18th scheduled flight); deadline Oct 17 04:40Z (conservative p10, hard constraint). Technician DFW-T1. Advisory only; needs human approval.",
+      "status": "pending_approval",
+      "plan_id": "P-1",
+      "evidence": [
+        {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "cpsat plan, objective 14.2808"
+        },
+        {
+          "kind": "kb",
+          "ref": "TC-ENG-BORESCOPE",
+          "note": "synthetic task card"
+        },
+        {
+          "kind": "health",
+          "ref": "SIM-017/engine_2",
+          "note": "engine_2 RUL p10 = 18 cycles = about 4.7 days at this aircraft's rotation (arrival of its 18th scheduled flight); deadline Oct 17 04:40Z (conservative p10, hard constraint)"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-31",
+          "note": "derive_tasks"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-46",
+          "note": "solve_schedule"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-49",
+          "note": "compare_plans"
+        }
+      ],
+      "decided_by": null,
+      "decided_at": null,
+      "note": ""
+    },
+    {
+      "synthetic": true,
+      "id": "WO-2",
+      "tail": "SIM-008",
+      "task_id": "T-SIM-008-brakes-002",
+      "station": "DFW",
+      "start": "2026-10-12T17:16:00Z",
+      "end": "2026-10-12T18:46:00Z",
+      "description": "Tire and wheel change on SIM-008 at DFW, Oct 12 17:16Z to Oct 12 18:46Z. Why: Tire and wheel change every 40 days after the last maintenance (Sep 05 12:00Z): due Oct 15 12:00Z, in about 3.0 days (synthetic interval). Technician DFW-T3. Advisory only; needs human approval.",
+      "status": "pending_approval",
+      "plan_id": "P-1",
+      "evidence": [
+        {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "cpsat plan, objective 14.2808"
+        },
+        {
+          "kind": "kb",
+          "ref": "TC-WHEEL",
+          "note": "synthetic task card"
+        },
+        {
+          "kind": "health",
+          "ref": "SIM-008/brakes",
+          "note": "Tire and wheel change every 40 days after the last maintenance (Sep 05 12:00Z): due Oct 15 12:00Z, in about 3.0 days (synthetic interval)"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-31",
+          "note": "derive_tasks"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-46",
+          "note": "solve_schedule"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-49",
+          "note": "compare_plans"
+        }
+      ],
+      "decided_by": null,
+      "decided_at": null,
+      "note": ""
+    },
+    {
+      "synthetic": true,
+      "id": "WO-3",
+      "tail": "SIM-021",
+      "task_id": "T-SIM-021-avionics-001",
+      "station": "ATL",
+      "start": "2026-10-12T22:52:00Z",
+      "end": "2026-10-13T00:52:00Z",
+      "description": "Avionics LRU swap on SIM-021 at ATL, Oct 12 22:52Z to Oct 13 00:52Z. Why: avionics RUL p10 = 52 cycles = about 13.4 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.9 legs/day (its own average legs/day)); deadline Oct 25 20:45Z (conservative p10, hard constraint). Technician ATL-T2. Advisory only; needs human approval.",
+      "status": "pending_approval",
+      "plan_id": "P-1",
+      "evidence": [
+        {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "cpsat plan, objective 14.2808"
+        },
+        {
+          "kind": "kb",
+          "ref": "TC-AVI-LRU",
+          "note": "synthetic task card"
+        },
+        {
+          "kind": "health",
+          "ref": "SIM-021/avionics",
+          "note": "avionics RUL p10 = 52 cycles = about 13.4 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.9 legs/day (its own average legs/day)); deadline Oct 25 20:45Z (conservative p10, hard constraint)"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-31",
+          "note": "derive_tasks"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-46",
+          "note": "solve_schedule"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-49",
+          "note": "compare_plans"
+        }
+      ],
+      "decided_by": null,
+      "decided_at": null,
+      "note": ""
+    },
+    {
+      "synthetic": true,
+      "id": "WO-4",
+      "tail": "SIM-005",
+      "task_id": "T-SIM-005-hydraulics-001",
+      "station": "LAX",
+      "start": "2026-10-13T10:15:00Z",
+      "end": "2026-10-13T15:15:00Z",
+      "description": "Hydraulic pump replacement on SIM-005 at LAX, Oct 13 10:15Z to Oct 13 15:15Z. Why: hydraulics RUL p10 = 35 cycles = about 9.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 22 01:15Z (conservative p10, hard constraint). Technician LAX-T2; part shipped from ATL. Advisory only; needs human approval.",
+      "status": "pending_approval",
+      "plan_id": "P-1",
+      "evidence": [
+        {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "cpsat plan, objective 14.2808"
+        },
+        {
+          "kind": "kb",
+          "ref": "TC-HYD-PUMP",
+          "note": "synthetic task card"
+        },
+        {
+          "kind": "health",
+          "ref": "SIM-005/hydraulics",
+          "note": "hydraulics RUL p10 = 35 cycles = about 9.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 22 01:15Z (conservative p10, hard constraint)"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-31",
+          "note": "derive_tasks"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-46",
+          "note": "solve_schedule"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-49",
+          "note": "compare_plans"
+        }
+      ],
+      "decided_by": null,
+      "decided_at": null,
+      "note": ""
+    },
+    {
+      "synthetic": true,
+      "id": "WO-5",
+      "tail": "SIM-012",
+      "task_id": "T-SIM-012-engine_1-001",
+      "station": "ORD",
+      "start": "2026-10-16T20:14:00Z",
+      "end": "2026-10-17T02:14:00Z",
+      "description": "Engine borescope inspection on SIM-012 at ORD, Oct 16 20:14Z to Oct 17 02:14Z. Why: engine_1 RUL p10 = 47 cycles = about 12.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 25 02:19Z (conservative p10, hard constraint). Technician ORD-T1. Advisory only; needs human approval.",
+      "status": "pending_approval",
+      "plan_id": "P-1",
+      "evidence": [
+        {
+          "kind": "plan",
+          "ref": "P-1",
+          "note": "cpsat plan, objective 14.2808"
+        },
+        {
+          "kind": "kb",
+          "ref": "TC-ENG-BORESCOPE",
+          "note": "synthetic task card"
+        },
+        {
+          "kind": "health",
+          "ref": "SIM-012/engine_1",
+          "note": "engine_1 RUL p10 = 47 cycles = about 12.6 days at this aircraft's rotation (beyond the known rotation, extrapolated at 3.7 legs/day (its own average legs/day)); deadline Oct 25 02:19Z (conservative p10, hard constraint)"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-31",
+          "note": "derive_tasks"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-46",
+          "note": "solve_schedule"
+        },
+        {
+          "kind": "tool_call",
+          "ref": "R-1/step-49",
+          "note": "compare_plans"
+        }
+      ],
+      "decided_by": null,
+      "decided_at": null,
+      "note": ""
+    }
+  ],
+  "explanation": "Plan P-1 (cpsat) is feasible: 5 of 5 tasks scheduled, 0 late or unscheduled. Most urgent: SIM-017 engine_2, RUL p10 18 cycles, hard deadline Oct 17 04:40Z. Scheduled at DFW Oct 12 14:30Z to Oct 12 20:30Z with technician DFW-T1, extension 0 h, part on hand or not needed. Baseline (home base, last window before the deadline): logistics $2200, downtime 0 h, flights affected 0. Optimized: logistics $600, downtime 0 h, flights affected 0. Savings are simulated relative to that baseline. Logistics flags: HYD-PUMP not on hand at LAX; shipped from ATL (+$600, 12 h). 5 work order(s) drafted, all pending human approval. Advisory only; this does not replace approved procedures.",
+  "missing_info": [
+    "sensor trend for SIM-017/engine_2: the digital twin is not available yet",
+    "sensor trend for SIM-005/hydraulics: the digital twin is not available yet",
+    "sensor trend for SIM-012/engine_1: the digital twin is not available yet"
   ]
- },
- "work_orders": [
-  {
-   "synthetic": true,
-   "id": "WO-1",
-   "tail": "SIM-017",
-   "task_id": "T-SIM-017-engine_2-001",
-   "station": "DFW",
-   "start": "2026-10-12T20:30:00Z",
-   "end": "2026-10-13T02:30:00Z",
-   "description": "Engine 2 borescope inspection (SIM-017) at DFW",
-   "status": "pending_approval",
-   "plan_id": "P-2",
-   "evidence": [
-    {
-     "kind": "plan",
-     "ref": "P-2",
-     "note": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT "
-    },
-    {
-     "kind": "kb",
-     "ref": "TC-ENG-001",
-     "note": "synthetic task card"
-    }
-   ],
-   "decided_by": null,
-   "decided_at": null,
-   "note": ""
-  },
-  {
-   "synthetic": true,
-   "id": "WO-2",
-   "tail": "SIM-004",
-   "task_id": "T-SIM-004-brakes-001",
-   "station": "DEN",
-   "start": "2026-10-12T19:42:00Z",
-   "end": "2026-10-12T22:42:00Z",
-   "description": "Brake assembly replacement (SIM-004) at DEN",
-   "status": "pending_approval",
-   "plan_id": "P-2",
-   "evidence": [
-    {
-     "kind": "plan",
-     "ref": "P-2",
-     "note": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on ha"
-    },
-    {
-     "kind": "kb",
-     "ref": "TC-GEN-001",
-     "note": "synthetic task card"
-    }
-   ],
-   "decided_by": null,
-   "decided_at": null,
-   "note": ""
-  },
-  {
-   "synthetic": true,
-   "id": "WO-3",
-   "tail": "SIM-011",
-   "task_id": "T-SIM-011-hydraulics-001",
-   "station": "LAX",
-   "start": "2026-10-12T19:39:00Z",
-   "end": "2026-10-13T00:39:00Z",
-   "description": "Hydraulic pump replacement (SIM-011) at LAX",
-   "status": "pending_approval",
-   "plan_id": "P-2",
-   "evidence": [
-    {
-     "kind": "plan",
-     "ref": "P-2",
-     "note": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP o"
-    },
-    {
-     "kind": "kb",
-     "ref": "TC-GEN-001",
-     "note": "synthetic task card"
-    }
-   ],
-   "decided_by": null,
-   "decided_at": null,
-   "note": ""
-  },
-  {
-   "synthetic": true,
-   "id": "WO-4",
-   "tail": "SIM-020",
-   "task_id": "T-SIM-020-avionics-001",
-   "station": "SEA",
-   "start": "2026-10-12T19:50:00Z",
-   "end": "2026-10-12T21:50:00Z",
-   "description": "Avionics LRU swap (SIM-020) at SEA",
-   "status": "pending_approval",
-   "plan_id": "P-2",
-   "evidence": [
-    {
-     "kind": "plan",
-     "ref": "P-2",
-     "note": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU"
-    },
-    {
-     "kind": "kb",
-     "ref": "TC-GEN-001",
-     "note": "synthetic task card"
-    }
-   ],
-   "decided_by": null,
-   "decided_at": null,
-   "note": ""
-  },
-  {
-   "synthetic": true,
-   "id": "WO-5",
-   "tail": "SIM-008",
-   "task_id": "T-SIM-008-landing_gear-001",
-   "station": "MIA",
-   "start": "2026-10-12T19:07:00Z",
-   "end": "2026-10-12T23:07:00Z",
-   "description": "Landing gear actuator check (SIM-008) at MIA",
-   "status": "pending_approval",
-   "plan_id": "P-2",
-   "evidence": [
-    {
-     "kind": "plan",
-     "ref": "P-2",
-     "note": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; f"
-    },
-    {
-     "kind": "kb",
-     "ref": "TC-GEN-001",
-     "note": "synthetic task card"
-    }
-   ],
-   "decided_by": null,
-   "decided_at": null,
-   "note": ""
-  }
- ],
- "explanation": "Recommend engine 2 borescope inspection on SIM-017 at DFW, Oct 12 20:30Z to 02:30Z: the first window with an engine technician and the kit on hand, 11.12 h ground time, no flight delay. Waiting for the static home-base policy would delay 5 flights and cost $800 in shipping. Work orders are drafted for human approval.",
- "missing_info": []
 }

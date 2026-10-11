@@ -23,6 +23,7 @@ from app.solver import service
 from app.solver.candidates import SolveContext
 from app.solver.common import aware
 from app.solver.engine import solve
+from app.solver.leastbad import least_bad
 from app.solver.store import STORE
 from app.solver.tasks import derive_tasks_ex
 from app.solver.windows import ground_windows
@@ -110,21 +111,17 @@ def get_component_health(component_id: str) -> dict:
 def get_sensor_trend(component_id: str, last: int = 30) -> dict:
     """Recent telemetry from the twin. If the twin is not available the tool says so instead of inventing a trend."""
     try:
-        from app.twin.state import get_twin  # type: ignore[import-not-found]
+        from app.twin.state import get_telemetry  # type: ignore[import-not-found]
     except ImportError:
         return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="twin not available"),
                     [f"sensor trend for {component_id}: the digital twin is not available yet"])
     tail = component_id.split("/", 1)[0]
-    view = get_twin(tail)
-    if view is None:
-        return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="twin not available"),
-                    [f"sensor trend for {component_id}: the digital twin is not available yet"])
-    comp = next((c for c in view.components if c.component_id == component_id), None)
-    if comp is None:
-        raise ToolError(f"unknown component {component_id!r}")
-    rows = [h.model_dump(mode="json") for h in comp.history[-last:]]
-    return _out({"history": rows, "sensors_last": comp.sensors_last},
-                EvidenceRef(kind="health", ref=component_id, note=f"last {len(rows)} history points"))
+    rows = get_telemetry(tail, component_id, last)
+    if not rows:     # the twin exists but holds no telemetry for this component: say so, never invent a trend
+        return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="no telemetry"),
+                    [f"sensor trend for {component_id}: the digital twin holds no telemetry for it yet"])
+    data = [{"cycle": r.cycle, "ts": r.ts, "values": r.values} for r in rows]
+    return _out(data, EvidenceRef(kind="health", ref=component_id, note=f"last {len(data)} telemetry rows"))
 
 
 def get_maintenance_history(tail: str) -> dict:
@@ -224,7 +221,8 @@ def shortage_report() -> dict:
         if t.id not in scheduled:
             blockers = ctx.blockers(t)
             top = next((k for k, _ in blockers.most_common() if k in kind), None)
-            rows.append({"task_id": t.id, "missing": kind.get(top, "capacity"), "detail": ctx.diagnose(t)})
+            rows.append({"task_id": t.id, "missing": kind.get(top, "capacity"), "detail": ctx.diagnose(t),
+                         "least_bad": least_bad(state, t)})
     for a in plan.assignments:
         t = next((x for x in tasks if x.id == a.task_id), None)
         if a.part_source and t and t.required_part:
@@ -269,8 +267,13 @@ def replan_with_event(event: dict) -> dict:
 def draft_work_orders(plan_id: Optional[str] = None) -> dict:
     plan = _plan(plan_id)
     state, _ = _state()
-    orders = workorders.draft(plan, state, _tasks(state))
-    return _out(orders, EvidenceRef(kind="plan", ref=plan.id, note=f"{len(orders)} work order(s), pending approval"))
+    notes: list[str] = []
+    try:    # the copilot owns the audited work-order store (approve / reject / supersede); use it when it exists
+        from app.copilot import workorders as store  # type: ignore[import-not-found]
+        orders, notes = store.draft_from_plan(plan, actor="agent:coordinator")
+    except ImportError:
+        orders = workorders.draft(plan, state, _tasks(state))
+    return _out(orders, EvidenceRef(kind="plan", ref=plan.id, note=f"{len(orders)} work order(s), pending approval"), notes)
 
 
 def search_kb(query: str) -> dict:

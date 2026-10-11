@@ -34,7 +34,10 @@ def traj():
 
 @pytest.fixture(scope="module")
 def healthy(traj):
-    return next(rows for rows in traj.values() if rows[-1]["true_rul"] > 100 and len(rows) >= 120)
+    # Real data: an engine that is still far from failure when its recording ends.
+    # Synthetic fallback (no NASA files): every engine runs to failure, so any long one will do for its first rows.
+    pick = lambda rows: len(rows) >= 130 and (rows[-1]["true_rul"] > 100 or not cmapss.data_available())
+    return next(rows for rows in traj.values() if pick(rows))
 
 
 @pytest.fixture(scope="module")
@@ -215,6 +218,11 @@ def test_snapshot_has_what_the_scheduler_needs(failing):
     assert by_id["SIM-017/brakes"].last_maintenance == T0 + timedelta(days=1)
     assert snap.now == max(r.ts for r in state._comps[ENG2].telemetry)  # newest row, no wall clock
     assert [a.tail for a in snap.aircraft] == [TAIL]
+
+
+def test_empty_twin_snapshot_is_empty_not_a_stand_in():
+    snap = state.snapshot()
+    assert snap.aircraft == [] and snap.components == [] and state.is_empty()
 
 
 def test_snapshot_uses_the_sim_clock_when_wired(failing):

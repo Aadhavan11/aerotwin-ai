@@ -36,15 +36,25 @@ def fresh(monkeypatch):
     monkeypatch.delenv("MOCK_SOLVER", raising=False)
     STORE.reset()
     RUNS.reset()
+    _reset_copilot_orders()
     yield
     STORE.reset()
     RUNS.reset()
+
+
+def _reset_copilot_orders() -> None:
+    try:    # once the copilot exists it owns the work-order store; start each test from an empty one
+        from app.copilot import workorders as store
+        store.reset()
+    except ImportError:
+        pass
 
 
 @pytest.fixture(scope="module")
 def golden_run():
     STORE.reset()
     RUNS.reset()
+    _reset_copilot_orders()
     run = run_workflow(GOAL, {}, "scripted")
     yield run
     STORE.reset()
@@ -100,7 +110,7 @@ def test_list_at_risk_is_sorted_by_conservative_rul_and_finds_the_golden_engine(
 
 def test_sensor_trend_says_so_when_there_is_no_twin_instead_of_inventing_one():
     res = call_tool("get_sensor_trend", {"component_id": "SIM-017/engine_2"})
-    assert res["data"] == [] and "twin is not available" in res["missing_info"][0]
+    assert res["data"] == [] and "twin" in res["missing_info"][0]
 
 
 def test_check_parts_and_shortage_report_match_the_golden_facts():
@@ -142,8 +152,8 @@ def test_run_finds_the_golden_anomaly_and_plans_it_at_dfw(golden_run):
     risk = next(s for s in golden_run.steps if s.tool == "list_at_risk" and s.kind == "tool_result")
     assert "SIM-017/engine_2" in [r["component_id"] for r in risk.output["data"]]
     wo = next(o for o in golden_run.work_orders if o.tail == "SIM-017")
-    assert wo.station == "DFW" and "RUL p10 = 18" in wo.description
-    assert "SIM-017 engine_2" in golden_run.explanation and "DFW" in golden_run.explanation
+    assert wo.station == "DFW" and wo.task_id == "T-SIM-017-engine_2-001"
+    assert "SIM-017 engine_2" in golden_run.explanation and "RUL p10 18" in golden_run.explanation and "DFW" in golden_run.explanation
 
 
 def test_steps_are_ordered_numbered_and_every_tool_call_has_a_result(golden_run):
@@ -195,7 +205,7 @@ def test_llm_mode_falls_back_to_scripted_and_says_so():
 
 
 def test_missing_twin_is_reported_in_missing_info_not_guessed(golden_run):
-    assert any("twin is not available" in m for m in golden_run.missing_info)
+    assert any("twin" in m for m in golden_run.missing_info)
 
 
 def test_infeasible_world_is_explained_and_only_scheduled_jobs_get_work_orders(monkeypatch):
@@ -217,6 +227,55 @@ def test_a_crashing_run_ends_in_error_not_in_running(monkeypatch):
     monkeypatch.setattr(scripted, "call_tool", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
     run = run_workflow(GOAL, {}, "scripted")
     assert run.status == "error" and "RuntimeError: boom" in run.explanation
+
+
+# ------------------------------------------------------------------ a deadline nobody can meet: honest, with a human-only suggestion
+def _near_failure_world(monkeypatch, p10: float = 1.9):
+    from app.contracts.models import RulEstimate
+    st = golden_state()
+    comp = next(c for c in st.components if c.component_id == "SIM-017/engine_2")
+    comp.rul_cycles = RulEstimate(p10=p10, p50=p10 * 3, p90=p10 * 8)
+    monkeypatch.setattr(service, "_snapshot", lambda: (st, "test"))
+    return st
+
+
+def test_near_failure_is_infeasible_with_a_least_bad_suggestion_that_is_never_applied(monkeypatch):
+    _near_failure_world(monkeypatch)
+    run = run_workflow(GOAL, {}, "scripted")
+    assert run.status == "done" and run.plan.feasible is False
+    assert not any(a.task_id == "T-SIM-017-engine_2-001" for a in run.plan.assignments)          # never scheduled past the deadline
+    assert not any(o.task_id == "T-SIM-017-engine_2-001" for o in run.work_orders)
+    short = next(s for s in run.steps if s.tool == "shortage_report" and s.kind == "tool_result").output["data"]
+    row = next(r for r in short if r["task_id"] == "T-SIM-017-engine_2-001")
+    assert row["least_bad"]["hours_after_deadline"] > 0 and "NOT a plan" in row["least_bad"]["note"]
+    assert "For a human to decide (NOT applied)" in run.explanation and "after its deadline" in run.explanation
+    assert "Savings are simulated" not in run.explanation          # no baseline-vs-optimized claim for a failed plan
+    pool = set()
+    for s in run.steps:
+        if s.kind == "tool_result" and s.output:
+            pool |= numbers(json.dumps(s.output["data"]))
+    pool |= numbers(json.dumps(run.plan.model_dump(mode="json")))
+    assert numbers(run.explanation) - pool == set()                 # still only tool-derived numbers
+
+
+def test_when_no_slot_exists_at_all_the_explanation_says_so(monkeypatch):
+    st = golden_state()
+    for s in st.stations:
+        for t in s.technicians:
+            t.skills = [x for x in t.skills if x != "engine"]
+    monkeypatch.setattr(service, "_snapshot", lambda: (st, "test"))
+    run = run_workflow(GOAL, {}, "scripted")
+    assert "no slot exists for T-SIM-017-engine_2-001 anywhere in the known rotation" in run.explanation
+    assert call_tool("shortage_report")["data"][0]["least_bad"] is None
+
+
+def test_least_bad_is_a_function_of_the_state_and_marks_itself_as_not_a_plan(monkeypatch):
+    from app.solver.leastbad import least_bad
+    st = _near_failure_world(monkeypatch)
+    from app.solver import derive_tasks
+    task = next(t for t in derive_tasks(st) if t.tail == "SIM-017")
+    lb = least_bad(st, task)
+    assert lb["station"] == "DFW" and lb["end"] > task.deadline and lb["hours_after_deadline"] == 6.0 and "NOT a plan" in lb["note"]
 
 
 # ------------------------------------------------------------------ disruption through the tool, then a fresh run in the changed world

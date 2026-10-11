@@ -1,84 +1,84 @@
 {
- "synthetic": true,
- "id": "P-1",
- "created": "2026-10-12T12:05:00Z",
- "mode": "static_baseline",
- "feasible": true,
- "infeasible_reasons": [],
- "assignments": [
-  {
-   "task_id": "T-SIM-017-engine_2-001",
-   "tail": "SIM-017",
-   "station": "ATL",
-   "start": "2026-10-16T15:53:00Z",
-   "end": "2026-10-16T21:53:00Z",
-   "technician_id": "ATL-T1",
-   "part_source": "DFW",
-   "window_hours": 1.37,
-   "extension_h": 4.63,
-   "reason": "Static policy: last home-base (ATL) window before the deadline; window is 1.4 h, job needs 6 h, so the next departure is delayed 4.6 h; part shipped from DFW."
+  "synthetic": true,
+  "id": "P-1",
+  "created": "2026-10-12T12:00:00Z",
+  "mode": "static_baseline",
+  "feasible": true,
+  "infeasible_reasons": [],
+  "assignments": [
+    {
+      "task_id": "T-SIM-017-engine_2-001",
+      "tail": "SIM-017",
+      "station": "ATL",
+      "start": "2026-10-14T12:25:00Z",
+      "end": "2026-10-14T18:25:00Z",
+      "technician_id": "ATL-T1",
+      "part_source": "DFW",
+      "window_hours": 9.4167,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base ATL that fits before the deadline: ATL, Oct 14 12:25Z to Oct 14 18:25Z. BORESCOPE-KIT shipped from DFW (+$800, ready in 18 h); technician ATL-T1 (engine) on shift. Ground window 9.4 h for a 6 h job: 0 h extension. Finishes 58.2 h before the Oct 17 04:40Z deadline."
+    },
+    {
+      "task_id": "T-SIM-012-engine_1-001",
+      "tail": "SIM-012",
+      "station": "DEN",
+      "start": "2026-10-14T17:09:00Z",
+      "end": "2026-10-14T23:09:00Z",
+      "technician_id": "DEN-T1",
+      "part_source": "DFW",
+      "window_hours": 9.75,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base DEN that fits before the deadline: DEN, Oct 14 17:09Z to Oct 14 23:09Z. BORESCOPE-KIT shipped from DFW (+$800, ready in 24 h); technician DEN-T1 (engine) on shift. Ground window 9.8 h for a 6 h job: 0 h extension. Finishes 243.2 h before the Oct 25 02:19Z deadline."
+    },
+    {
+      "task_id": "T-SIM-008-brakes-002",
+      "tail": "SIM-008",
+      "station": "SEA",
+      "start": "2026-10-15T04:51:00Z",
+      "end": "2026-10-15T06:21:00Z",
+      "technician_id": "SEA-T1",
+      "part_source": null,
+      "window_hours": 1.6667,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base SEA that fits before the deadline: SEA, Oct 15 04:51Z to Oct 15 06:21Z. No part needed; technician SEA-T1 (gear) on shift. Ground window 1.7 h for a 1.5 h job: 0 h extension. Finishes 5.7 h before the Oct 15 12:00Z deadline."
+    },
+    {
+      "task_id": "T-SIM-021-avionics-001",
+      "tail": "SIM-021",
+      "station": "LAX",
+      "start": "2026-10-16T13:47:00Z",
+      "end": "2026-10-16T15:47:00Z",
+      "technician_id": "LAX-T2",
+      "part_source": null,
+      "window_hours": 8.6667,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base LAX that fits before the deadline: LAX, Oct 16 13:47Z to Oct 16 15:47Z. AVIONICS-LRU on hand at LAX; technician LAX-T2 (avionics) on shift. Ground window 8.7 h for a 2 h job: 0 h extension. Finishes 221.0 h before the Oct 25 20:45Z deadline."
+    },
+    {
+      "task_id": "T-SIM-005-hydraulics-001",
+      "tail": "SIM-005",
+      "station": "LAX",
+      "start": "2026-10-16T18:25:00Z",
+      "end": "2026-10-16T23:25:00Z",
+      "technician_id": "LAX-T2",
+      "part_source": "ATL",
+      "window_hours": 10.4167,
+      "extension_h": 0.0,
+      "reason": "Baseline policy: last ground window at home base LAX that fits before the deadline: LAX, Oct 16 18:25Z to Oct 16 23:25Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 10.4 h for a 5 h job: 0 h extension. Finishes 121.8 h before the Oct 22 01:15Z deadline."
+    }
+  ],
+  "metrics": {
+    "downtime_h": 0.0,
+    "flights_affected": 0,
+    "logistics_cost_usd": 2200.0,
+    "tech_utilization": 0.0108,
+    "hangar_utilization": 0.0142,
+    "schedule_changes": 0,
+    "tasks_total": 5,
+    "tasks_scheduled": 5,
+    "late_or_unscheduled": 0
   },
-  {
-   "task_id": "T-SIM-004-brakes-001",
-   "tail": "SIM-004",
-   "station": "ORD",
-   "start": "2026-10-15T08:57:00Z",
-   "end": "2026-10-15T11:57:00Z",
-   "technician_id": "ORD-T1",
-   "part_source": null,
-   "window_hours": 1.3,
-   "extension_h": 1.7,
-   "reason": "Static policy: last home-base (ORD) window before the deadline; window is 1.3 h, job needs 3 h, so the next departure is delayed 1.7 h."
-  },
-  {
-   "task_id": "T-SIM-011-hydraulics-001",
-   "tail": "SIM-011",
-   "station": "DEN",
-   "start": "2026-10-15T16:09:00Z",
-   "end": "2026-10-15T21:09:00Z",
-   "technician_id": "DEN-T1",
-   "part_source": null,
-   "window_hours": 1.1,
-   "extension_h": 3.9,
-   "reason": "Static policy: last home-base (DEN) window before the deadline; window is 1.1 h, job needs 5 h, so the next departure is delayed 3.9 h."
-  },
-  {
-   "task_id": "T-SIM-020-avionics-001",
-   "tail": "SIM-020",
-   "station": "LAX",
-   "start": "2026-10-14T09:05:00Z",
-   "end": "2026-10-14T11:05:00Z",
-   "technician_id": "LAX-T1",
-   "part_source": null,
-   "window_hours": 1.17,
-   "extension_h": 0.83,
-   "reason": "Static policy: last home-base (LAX) window before the deadline; window is 1.2 h, job needs 2 h, so the next departure is delayed 0.8 h."
-  },
-  {
-   "task_id": "T-SIM-008-landing_gear-001",
-   "tail": "SIM-008",
-   "station": "ATL",
-   "start": "2026-10-15T15:37:00Z",
-   "end": "2026-10-15T19:37:00Z",
-   "technician_id": "ATL-T1",
-   "part_source": null,
-   "window_hours": 1.63,
-   "extension_h": 2.37,
-   "reason": "Static policy: last home-base (ATL) window before the deadline; window is 1.6 h, job needs 4 h, so the next departure is delayed 2.4 h."
-  }
- ],
- "metrics": {
-  "downtime_h": 13.43,
-  "flights_affected": 5,
-  "logistics_cost_usd": 800.0,
-  "tech_utilization": 0.011,
-  "hangar_utilization": 0.012,
-  "schedule_changes": 0,
-  "tasks_total": 5,
-  "tasks_scheduled": 5,
-  "late_or_unscheduled": 0
- },
- "objective_value": 267.3,
- "solve_seconds": 0.1,
- "evidence": []
+  "objective_value": 41.3558,
+  "solve_seconds": 0.0053,
+  "evidence": []
 }

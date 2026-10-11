@@ -1,6 +1,6 @@
 """Glue shared by the solver and what-if routers: where the FleetState comes from, and keeping the current / baseline plans.
 
-State source (in order): MOCK=1 or MOCK_SOLVER=1 -> the golden stand-in; else Aashirth's ``app.twin.state.snapshot()``;
+State source (in order): MOCK_SOLVER=1 -> the golden stand-in; else Aashirth's ``app.twin.state.snapshot()`` (golden stand-in, labelled, if the twin is empty);
 if that module does not exist yet -> the golden stand-in, with a warning and a note on every plan made from it.
 """
 from __future__ import annotations
@@ -23,8 +23,8 @@ STAND_IN_NOTE = "state source: golden stand-in (app.twin.state.snapshot is not a
 
 def _snapshot() -> tuple[FleetState, str]:
     from app.solver.golden import golden_state
-    if os.getenv("MOCK") == "1" or os.getenv("MOCK_SOLVER") == "1":
-        return golden_state(), "golden stand-in (MOCK)"
+    if os.getenv("MOCK_SOLVER") == "1":      # (MOCK=1 mounts Shamit's mock routers instead of ours, so it is not our business here)
+        return golden_state(), "golden stand-in (MOCK_SOLVER)"
     try:
         from app.twin.state import snapshot, list_aircraft  # type: ignore[import-not-found]
     except ImportError:

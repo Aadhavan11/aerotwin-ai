@@ -38,11 +38,11 @@ MUTATIONS = [
     ("replan diff forgets added tasks", "app/solver/plan_metrics.py", "added = [new[t] for t in sorted(new) if t not in old]", "added = []"),
     ("part delay not applied", "app/whatif/events.py", "ps.eta_hours = lead + float(event.delay_hours)", "ps.eta_hours = 0.0"),
     # agents (piece 11)
-    ("work orders drafted already approved", "app/agents/workorders.py", 'status="pending_approval"', 'status="approved"'),
-    ("work orders without evidence", "app/agents/workorders.py", "description=desc, status=\"pending_approval\", plan_id=plan.id, evidence=evidence)", "description=desc, status=\"pending_approval\", plan_id=plan.id, evidence=[])"),
+    ("work orders drafted already approved", "app/copilot/workorders.py", 'status="pending_approval", plan_id=plan.id, evidence=evidence', 'status="approved", plan_id=plan.id, evidence=evidence'),
+    ("work orders without evidence", "app/copilot/workorders.py", 'status="pending_approval", plan_id=plan.id, evidence=evidence', 'status="pending_approval", plan_id=plan.id, evidence=[]'),
     ("explanation invents a number", "app/agents/scripted.py", "{m.late_or_unscheduled} late or unscheduled.\"]", "{m.late_or_unscheduled + 7} late or unscheduled.\"]"),
     ("crashed run left as running", "app/agents/runner.py", 'RUNS.update(run_id, status="error"', 'RUNS.update(run_id, status="running"'),
-    ("llm mode reported as llm", "app/agents/runner.py", 'run = RUNS.create(goal, "scripted")', "run = RUNS.create(goal, mode)"),
+    ("fallback from llm mode still reported as llm", "app/agents/runner.py", 'RUNS.update(run_id, mode="scripted", status="running")', 'RUNS.update(run_id, status="running")'),
     ("steps appended out of order (no tool_result)", "app/agents/scripted.py", 'self.refs[name] = self.step(agent, "tool_result"', 'self.refs[name] = self.step(agent, "summary"'),
 ]
 
