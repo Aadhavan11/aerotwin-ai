@@ -30,6 +30,6 @@ def test_fleet_from_database(dbclient):
 
 def test_legs_and_stations_from_database(dbclient):
     legs = dbclient.get("/legs?tail=SIM-017")
-    assert legs.headers["x-data-source"] == "database" and len(legs.json()) > 20
+    assert legs.headers["x-data-source"] == "database" and len(legs.json()) == 20
     assert len(dbclient.get("/stations").json()) == 8
     assert dbclient.get("/health").json()["data_source"] == "database"

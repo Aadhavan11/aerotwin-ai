@@ -50,10 +50,13 @@ def main() -> None:
     db.kv_set("scenario", args.scenario)
     db.kv_set("sim_now", settings.SIM_START)
     try:
-        from app.sim.fleet import generate_fleet  # type: ignore  (Aadhavan: work/OWNERSHIP.md piece 9)
+        from app.sim.service import Simulator
 
-        info = generate_fleet(settings.SEED)
-        source = "app.sim.fleet.generate_fleet"
+        simulator = Simulator(str(settings.DB_PATH), settings.SEED)
+        simulator.reset(args.scenario)
+        info = {"aircraft": len(simulator.state.aircraft), "components": len(simulator.state.components), "legs": len(simulator.state.legs)}
+        simulator.connection.close()
+        source = "app.sim.service.Simulator"
     except ModuleNotFoundError as e:
         if not (e.name or "").startswith("app.sim"):
             raise

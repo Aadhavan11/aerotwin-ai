@@ -10,7 +10,6 @@ npm run types      # regenerate src/api/schema.d.ts from the running API's OpenA
 ```
 
 Screens: **Fleet** (KPIs, offline US map, aircraft by risk), **Planning** (Gantt of jobs vs ground windows, optimized vs baseline, "why this slot"), **Simulation Lab** (inject / delay / close / re-plan, comparison),
-**Copilot drawer** (agent activity, copilot chat, work orders with approve/reject, audit). `src/pages/Aircraft.tsx` is a **placeholder** for Aadhavan's Aircraft Twin screen (`work/OWNERSHIP.md` piece 13):
-keep the route `/aircraft/:tail`; data comes from `GET /aircraft/{tail}` (`TwinView`).
+**Copilot drawer** (agent activity, copilot chat, work orders with approve/reject, audit). **Aircraft Twin** provides a clickable 2D aircraft, component health and RUL quantiles, predicted uncertainty band, sensor trends, quality reasons, history and timeline. The route is `/aircraft/:tail`; data comes from `GET /aircraft/{tail}` (`TwinView`).
 
 The header shows SIMULATED always, MOCK API when `MOCK=1`, and "n/6 modules real" when some groups are still mock. Types: `src/api/types.ts` re-exports from the generated schema.

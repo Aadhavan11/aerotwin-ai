@@ -14,7 +14,7 @@ from app.solver.store import STORE
 from app.solver.golden import GOLDEN_COMPONENT, GOLDEN_TAIL, golden_state
 from app.solver.tasks import cycle_deadline, derive_tasks_ex
 from app.solver.windows import ground_windows_checked
-from solver_helpers import T0, assert_no_fallback, engine_task, hard_violations, hrs, mini_state, simple_station
+from tests.solver_helpers import T0, assert_no_fallback, engine_task, hard_violations, hrs, mini_state, simple_station
 
 MODES = ["static_baseline", "greedy", "cpsat"]
 
