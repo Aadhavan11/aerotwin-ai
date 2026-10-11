@@ -4,6 +4,8 @@
     GET  /workorders                    -> WorkOrder[]
     POST /workorders/{id}/decision      {decision: approve|reject, user, note} -> WorkOrder
     GET  /audit                         -> AuditEntry[] (newest first)
+    GET  /aircraft/{tail}/maintenance   -> planned work, orders, parts, suggestions, history for one aircraft (additive)
+    GET  /maintenance/queue             -> every open task in the fleet with slot, margin, order status (additive)
 
 Mount with ``app.include_router(app.copilot.router.router)``. Errors are
 ``{"error": ..., "detail": ...}``. Call ``app.copilot.reset_all()`` on
@@ -42,6 +44,25 @@ def post_decision(work_order_id: str, body: DecisionRequest):
         return workorders.decide(work_order_id, body.decision, body.user, body.note, persist.sim_now())
     except workorders.WorkOrderError as exc:
         return JSONResponse(status_code=exc.status, content={"error": exc.code, "detail": exc.message})
+
+
+@router.get("/aircraft/{tail}/maintenance")
+def get_aircraft_maintenance(tail: str):
+    """Planned work, work orders, parts and technicians, suggestions and history for one aircraft (read only)."""
+    from app.copilot import maintenance
+
+    out = maintenance.build(tail)
+    if out is None:
+        return JSONResponse(status_code=404, content={"error": "not_found", "detail": f"no aircraft {tail!r}"})
+    return out
+
+
+@router.get("/maintenance/queue")
+def get_maintenance_queue():
+    """Every open task in the fleet with its planned slot, deadline margin and work-order status (read only)."""
+    from app.copilot import maintenance
+
+    return maintenance.queue()
 
 
 @router.get("/audit", response_model=list[AuditEntry])

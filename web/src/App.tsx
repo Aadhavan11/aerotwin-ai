@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
@@ -6,12 +6,14 @@ import { fmtZ } from "./lib/format";
 import CopilotDrawer from "./components/CopilotDrawer";
 import Fleet from "./pages/Fleet";
 const Aircraft = lazy(() => import("./pages/Aircraft"));
+const Maintenance = lazy(() => import("./pages/Maintenance"));
 const Planning = lazy(() => import("./pages/Planning"));
 const Lab = lazy(() => import("./pages/Lab"));
 
 const nav = [
   { to: "/", label: "Fleet" },
   { to: "/aircraft/SIM-017", label: "Aircraft", match: "/aircraft" },
+  { to: "/maintenance", label: "Maintenance", match: "/maintenance" },
   { to: "/planning", label: "Planning" },
   { to: "/lab", label: "Scenarios" },
 ];
@@ -20,6 +22,11 @@ export default function App() {
   const [open, setOpen] = useState(false);
   const health = usePoll<HealthInfo>("/health", 4000);
   const location = useLocation();
+  useEffect(() => {
+    const openCopilot = () => setOpen(true);
+    window.addEventListener("aerotwin:copilot", openCopilot);
+    return () => window.removeEventListener("aerotwin:copilot", openCopilot);
+  }, []);
   const h = health.data;
   const modules = h ? Object.entries(h.modules) : [];
   const mocked = modules.filter(([, value]) => value.startsWith("mock")).map(([k]) => k);
@@ -64,6 +71,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Fleet />} />
             <Route path="/aircraft/:tail" element={<Aircraft />} />
+            <Route path="/maintenance" element={<Maintenance />} />
+            <Route path="/maintenance/:tail" element={<Maintenance />} />
             <Route path="/planning" element={<Planning />} />
             <Route path="/lab" element={<Lab />} />
           </Routes>

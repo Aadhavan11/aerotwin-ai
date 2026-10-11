@@ -40,7 +40,7 @@ log = logging.getLogger(__name__)
 
 UTC = timezone.utc
 SIM_START = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)   # SimClock start (CONTRACTS / work/01)
-HOURS_PER_CYCLE = 1.8                                   # assumption: average block hours per flight
+HOURS_PER_CYCLE = 2.0                                   # assumption: block hours per flight; equals the simulator's 2 h legs
 WINDOW = 30
 HISTORY_MAX = 600
 TELEMETRY_MAX = 400
@@ -70,7 +70,7 @@ def status_from(health: float, is_anomaly: bool, rul_p10: Optional[float]) -> st
 # Internal records
 # --------------------------------------------------------------------------
 class _Comp:
-    __slots__ = ("state", "window", "telemetry", "history", "sensors_last", "score")
+    __slots__ = ("state", "window", "telemetry", "history", "sensors_last", "score", "cycle0")
 
     def __init__(self, state: ComponentState):
         self.state = state
@@ -79,6 +79,9 @@ class _Comp:
         self.history: list[HistoryPoint] = []
         self.sensors_last: dict[str, float] = {}
         self.score: Optional[HealthScore] = None
+        # Cycle counter just before the first row of the current series. The RUL model was trained on engine age
+        # (cycles since the start of a run), not on the airframe's lifetime counter, so it is fed ``row.cycle - cycle0``.
+        self.cycle0: Optional[int] = None
 
 
 _comps: dict[str, _Comp] = {}
@@ -194,7 +197,10 @@ def ingest_telemetry(row: TelemetryRow, *, backfill: bool = False) -> ComponentS
         if _newest_ts is None or row.ts > _newest_ts:
             _newest_ts = row.ts
 
-        score = ml_health.score_component(kind, row.tail, row.component_id, list(comp.window))
+        if comp.cycle0 is None:
+            comp.cycle0 = row.cycle - 1
+        rebased = [r.model_copy(update={"cycle": r.cycle - comp.cycle0}) for r in comp.window] if comp.cycle0 else list(comp.window)
+        score = ml_health.score_component(kind, row.tail, row.component_id, rebased)
         comp.score = score
         prev = comp.state
         prev_status = prev.status
@@ -312,6 +318,7 @@ def apply_maintenance(tail: str, component_id: str, at: datetime) -> ComponentSt
         comp.history.clear()
         comp.sensors_last = {}
         comp.score = None
+        comp.cycle0 = None
         comp.state = comp.state.model_copy(update={
             "health": 1.0, "anomaly_score": 0.0, "cycles": 0, "hours": 0.0, "rul_cycles": None,
             "data_quality": DataQuality(status="ok"), "last_maintenance": at, "status": "ok", "updated": at,

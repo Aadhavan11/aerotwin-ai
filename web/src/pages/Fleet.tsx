@@ -131,7 +131,7 @@ export default function Fleet() {
         <div className="comp-head" style={{ marginBottom: 8 }}>
           <h2 style={{ fontSize: 15 }}>Maintenance stations</h2>
           <span className="muted" style={{ fontSize: 12 }}>
-            hangar bays, technicians on shift and the parts held
+            hangar bays, technicians on shift at {fmtZ(health.data?.sim_now)} and the parts held
           </span>
         </div>
         <div style={{ overflowX: "auto" }}>
@@ -139,10 +139,12 @@ export default function Fleet() {
             <thead>
               <tr>
                 <th>Station</th>
-                <th style={{ textAlign: "right" }}>Hangar bays</th>
+                <th style={{ textAlign: "right" }}>Bays</th>
                 <th style={{ textAlign: "right" }}>On ground</th>
-                <th>Technicians</th>
-                <th>Parts in stock</th>
+                <th>Technicians on shift</th>
+                <th>Next shift change</th>
+                <th>Parts on hand</th>
+                <th>Resupply</th>
               </tr>
             </thead>
             <tbody>
@@ -150,10 +152,15 @@ export default function Fleet() {
                 .sort((a, b) => a.iata.localeCompare(b.iata))
                 .map((s) => {
                   const here = data.aircraft.filter((a) => a.location === s.iata).length;
-                  const skills = s.technicians.reduce<Record<string, number>>((m, t) => {
-                    t.skills.forEach((k) => (m[k] = (m[k] ?? 0) + (t.available === false ? 0 : 1)));
+                  const t0 = Date.parse(health.data?.sim_now ?? "") || Date.now();
+                  const current = s.technicians.filter((t) => Date.parse(t.shift_start) <= t0 && t0 < Date.parse(t.shift_end));
+                  const present = current.filter((t) => t.available !== false);
+                  const absent = current.length - present.length;
+                  const skills = present.reduce<Record<string, number>>((m, t) => {
+                    t.skills.forEach((k) => (m[k] = (m[k] ?? 0) + 1));
                     return m;
                   }, {});
+                  const change = current.length ? Math.min(...current.map((t) => Date.parse(t.shift_end))) : null;
                   return (
                     <tr key={s.iata} style={{ cursor: "default" }}>
                       <td className="mono" style={{ fontWeight: 600 }}>{s.iata}</td>
@@ -162,17 +169,23 @@ export default function Fleet() {
                       </td>
                       <td className="mono" style={{ textAlign: "right" }}>{here}</td>
                       <td>
-                        <span className="mono">{s.technicians.filter((t) => t.available !== false).length}</span>{" "}
+                        <span className="mono">{present.length}</span>{" "}
                         <span className="muted">
                           {Object.entries(skills)
                             .map(([k, n]) => `${k} ${n}`)
                             .join(", ")}
+                          {absent > 0 ? `; ${absent} absent` : ""}
                         </span>
+                      </td>
+                      <td className="mono muted">{change ? fmtZ(new Date(change).toISOString()) : "-"}</td>
+                      <td className="muted">
+                        {s.parts.map((p) => `${p.part} ${p.qty}${p.eta_hours > 0 ? ` (+${p.eta_hours} h)` : ""}`).join(" · ")}
                       </td>
                       <td className="muted">
                         {s.parts
-                          .map((p) => `${p.part} ${p.qty}${p.eta_hours > 0 ? ` (+${p.eta_hours} h)` : ""}`)
-                          .join(" · ")}
+                          .filter((p) => p.qty === 0 && p.ship_from)
+                          .map((p) => `${p.part} from ${p.ship_from}, ${p.ship_hours} h, $${Math.round(p.ship_cost_usd).toLocaleString()}`)
+                          .join(" · ") || "all stocked"}
                       </td>
                     </tr>
                   );

@@ -7,6 +7,28 @@ from app.sim.clock import START
 SENSOR_NAMES = ['T24','T30','T50','P30','Nf','Nc','Ps30','phi','NRf','NRc','BPR','htBleed','W31','W32']
 BASE = [642,1580,1400,554,2388,9050,47,522,2388,8138,8.4,392,39,23]
 
+def wear_profile(seed, component_id, spec):
+    """(starting wear fraction, flights from new to limit) for one non-engine component.
+
+    Deterministic per (seed, component): the fleet generator uses the same numbers to set the counters
+    ("flights since replaced") so that they agree with the wear level the telemetry starts at.
+    """
+    digest = hashlib.sha256(f'{seed}:wear:{component_id}'.encode()).digest()
+    r = random.Random(int.from_bytes(digest[:8], 'big'))
+    return r.uniform(.06, .48), spec.life_cycles * r.uniform(.8, 1.25)
+
+
+def _extras(kind, rng, fraction):
+    """Secondary channels in plausible units for each component kind."""
+    if kind == 'brakes':
+        return {'disc_temp_c': round(rng.gauss(255 + 40 * fraction, 28), 1)}
+    if kind == 'landing_gear':
+        return {'shock_load_g': round(max(1.05, rng.gauss(1.36, .11)), 2)}
+    if kind == 'hydraulics':
+        return {'fluid_temp_c': round(rng.gauss(54 + 8 * fraction, 2.2), 1)}
+    return {'box_temp_c': round(rng.gauss(39 + 5 * fraction, 1.6), 1)}
+
+
 class TelemetrySource:
     def __init__(self, seed=1234, trajectories=None):
         self.seed = seed
@@ -45,9 +67,12 @@ class TelemetrySource:
                 from app.ml.sensors import GENERIC
                 kind = component_id.split('/')[-1]
                 spec = GENERIC[kind]
-                fraction = min(1., .05+age*.003)
-                values = {spec.wear_signal: spec.healthy+(spec.limit-spec.healthy)*fraction}
-                values.update({name: 40+age*.2+rng.gauss(0,.2) for name in spec.extras})
+                start, life = wear_profile(self.seed, component_id, spec)
+                fraction = min(1., start+age/life)
+                span = spec.limit-spec.healthy
+                level = spec.healthy+span*fraction+rng.gauss(0, abs(span)*.004)
+                values = {spec.wear_signal: round(level, 2 if abs(span) < 50 else 0)}
+                values.update(_extras(kind, rng, fraction))
             rows.append(TelemetryRow(tail=tail,component_id=component_id,cycle=cycle,ts=self.now,values=values))
         return rows
 

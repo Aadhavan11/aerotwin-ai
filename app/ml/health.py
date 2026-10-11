@@ -303,7 +303,11 @@ def predict_windows(bundle: _Bundle, X: np.ndarray) -> dict:
 
 
 def score_engine(tail: str, component_id: str, window: Sequence[TelemetryRow]) -> HealthScore:
-    """Score one engine from its last <= 30 telemetry rows."""
+    """Score one engine from its last <= 30 telemetry rows.
+
+    The "cycle" feature is the rows' cycle counter as given: the model learned engine age (cycles since the run
+    began), so a caller that holds a lifetime counter must rebase the rows first (the twin does).
+    """
     rows = _last_rows(window)
     if not rows:
         return _empty_score(tail, component_id, ["no telemetry rows"], MODEL_VERSION)
@@ -338,17 +342,23 @@ def score_engine(tail: str, component_id: str, window: Sequence[TelemetryRow]) -
 # --------------------------------------------------------------------------
 @lru_cache(maxsize=None)
 def _generic_models(kind: str):
-    """A small IsolationForest per kind, fitted on synthetic healthy windows. Deterministic."""
+    """A small IsolationForest per kind, fitted on synthetic in-service windows. Deterministic.
+
+    "Normal" is any wear level in the first ~60% of life wearing at about the typical rate for the kind
+    (``GenericSpec.life_cycles``), so a component that is simply half worn is not flagged. What the forest
+    flags is a level near the limit or a wear rate far above the typical one.
+    """
     from sklearn.ensemble import IsolationForest
 
     spec = GENERIC[kind]
     rng = np.random.default_rng(SEED + sum(map(ord, kind)))
     span = abs(spec.limit - spec.healthy)
     sign = 1.0 if spec.worsens == "up" else -1.0
+    rate = span / spec.life_cycles
     rows = []
-    for _ in range(400):
-        level = spec.healthy + sign * rng.uniform(0.0, 0.35) * span          # healthy range: first third of life
-        slope = sign * abs(rng.normal(0.0, 0.0006 * span))
+    for i in range(500):
+        level = spec.healthy + sign * rng.uniform(0.0, 0.62) * span
+        slope = 0.0 if i % 10 == 0 else sign * abs(rng.normal(rate, 0.6 * rate))   # slope 0: windows of < 3 rows
         rows.append([level, slope])
     iforest = IsolationForest(n_estimators=100, random_state=SEED).fit(np.array(rows))
     raw = -iforest.score_samples(np.array(rows))
@@ -391,14 +401,20 @@ def score_generic(kind: str, tail: str, component_id: str, window: Sequence[Tele
     span = spec.limit - spec.healthy
     level = float(xv[-1])
     health = _clip01(1.0 - (level - spec.healthy) / span)
+    toward = 1.0 if span > 0 else -1.0                    # sign of "toward the limit"
+    # Prior for short windows: this kind of component wears at about span / typical life per flight.
+    typical = toward * abs(span) / spec.life_cycles
     if len(xv) >= 3 and np.ptp(t) > 0:
         tc = t - t.mean()
         slope = float((tc * (xv - xv.mean())).sum() / (tc * tc).sum())
         resid = xv - (xv.mean() + slope * tc)
         se = float(math.sqrt((resid ** 2).sum() / max(len(xv) - 2, 1) / (tc * tc).sum()))
+        if len(xv) < 10:                                  # blend the estimate with the prior while it is still noisy
+            w = (len(xv) - 2) / 8
+            slope = w * slope + (1 - w) * typical
+            se = max(se, 0.35 * abs(typical) * (1 - w))
     else:
-        slope, se = 0.0, 0.0
-    toward = 1.0 if span > 0 else -1.0                    # sign of "toward the limit"
+        slope, se = typical, 0.35 * abs(typical)
     remaining = max((spec.limit - level) * toward, 0.0)
     def cycles_left(rate: float) -> float:
         r = rate * toward

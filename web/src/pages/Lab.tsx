@@ -4,6 +4,7 @@ import type {
   Comparison,
   HealthInfo,
   InjectResult,
+  Plan,
   PlanMetrics,
   ReplanResult,
   ScenarioEvent,
@@ -27,15 +28,14 @@ type Result =
 export default function Lab() {
   const health = usePoll<HealthInfo>("/health", 5000);
   const stations = usePoll<Station[]>("/stations", 5000);
+  const plan = usePoll<{ current: Plan }>("/plan", 5000);
   const now = health.data?.sim_now ?? "2026-10-12T12:00:00Z";
-  const engineTech = stations.data
-    ?.find((s) => s.iata === "DFW")
-    ?.technicians.find(
-      (t) =>
-        t.available &&
-        t.skills.includes("engine") &&
-        Date.parse(t.shift_end) > Date.parse(now),
-    );
+  // The engine technician who is actually on the SIM-017 job (so the scenario has an effect), else the first one on shift.
+  const dfwTechs = stations.data?.find((s) => s.iata === "DFW")?.technicians ?? [];
+  const assigned = plan.data?.current.assignments.find((a) => a.station === "DFW" && a.tail === "SIM-017")?.technician_id;
+  const engineTech =
+    dfwTechs.find((t) => t.id === assigned && t.available) ??
+    dfwTechs.find((t) => t.available && t.skills.includes("engine") && Date.parse(t.shift_end) > Date.parse(now));
   const [busy, setBusy] = useState("");
   const [err, setErr] = useState("");
   const [result, setResult] = useState<Result>(null);

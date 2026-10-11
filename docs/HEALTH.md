@@ -63,7 +63,9 @@ The 100 test engines were never used to fit or calibrate anything, and they are 
 - Individual engines can be off: the last-window RUL error has a typical size of about 11 cycles. The model is more accurate near end of life (3.8 cycles) than early.
 - Anomaly recall of 0.72 means about 3 in 10 late-life windows are not flagged by the anomaly model alone; the `rul_p10 < 30` rule in `status_from` also raises `alert`.
 - Brakes, landing gear, hydraulics and avionics use rule-based demo models with synthetic limits.
-- `HOURS_PER_CYCLE = 1.8` in `twin/state.py` is an assumption that fills component hours from cycles.
+- `HOURS_PER_CYCLE = 2.0` in `twin/state.py` is an assumption (the simulator flies 2 h legs) that fills component hours from cycles.
+- The RUL model's `cycle` feature is engine age since the run began. The twin rebases each engine's lifetime counter to that (`_Comp.cycle0`) before scoring; without it a 5,000-cycle engine looked old to the model.
+- The non-engine models flag a level near the limit or a wear rate far above the typical rate for the kind (`GenericSpec.life_cycles`); a part that is simply half worn is not an anomaly. With fewer than 10 rows the slope is blended with that typical rate.
 
 ## Process disclosure
 

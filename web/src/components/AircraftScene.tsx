@@ -176,6 +176,11 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
         return renderer.domElement.toDataURL(type, 0.9);
       };
       w.__twinCut = (on: boolean) => cut(on);
+      w.__twinCam = (x: number, y: number, z: number, tx: number, ty: number, tz: number) => {
+        camera.position.set(x, y, z);
+        controls.target.set(tx, ty, tz);
+        controls.update();
+      };
     }
     const ray = new THREE.Raycaster();
     let down = [0, 0];

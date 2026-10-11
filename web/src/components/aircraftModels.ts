@@ -23,7 +23,15 @@ export type Profile = {
   height: number;
   fusW: number;
   fusH: number;
-  nose: { len: number; droop: number; nTop: number; nBot: number; nW: number };
+  // Side silhouette of the nose as (distance from the tip, height above the fuselage axis) control points.
+  // Past `len` the section is the full barrel. `wLen` is the length over which the half-width reaches the barrel.
+  nose: {
+    len: number; radome: number; wLen: number; wExp: number;
+    top: [number, number][]; bot: [number, number][];
+    // Flight-deck glazing as quads [front-top, aft-top, aft-bottom, front-bottom]. The windshield is given as
+    // (distance from the tip, section angle in degrees: 0 = side, 90 = crown); the side windows as (distance, height above the axis).
+    windshield: [number, number][]; sliding: [number, number][]; fixed: [number, number][];
+  };
   tailLen: number;
   wing: {
     apexD: number; rootY: number; dihedral: number; leSweep: number; teSweepIn: number;
@@ -56,7 +64,14 @@ export const profiles: Record<"a320" | "b738", Profile> = {
     height: 11.76,
     fusW: 3.95,
     fusH: 4.14,
-    nose: { len: 6.2, droop: 0.32, nTop: 1.65, nBot: 2.4, nW: 2.05 },
+    nose: {
+      len: 6.8, radome: 1.55, wLen: 4.7, wExp: 2.1,
+      top: [[0, -0.2], [0.02, -0.08], [0.06, 0.02], [0.16, 0.14], [0.4, 0.24], [0.9, 0.34], [1.6, 0.48], [2.2, 0.68], [2.8, 1.12], [3.5, 1.62], [4.4, 1.92], [5.5, 2.04]],
+      bot: [[0, -0.2], [0.02, -0.34], [0.06, -0.44], [0.16, -0.56], [0.4, -0.68], [0.9, -0.94], [1.6, -1.28], [2.6, -1.66], [3.8, -1.92], [5.0, -2.04]],
+      windshield: [[2.12, 87], [3.12, 88], [3.34, 42], [2.4, 43]],
+      sliding: [[3.42, 1.1], [3.98, 1.04], [3.98, 0.48], [3.48, 0.52]],
+      fixed: [[4.04, 1.02], [4.4, 0.96], [4.4, 0.52], [4.08, 0.49]],
+    },
     tailLen: 11.6,
     wing: {
       apexD: 12.9, rootY: -1.28, dihedral: 5.1, leSweep: 27.5, teSweepIn: 3, kinkR: 6.3, tipR: 17.05,
@@ -72,7 +87,7 @@ export const profiles: Record<"a320" | "b738", Profile> = {
     gear: { noseD: 5.07, mainD: 17.71, track: 7.59, mainTire: 1.27, noseTire: 0.76, centerHeight: 3.95 },
     windows: { first: 7.4, last: 27.6, pitch: 0.533, skip: [[15.0, 16.85]] },
     doors: [
-      { d: 4.45, w: 0.81, h: 1.85, y0: -0.48, side: "both", kind: "pax" },
+      { d: 4.95, w: 0.81, h: 1.85, y0: -0.48, side: "both", kind: "pax" },
       { d: 31.0, w: 0.81, h: 1.85, y0: -0.48, side: "both", kind: "pax" },
       { d: 15.35, w: 0.51, h: 1.02, y0: -0.05, side: "both", kind: "exit" },
       { d: 16.45, w: 0.51, h: 1.02, y0: -0.05, side: "both", kind: "exit" },
@@ -91,7 +106,14 @@ export const profiles: Record<"a320" | "b738", Profile> = {
     height: 12.55,
     fusW: 3.76,
     fusH: 4.01,
-    nose: { len: 7.4, droop: 0.22, nTop: 1.45, nBot: 2.1, nW: 1.72 },
+    nose: {
+      len: 7.0, radome: 1.75, wLen: 5.0, wExp: 2.0,
+      top: [[0, -0.3], [0.02, -0.18], [0.06, -0.08], [0.15, 0.04], [0.35, 0.14], [0.8, 0.25], [1.5, 0.4], [2.2, 0.62], [2.8, 1.12], [3.5, 1.64], [4.4, 1.91], [5.6, 1.99]],
+      bot: [[0, -0.3], [0.02, -0.42], [0.06, -0.52], [0.15, -0.64], [0.35, -0.76], [0.8, -1.02], [1.5, -1.36], [2.5, -1.68], [3.6, -1.88], [5.0, -1.975]],
+      windshield: [[2.3, 87], [3.3, 88], [3.52, 42], [2.58, 43]],
+      sliding: [[3.6, 1.08], [4.1, 1.02], [4.1, 0.46], [3.66, 0.5]],
+      fixed: [[4.16, 1.0], [4.5, 0.94], [4.5, 0.5], [4.2, 0.47]],
+    },
     tailLen: 12.4,
     wing: {
       apexD: 15.2, rootY: -1.12, dihedral: 6, leSweep: 27, teSweepIn: 2, kinkR: 6.0, tipR: 17.16,
@@ -107,7 +129,7 @@ export const profiles: Record<"a320" | "b738", Profile> = {
     gear: { noseD: 4.83, mainD: 20.4, track: 5.72, mainTire: 1.12, noseTire: 0.69, centerHeight: 3.05 },
     windows: { first: 7.9, last: 31.6, pitch: 0.508, skip: [[16.7, 18.55]] },
     doors: [
-      { d: 4.75, w: 0.86, h: 1.83, y0: -0.45, side: "both", kind: "pax" },
+      { d: 5.1, w: 0.86, h: 1.83, y0: -0.45, side: "both", kind: "pax" },
       { d: 33.5, w: 0.76, h: 1.83, y0: -0.45, side: "both", kind: "pax" },
       { d: 17.15, w: 0.51, h: 0.97, y0: -0.05, side: "both", kind: "exit" },
       { d: 18.1, w: 0.51, h: 0.97, y0: -0.05, side: "both", kind: "exit" },
@@ -270,13 +292,43 @@ export function buildAircraft(type: string) {
   // Top and bottom contours plus half-width, as functions of distance from the nose.
   const N = P.nose;
   const tailStart = L - P.tailLen;
-  const contour = (d: number) => {
-    if (d <= N.len) {
-      const u = Math.max(d / N.len, 0.0005);
-      const f = (n: number) => (1 - (1 - u) ** n) ** (1 / n);
-      const tip = -N.droop * H;
-      return { top: lerp(tip, H, f(N.nTop)), bot: lerp(tip, -H, f(N.nBot)), w: W * f(N.nW) };
+  // Monotone cubic through control points, so the silhouette cannot overshoot between them.
+  const pchip = (pts: [number, number][]) => {
+    const n = pts.length;
+    const h: number[] = [];
+    const dl: number[] = [];
+    for (let i = 0; i < n - 1; i++) {
+      h.push(pts[i + 1][0] - pts[i][0]);
+      dl.push((pts[i + 1][1] - pts[i][1]) / h[i]);
     }
+    const m: number[] = new Array(n).fill(0);
+    m[0] = dl[0];
+    m[n - 1] = dl[n - 2];
+    for (let i = 1; i < n - 1; i++) {
+      if (dl[i - 1] * dl[i] <= 0) continue;
+      const w1 = 2 * h[i] + h[i - 1];
+      const w2 = h[i] + 2 * h[i - 1];
+      m[i] = (w1 + w2) / (w1 / dl[i - 1] + w2 / dl[i]);
+    }
+    return (x: number) => {
+      if (x <= pts[0][0]) return pts[0][1];
+      if (x >= pts[n - 1][0]) return pts[n - 1][1];
+      let i = 0;
+      while (x > pts[i + 1][0]) i++;
+      const t = (x - pts[i][0]) / h[i];
+      const t2 = t * t;
+      const t3 = t2 * t;
+      return (2 * t3 - 3 * t2 + 1) * pts[i][1] + (t3 - 2 * t2 + t) * h[i] * m[i] + (-2 * t3 + 3 * t2) * pts[i + 1][1] + (t3 - t2) * h[i] * m[i + 1];
+    };
+  };
+  const noseTop = pchip([...N.top, [N.len, H]]);
+  const noseBot = pchip([...N.bot, [N.len, -H]]);
+  const noseW = (d: number) => {
+    const u = Math.min(Math.max(d / N.wLen, 0), 1);
+    return W * (1 - (1 - u) ** N.wExp) ** (1 / N.wExp);
+  };
+  const contour = (d: number) => {
+    if (d <= N.len) return { top: noseTop(d), bot: noseBot(d), w: noseW(d) };
     if (d < tailStart) return { top: H, bot: -H, w: W };
     const u = Math.min((d - tailStart) / P.tailLen, 1);
     return { top: H * (1 - 0.2 * u * u), bot: -H + 1.43 * H * u ** 1.32, w: W * (1 - 0.86 * u ** 1.22) };
@@ -302,7 +354,7 @@ export function buildAircraft(type: string) {
     return right ? th : Math.PI - th;
   };
   const ds: number[] = [];
-  for (let i = 0; i <= 40; i++) ds.push(N.len * (1 - Math.cos((Math.PI / 2) * (i / 40))) ** 1.0 * 1);
+  for (let i = 0; i <= 64; i++) ds.push(N.len * (1 - Math.cos((Math.PI / 2) * (i / 64))));
   for (let d = N.len + 0.5; d < tailStart; d += 0.5) ds.push(d);
   for (let i = 0; i <= 36; i++) ds.push(tailStart + P.tailLen * (i / 36));
   const seg = 72;
@@ -312,15 +364,16 @@ export function buildAircraft(type: string) {
     `Semi-monocoque pressure fuselage, ${P.fusW} m wide and ${P.fusH} m high, with the type's nose and upswept tail cone.`);
   add(loft(fusRings, true, true, true), paint, fuselage, { shell: true });
 
-  // Radome (weather radar) - the first metres of the nose, slightly greyer.
+  // Radome (weather radar): the first part of the nose, a shade greyer, with the joint to the metal skin drawn.
   const radome = part("radome", "Radome and weather radar", "Systems", "Composite nose radome over the weather-radar antenna (ATA 34).", "avionics");
-  // A thin shell offset along the surface over the first metre of the nose, a shade greyer than the paint.
-  const radomeRings = ds.filter((d) => d > 0.004 && d <= 1.15).map((d) => Array.from({ length: seg }, (_, j) => ringPoint(d, (2 * Math.PI * j) / seg, 0.006)));
-  if (radomeRings.length > 2) add(loft(radomeRings, true, true, false), new T.MeshPhysicalMaterial({ color: 0xebebe9, roughness: 0.42, clearcoat: 0.35 }), radome);
+  const radomeRings = ds.filter((d) => d > 0.004 && d <= N.radome).map((d) => Array.from({ length: seg }, (_, j) => ringPoint(d, (2 * Math.PI * j) / seg, 0.006)));
+  radomeRings.push(Array.from({ length: seg }, (_, j) => ringPoint(N.radome, (2 * Math.PI * j) / seg, 0.006)));
+  if (radomeRings.length > 2) add(loft(radomeRings, true, true, false), new T.MeshPhysicalMaterial({ color: 0xe6e8e8, roughness: 0.4, clearcoat: 0.4 }), radome);
+  polyline(Array.from({ length: seg }, (_, j) => ringPoint(N.radome, (2 * Math.PI * j) / seg, 0.012)));
 
-  // Cockpit glazing: windows follow the nose surface (patches in distance/angle space).
+  // Flight-deck glazing: each pane is a patch in (distance, section angle) space, so it follows the nose surface.
   const cockpit = part("cockpit", "Flight deck windows", "Airframe", "Windshield and side windows of the flight deck, following the nose surface.");
-  const patch = (corners: [number, number][], off = 0.012, right = true, nu = 8, nv = 6) => {
+  const patchDT = (corners: [number, number][], off: number, right: boolean, nu = 10, nv = 8) => {
     const rings: T.Vector3[][] = [];
     for (let i = 0; i <= nu; i++) {
       const u = i / nu;
@@ -330,34 +383,27 @@ export function buildAircraft(type: string) {
       for (let j = 0; j <= nv; j++) {
         const v = j / nv;
         const d = lerp(top[0], bot[0], v);
-        const y = lerp(top[1], bot[1], v);
-        ring.push(ringPoint(d, thetaAt(d, y, right), off));
+        const a = deg(Math.min(lerp(top[1], bot[1], v), 89.6));
+        ring.push(ringPoint(d, right ? a : Math.PI - a, off));
       }
       rings.push(ring);
     }
     return loft(rings, false);
   };
-  const nl = N.len;
-  // [front-top, aft-top, aft-bottom, front-bottom] as (fraction of nose length, height fraction of the local section)
-  const windowsCockpit: [number, number][][] = P.key === "a320"
-    ? [
-        [[0.31, 0.86], [0.42, 0.88], [0.42, 0.34], [0.27, 0.26]],
-        [[0.44, 0.78], [0.54, 0.8], [0.54, 0.36], [0.44, 0.34]],
-        [[0.56, 0.8], [0.63, 0.8], [0.63, 0.4], [0.56, 0.37]],
-      ]
-    : [
-        [[0.34, 0.84], [0.43, 0.86], [0.43, 0.3], [0.3, 0.22]],
-        [[0.45, 0.72], [0.54, 0.76], [0.54, 0.33], [0.45, 0.31]],
-        [[0.56, 0.76], [0.62, 0.77], [0.62, 0.36], [0.56, 0.34]],
-      ];
-  const toDY = (w: [number, number][]) =>
-    w.map(([fd, fy]) => {
-      const d = fd * nl;
-      const c = contour(d);
-      return [d, (c.top + c.bot) / 2 + fy * ((c.top - c.bot) / 2)] as [number, number];
-    });
-  const cockpitGlass = new T.MeshPhysicalMaterial({ color: 0x1b2229, roughness: 0.06, metalness: 0.25, clearcoat: 1, side: T.DoubleSide });
-  for (const right of [true, false]) for (const w of windowsCockpit) add(patch(toDY(w), 0.016, right), cockpitGlass, cockpit);
+  const grow = (c: [number, number][], dd: number, da: number): [number, number][] => {
+    const cd = c.reduce((s, p) => s + p[0], 0) / c.length;
+    const ca = c.reduce((s, p) => s + p[1], 0) / c.length;
+    return c.map(([d, a]) => [d + Math.sign(d - cd) * dd, a + Math.sign(a - ca) * da]);
+  };
+  const frame = new T.MeshStandardMaterial({ color: 0x5c6268, roughness: 0.5, metalness: 0.4, side: T.DoubleSide });
+  const cockpitGlass = new T.MeshPhysicalMaterial({ color: 0x16212c, roughness: 0.04, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.4, side: T.DoubleSide });
+  const toAngles = (quad: [number, number][]): [number, number][] => quad.map(([d, y]) => [d, (thetaAt(d, y, true) * 180) / Math.PI]);
+  for (const right of [true, false]) {
+    for (const quad of [N.windshield, toAngles(N.sliding), toAngles(N.fixed)]) {
+      add(patchDT(grow(quad, 0.035, 1.6), 0.011, right, 8, 6), frame, cockpit);
+      add(patchDT(quad, 0.017, right), cockpitGlass, cockpit);
+    }
+  }
 
   // Cabin windows: rounded, sitting on the shell on both sides.
   const cabinWindow = new T.ShapeGeometry(

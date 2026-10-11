@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { usePoll } from "../api/client";
-import type { Leg, Plan, TwinComponent, TwinView, WorkOrder } from "../api/types";
+import type { Leg, TwinComponent, TwinView } from "../api/types";
 import { Card, ErrorBox, Loading, StatusPill } from "../components/ui";
 import EngineSection, { deviation, deviationClass, unitLabel, type GenericSpec, type SensorCatalog } from "../components/EngineSection";
 import { profileFor, type Profile } from "../components/aircraftModels";
@@ -31,9 +31,14 @@ const short = (c: TwinComponent) => c.component_id.split("/").pop() ?? c.compone
 const nameOf = (c: TwinComponent) => NAMES[short(c)] ?? short(c);
 const n1 = (v: number) => Number(v.toFixed(1)).toLocaleString();
 const pct = (v: number) => `${Math.round(v * 100)}`;
+/** The models cap remaining life (engines at 125 flights, the rule-based systems at 500): show a capped value as "at least". */
+const rulText = (v: number, kind: string) => {
+  const cap = kind === "engine" ? 125 : 500;
+  return v >= cap - 0.05 ? `${cap}+` : n1(v);
+};
 
 /** Remaining useful life as a band on a real scale: p10 to p90 shaded, p50 marked. */
-function RulBand({ p10, p50, p90 }: { p10: number; p50: number; p90: number }) {
+function RulBand({ p10, p50, p90, kind }: { p10: number; p50: number; p90: number; kind: string }) {
   const max = Math.max(60, Math.ceil((p90 * 1.15) / 10) * 10);
   const x = (v: number) => `${(Math.min(v, max) / max) * 100}%`;
   return (
@@ -52,17 +57,17 @@ function RulBand({ p10, p50, p90 }: { p10: number; p50: number; p90: number }) {
         <div>
           <dt>Conservative (p10)</dt>
           <dd>
-            {n1(p10)}
+            {rulText(p10, kind)}
             <small>flights</small>
           </dd>
         </div>
         <div>
           <dt>Median (p50)</dt>
-          <dd>{n1(p50)}</dd>
+          <dd>{rulText(p50, kind)}</dd>
         </div>
         <div>
           <dt>Upper (p90)</dt>
-          <dd>{n1(p90)}</dd>
+          <dd>{rulText(p90, kind)}</dd>
         </div>
       </dl>
     </div>
@@ -148,15 +153,15 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
         )}
         <dl className="mt-4 grid grid-cols-3 gap-3 text-xs">
           <div>
-            <dt className="muted">Cycles</dt>
+            <dt className="muted">Flights since restored</dt>
             <dd className="mono">{component.cycles.toLocaleString()}</dd>
           </div>
           <div>
-            <dt className="muted">Hours</dt>
-            <dd className="mono">{n1(component.hours)}</dd>
+            <dt className="muted">Hours since restored</dt>
+            <dd className="mono">{Math.round(component.hours).toLocaleString()}</dd>
           </div>
           <div>
-            <dt className="muted">Last maintenance</dt>
+            <dt className="muted">Last service</dt>
             <dd className="mono">{component.last_maintenance ? fmtZ(component.last_maintenance) : "none recorded"}</dd>
           </div>
         </dl>
@@ -165,7 +170,7 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
       <Card title="Remaining useful life">
         {rul ? (
           <>
-            <RulBand p10={rul.p10} p50={rul.p50} p90={rul.p90} />
+            <RulBand p10={rul.p10} p50={rul.p50} p90={rul.p90} kind={component.kind} />
             <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
               Flights remaining. The scheduler treats p10 as a hard deadline; the band is model uncertainty, not an approved limit.
             </p>
@@ -298,15 +303,15 @@ function SystemsTable({ components, selected, onSelect }: { components: TwinComp
   return (
     <Card title="Monitored systems">
       <div style={{ overflowX: "auto" }}>
-        <table className="data-table">
+        <table className="data-table compact">
           <thead>
             <tr>
               <th>System</th>
               <th>Status</th>
               <th>Health</th>
               <th>Anomaly</th>
-              <th style={{ textAlign: "right" }}>RUL p10 / p50 / p90</th>
-              <th style={{ textAlign: "right" }}>Cycles</th>
+              <th style={{ textAlign: "right" }}>RUL p10/p50/p90</th>
+              <th style={{ textAlign: "right" }} title="Flights since the system was last restored (overhaul, replacement or shop visit)">Since restored</th>
               <th style={{ textAlign: "right" }}>Hours</th>
               <th>Last service</th>
               <th>Data</th>
@@ -329,13 +334,13 @@ function SystemsTable({ components, selected, onSelect }: { components: TwinComp
                 </td>
                 <td className="mono">{c.anomaly_score.toFixed(2)}</td>
                 <td className="mono" style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                  {c.rul_cycles ? `${n1(c.rul_cycles.p10)} / ${n1(c.rul_cycles.p50)} / ${n1(c.rul_cycles.p90)}` : "-"}
+                  {c.rul_cycles ? `${rulText(c.rul_cycles.p10, c.kind)} / ${rulText(c.rul_cycles.p50, c.kind)} / ${rulText(c.rul_cycles.p90, c.kind)}` : "-"}
                 </td>
                 <td className="mono" style={{ textAlign: "right" }}>
                   {c.cycles.toLocaleString()}
                 </td>
                 <td className="mono" style={{ textAlign: "right" }}>
-                  {n1(c.hours)}
+                  {Math.round(c.hours).toLocaleString()}
                 </td>
                 <td className="mono muted" style={{ whiteSpace: "nowrap" }}>{c.last_maintenance ? fmtZ(c.last_maintenance) : "none"}</td>
                 <td className="muted">{c.data_quality.status === "degraded" ? "partial" : c.data_quality.status}</td>
@@ -345,7 +350,7 @@ function SystemsTable({ components, selected, onSelect }: { components: TwinComp
         </table>
       </div>
       <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
-        RUL is in flights. Select a row to show that system on the model and in the panels.
+        RUL is in flights; a capped value (125+ for engines, 500+ for the other systems) means at least that many. Select a row to show that system on the model and in the panels.
       </p>
     </Card>
   );
@@ -384,85 +389,66 @@ function Specs({ profile, type }: { profile: Profile | null; type: string }) {
   );
 }
 
-/** What is planned for this aircraft: assigned maintenance, the work orders raised for it, and its next flights. */
-function Operations({ tail, now }: { tail: string; now?: string }) {
-  const plan = usePoll<{ current: Plan; baseline: Plan }>("/plan", 5000).data;
-  const orders = usePoll<WorkOrder[]>("/workorders", 5000).data;
-  const legs = usePoll<Leg[]>(`/legs?tail=${encodeURIComponent(tail)}`, 15000).data;
-  const mine = (plan?.current.assignments ?? []).filter((a) => a.tail === tail);
-  const wos = (orders ?? []).filter((w) => w.tail === tail);
-  const t0 = now ? Date.parse(now) : 0;
-  const next = (legs ?? []).filter((l) => Date.parse(l.sched_arr) > t0).sort((a, b) => Date.parse(a.sched_dep) - Date.parse(b.sched_dep)).slice(0, 6);
+/** What needs attention on the aircraft itself. Planning the fix lives in the Maintenance section. */
+function Alerts({ data, tail }: { data: TwinView; tail: string }) {
+  const open = data.components.filter((c) => c.status === "alert" || c.status === "watch");
+  const notes = data.components.filter((c) => c.status === "ok" && c.data_quality.status === "bad");
+  const latest = (id: string) =>
+    [...data.timeline].filter((e) => e.kind === "anomaly" && e.ref === id).sort((x, y) => Date.parse(y.ts) - Date.parse(x.ts))[0];
   return (
-    <Card title="Maintenance and operations">
-      <h3 className="sub">Planned maintenance</h3>
-      {mine.length === 0 ? (
-        <p className="muted" style={{ fontSize: 13, margin: "4px 0 12px" }}>
-          No task is scheduled for this aircraft.
+    <Card title="Alerts">
+      {open.length === 0 && notes.length === 0 ? (
+        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+          No system is on watch or in alert. Anomaly scores and remaining life are inside their normal range.
         </p>
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Task</th>
-              <th>Station</th>
-              <th>Window (UTC)</th>
-              <th>Technician</th>
-              <th>Part</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mine.map((a) => (
-              <tr key={a.task_id}>
-                <td className="mono">{a.task_id.replace(/^T-/, "")}</td>
-                <td className="mono">{a.station}</td>
-                <td className="mono">
-                  {fmtZ(a.start)} to {fmtZ(a.end)}
-                </td>
-                <td className="mono">{a.technician_id ?? "-"}</td>
-                <td className="muted">{a.part_source ? `from ${a.part_source}` : "on hand"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {mine[0] && (
-        <p className="muted" style={{ fontSize: 12.5, margin: "8px 0 12px", lineHeight: 1.5 }}>
-          {mine[0].reason}
-        </p>
-      )}
-      <h3 className="sub">Work orders</h3>
-      {wos.length === 0 ? (
-        <p className="muted" style={{ fontSize: 13, margin: "4px 0 12px" }}>
-          None yet. Run the agents from the Copilot to draft them.
-        </p>
-      ) : (
-        <ul className="plain-list">
-          {wos.map((w) => {
-            const now = mine.find((a) => a.task_id === w.task_id);
-            const moved = w.status === "approved" && now && (now.station !== w.station || Math.abs(Date.parse(now.start) - Date.parse(w.start)) > 60_000);
+        <ul className="suggest">
+          {open.map((c) => {
+            const ev = latest(c.component_id);
             return (
-              <li key={w.id} style={{ flexWrap: "wrap" }}>
-                <span className="mono">{w.id}</span>
-                <span className="muted">
-                  {w.station} · {fmtZ(w.start)}
-                </span>
-                <span className={`status s-${w.status === "approved" ? "ok" : w.status === "rejected" ? "alert" : "watch"}`}>
-                  {w.status === "pending_approval" ? "Waiting for approval" : w.status === "approved" ? `Approved by ${w.decided_by ?? "a person"}` : `Rejected by ${w.decided_by ?? "a person"}`}
-                </span>
-                {moved && now && (
-                  <span className="reasons" style={{ flexBasis: "100%", margin: "4px 0 0" }}>
-                    The plan now schedules this task at {now.station} on {fmtZ(now.start)}, not the approved slot. Review it before work starts.
-                  </span>
+              <li key={c.component_id}>
+                <div className="comp-head">
+                  <strong>{nameOf(c)}</strong>
+                  <StatusPill status={c.status} />
+                </div>
+                <div className="muted" style={{ fontSize: 13, marginTop: 3, lineHeight: 1.5 }}>
+                  Anomaly score {c.anomaly_score.toFixed(2)} · health {pct(c.health)}%
+                  {c.rul_cycles ? ` · conservative life ${rulText(c.rul_cycles.p10, c.kind)} flights` : ""}
+                </div>
+                {ev && (
+                  <div style={{ fontSize: 13, marginTop: 4, lineHeight: 1.5 }}>
+                    {ev.summary} <span className="muted mono">({fmtZ(ev.ts)})</span>
+                  </div>
                 )}
               </li>
             );
           })}
+          {notes.map((c) => (
+            <li key={c.component_id}>
+              <div className="comp-head">
+                <strong>{nameOf(c)}</strong>
+                <span className="status s-watch">Data quality</span>
+              </div>
+              <div className="muted" style={{ fontSize: 13, marginTop: 3 }}>{c.data_quality.reasons.join("; ") || "Telemetry cannot be scored."}</div>
+            </li>
+          ))}
         </ul>
       )}
-      <h3 className="sub">Next flights</h3>
+      <p style={{ fontSize: 13, margin: "12px 0 0" }}>
+        <Link to={`/maintenance/${tail}`}>Open maintenance for {tail} →</Link>
+      </p>
+    </Card>
+  );
+}
+
+function NextFlights({ tail, now }: { tail: string; now?: string }) {
+  const legs = usePoll<Leg[]>(`/legs?tail=${encodeURIComponent(tail)}`, 15000).data;
+  const t0 = now ? Date.parse(now) : 0;
+  const next = (legs ?? []).filter((l) => Date.parse(l.sched_arr) > t0).sort((a, b) => Date.parse(a.sched_dep) - Date.parse(b.sched_dep)).slice(0, 6);
+  return (
+    <Card title="Next flights">
       {next.length === 0 ? (
-        <p className="muted" style={{ fontSize: 13, margin: "4px 0 0" }}>
+        <p className="muted" style={{ fontSize: 13, margin: 0 }}>
           No further scheduled flights in the loaded horizon.
         </p>
       ) : (
@@ -529,10 +515,18 @@ export default function Aircraft() {
         <h1>{a.tail}</h1>
         <span style={{ fontSize: 15 }}>{profile?.label ?? a.type}</span>
         <StatusPill status={a.status} />
+        <div className="seg" role="tablist" aria-label="Section" style={{ marginLeft: "auto" }}>
+          <span role="tab" aria-selected={true} className="on">
+            Aircraft
+          </span>
+          <Link to={`/maintenance/${a.tail}`} role="tab" aria-selected={false}>
+            Maintenance
+          </Link>
+        </div>
       </div>
       <p className="twin-meta">
         Home {a.home} · {a.location === "AIR" ? "in flight" : `on the ground at ${a.location}`} · {a.cycles.toLocaleString()} flights ·{" "}
-        {n1(a.hours)} flight hours
+        {Math.round(a.hours).toLocaleString()} flight hours
       </p>
       <ErrorBox error={error} />
       <div className="twin-grid">
@@ -630,6 +624,7 @@ export default function Aircraft() {
           </Card>
         </div>
         <div className="space-y-4">
+          <Alerts data={data} tail={tail} />
           {component ? (
             <ComponentPanel key={component.component_id} component={component} tail={tail} sensor={sensor} catalog={catalog} />
           ) : (
@@ -637,8 +632,8 @@ export default function Aircraft() {
               <p className="muted">This aircraft has no registered components.</p>
             </Card>
           )}
-          <Operations tail={tail} now={health.data?.sim_now} />
           <Specs profile={profile} type={a.type} />
+          <NextFlights tail={tail} now={health.data?.sim_now} />
         </div>
       </div>
     </div>
