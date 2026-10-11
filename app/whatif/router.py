@@ -45,6 +45,11 @@ def post_plan_replan(req: ReplanRequest):
         result = replan(state, prior, req.event, req.weights, already_applied=req.already_applied)
         STORE.save(result.after)
         STORE.last_replan_seconds = result.solve_seconds
+        if not req.already_applied:
+            STORE.world_events.append(req.event)    # the snapshot is not written back, so remember the disruption
+        # recompute the baseline in the SAME changed world so "baseline vs optimized" stays an honest comparison
+        changed, _ = service.get_state()
+        service.solve_and_save(changed, source, "static_baseline")
     return result
 
 

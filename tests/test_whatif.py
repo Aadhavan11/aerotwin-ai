@@ -9,16 +9,39 @@ from fastapi.testclient import TestClient
 
 from app.contracts.models import Scenario, ScenarioEvent
 from app.solver import derive_tasks, solve
-from app.solver.golden import GOLDEN_COMPONENT, GOLDEN_TAIL, golden_part_delay
+from app.solver.store import STORE
+from app.solver.golden import GOLDEN_COMPONENT, GOLDEN_TAIL, golden_part_delay, golden_state
 from app.solver.router import router as solver_router
 from app.whatif import compare as cmp
 from app.whatif.events import EventError, apply_event, apply_event_to_state
 from app.whatif.replan import replan
 from app.whatif.router import router as whatif_router
 from app.whatif.simulate import affected_legs, simulate, simulate_detailed
-from helpers import T0, engine_task, hard_violations, hrs, mini_state, simple_station
+from solver_helpers import T0, assert_no_fallback, engine_task, hard_violations, hrs, mini_state, simple_station
 
 SIM17_TASK = "T-SIM-017-engine_2-001"
+
+
+# ---- fixtures (defined per module so they can never clash with fixtures other people add under tests/) ----
+@pytest.fixture(autouse=True)
+def fresh_store(monkeypatch):
+    """Empty plan store for every test; tests never use mock flags (they exercise the real CP-SAT solver)."""
+    monkeypatch.delenv("MOCK", raising=False)
+    monkeypatch.delenv("MOCK_SOLVER", raising=False)
+    STORE.reset()
+    yield
+    STORE.reset()
+
+
+@pytest.fixture(scope="session")
+def golden():
+    """The golden FleetState (stand-in). Read-only: tests that change it use apply_event_to_state or model_copy(deep=True)."""
+    return golden_state()
+
+
+@pytest.fixture(scope="session")
+def golden_tasks(golden):
+    return derive_tasks(golden)
 
 
 def ev(**kw) -> ScenarioEvent:
@@ -93,7 +116,8 @@ def test_12h_dfw_kit_delay_changes_the_plan_and_the_diff_lists_the_moved_task(go
     print(f"\nreplan after 12 h DFW kit delay: {r.solve_seconds:.3f} s "
           f"(target < 5 s); moved={[m['task_id'] for m in r.diff.moved]} added={r.diff.added} dropped={r.diff.dropped}")
     assert r.solve_seconds < 5.0
-    assert r.after.feasible and r.after.mode == "cpsat"
+    assert r.after.feasible
+    assert_no_fallback(r.after, "cpsat")
     assert [m["task_id"] for m in r.diff.moved] == [SIM17_TASK]
     m = r.diff.moved[0]
     assert m["from"]["station"] == "DFW" and m["to"]["start"] > m["from"]["start"]
@@ -127,6 +151,7 @@ def test_a_delay_that_does_not_matter_changes_nothing(golden, prior):
 @pytest.mark.parametrize("station", ["ATL", "DFW", "ORD", "DEN", "LAX", "JFK", "MIA", "SEA"])
 def test_a_closed_facility_is_never_used(golden, prior, station):
     r = replan(golden, prior, ev(type="facility_closed", station=station))
+    assert_no_fallback(r.after, "cpsat")
     assert [a for a in r.after.assignments if a.station == station] == []
     st2 = apply_event_to_state(golden, ev(type="facility_closed", station=station))
     assert hard_violations(st2, derive_tasks(st2), r.after) == []
@@ -346,3 +371,67 @@ def test_metrics_plan_block_has_baseline_optimized_and_replan_seconds(client):
     m = client.get("/metrics/plan").json()
     assert set(m) == {"baseline", "optimized", "replan_seconds"} and m["replan_seconds"] is None
     assert m["optimized"]["tasks_total"] == 5
+
+
+# ------------------------------------------------------------------ fixtures for the UI team and the demo script
+def test_plan_fixtures_match_the_contract_models():
+    from pathlib import Path
+
+    from app.contracts.models import Plan, ReplanResult
+    root = Path(__file__).resolve().parent.parent / "fixtures"
+    for name, model in (("plan_current.json", Plan), ("plan_baseline.json", Plan), ("replan_result.json", ReplanResult)):
+        obj = model.model_validate_json((root / name).read_text())
+        plan = obj if isinstance(obj, Plan) else obj.after
+        assert plan.synthetic is True and plan.assignments and all(a.reason for a in plan.assignments)
+    cur = Plan.model_validate_json((root / "plan_current.json").read_text())
+    assert cur.mode == "cpsat" and cur.feasible
+
+
+def test_demo_script_runs_and_prints_the_baseline_vs_optimized_table(capsys, monkeypatch):
+    import runpy
+    import sys
+    from pathlib import Path
+    monkeypatch.setattr(sys, "argv", ["plan_demo.py"])
+    runpy.run_path(str(Path(__file__).resolve().parent.parent / "scripts" / "plan_demo.py"), run_name="__main__")
+    out = capsys.readouterr().out
+    for needle in ("BASELINE DEFINITION", "static baseline", "CP-SAT optimized", "replan time:", "MOVED", "SimPy", "SIMULATED"):
+        assert needle in out
+
+
+# ------------------------------------------------------------------ the changed world after a disruption (HTTP)
+def test_baseline_is_recomputed_in_the_changed_world_after_a_replan(client):
+    before = client.get("/plan").json()
+    assert before["baseline"]["feasible"] is True
+    r = client.post("/plan/replan", json={"event": {"type": "facility_closed", "at": "2026-10-12T14:00:00Z", "station": "ATL"}})
+    assert r.status_code == 200
+    after = client.get("/plan").json()
+    # SIM-017's home base ATL is now closed: the home-base-only baseline can no longer plan it, and says so
+    assert after["baseline"]["id"] != before["baseline"]["id"] and after["baseline"]["feasible"] is False
+    assert "ATL" in " ".join(after["baseline"]["infeasible_reasons"])
+    assert after["current"]["id"] == r.json()["after"]["id"]
+    assert [x["feasible"] for x in after["compare"]["rows"]][0] is False       # baseline row matches
+
+
+def test_later_solves_and_scenarios_see_the_disruption(client):
+    client.get("/plan")
+    client.post("/plan/replan", json={"event": {"type": "facility_closed", "at": "2026-10-12T14:00:00Z", "station": "DFW"}})
+    plan = client.post("/plan/solve", json={"mode": "cpsat"}).json()
+    assert plan["assignments"] and all(a["station"] != "DFW" for a in plan["assignments"])
+    rows = client.post("/whatif/compare", json={"scenarios": [{"name": "same world"}]}).json()["rows"]
+    assert rows[0]["metrics"]["schedule_changes"] == 0 and rows[0]["feasible"]
+
+
+def test_polling_get_plan_is_stable_and_does_not_churn_plan_ids(client):
+    a, b = client.get("/plan").json(), client.get("/plan").json()
+    assert a["current"]["id"] == b["current"]["id"] and a["baseline"]["id"] == b["baseline"]["id"]
+    assert [x["plan_id"] for x in a["compare"]["rows"]] == [x["plan_id"] for x in b["compare"]["rows"]]
+
+
+def test_already_applied_replan_does_not_store_the_event_but_still_refreshes_the_baseline(client):
+    first = client.get("/plan").json()
+    r = client.post("/plan/replan", json={"already_applied": True, "event": {"type": "part_delay", "at": "2026-10-12T14:00:00Z",
+                                                                             "station": "DFW", "part": "BORESCOPE-KIT", "delay_hours": 12}})
+    assert r.status_code == 200
+    from app.solver.store import STORE as store
+    assert store.world_events == []                                                # the platform owns that event
+    assert client.get("/plan").json()["baseline"]["id"] != first["baseline"]["id"]

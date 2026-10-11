@@ -21,8 +21,7 @@ SOLVE_LOCK = threading.RLock()     # one solve at a time: plan ids and the curre
 STAND_IN_NOTE = "state source: golden stand-in (app.twin.state.snapshot is not available)"
 
 
-def get_state() -> tuple[FleetState, str]:
-    """(snapshot, source label)."""
+def _snapshot() -> tuple[FleetState, str]:
     from app.solver.golden import golden_state
     if os.getenv("MOCK") == "1" or os.getenv("MOCK_SOLVER") == "1":
         return golden_state(), "golden stand-in (MOCK)"
@@ -32,6 +31,18 @@ def get_state() -> tuple[FleetState, str]:
         log.warning("app.twin.state.snapshot not available: using the golden stand-in state")
         return golden_state(), "golden stand-in (twin snapshot not available)"
     return snapshot(), "twin.snapshot"
+
+
+def get_state() -> tuple[FleetState, str]:
+    """(snapshot with the disruptions applied through POST /plan/replan, source label)."""
+    from app.whatif.events import EventError, apply_event
+    state, source = _snapshot()
+    for ev in STORE.world_events:
+        try:
+            state, _ = apply_event(state, ev)
+        except EventError as exc:   # the snapshot changed under us (e.g. a reset); skip the stale event
+            log.warning("dropping stored event %s: %s", ev.id or ev.type, exc)
+    return state, source
 
 
 def _tag(plan: Plan, source: str) -> Plan:

@@ -1,7 +1,9 @@
 """In-memory plan store: the current (optimized) plan, the static baseline, and plan ids.
 
 The scheduler functions (solve, replan) are PURE: they never write here. The routers do, and Shamit's tool wrappers can call
-``STORE.save(plan)`` so ``GET /plan`` shows what the agents produced. ``STORE.add_listener(fn)`` lets his db/audit layer
+``STORE.save(plan)`` so ``GET /plan`` shows what the agents produced. ``world_events`` remembers the disruptions applied through
+``POST /plan/replan`` (the snapshot itself is not written back), so later plans, the baseline and the what-if scenarios are all
+computed in the same changed world. ``STORE.add_listener(fn)`` lets his db/audit layer
 persist every saved plan (``fn(plan)``) without this module importing the database.
 """
 from __future__ import annotations
@@ -9,7 +11,7 @@ from __future__ import annotations
 import threading
 from typing import Callable, Optional
 
-from app.contracts.models import Plan
+from app.contracts.models import Plan, ScenarioEvent
 
 
 class PlanStore:
@@ -20,6 +22,8 @@ class PlanStore:
         self.baseline: Optional[Plan] = None
         self.history: list[Plan] = []
         self.last_replan_seconds: Optional[float] = None
+        self.world_events: list[ScenarioEvent] = []     # disruptions applied through POST /plan/replan
+        self.greedy_cache: dict[str, Plan] = {}         # current plan id -> greedy plan on the same world, for GET /plan
         self._listeners: list[Callable[[Plan], None]] = []
 
     def next_plan_id(self) -> str:
@@ -51,6 +55,8 @@ class PlanStore:
             self.baseline = None
             self.history = []
             self.last_replan_seconds = None
+            self.world_events = []
+            self.greedy_cache = {}
 
 
 STORE = PlanStore()

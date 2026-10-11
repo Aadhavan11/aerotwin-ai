@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from app.contracts.models import Comparison, ObjectiveWeights, Plan, SolveMode
 from app.solver import service
 from app.solver.engine import solve
+from app.solver.store import STORE
 from app.solver.tasks import derive_tasks
 
 router = APIRouter(tags=["plan"])
@@ -32,7 +33,9 @@ def get_plan() -> PlanBundle:
     from app.whatif.compare import compare
     state, source = service.get_state()
     current, baseline = service.ensure_plans(state, source)
-    greedy = solve(state, derive_tasks(state), None, "greedy")
+    greedy = STORE.greedy_cache.get(current.id)
+    if greedy is None:
+        greedy = STORE.greedy_cache[current.id] = solve(state, derive_tasks(state), None, "greedy")
     return PlanBundle(current=current, baseline=baseline,
                       compare=compare(state, {"baseline": baseline, "greedy": greedy, "optimized": current}))
 

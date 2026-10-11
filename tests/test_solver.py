@@ -10,12 +10,35 @@ import pytest
 from app.contracts.models import ObjectiveWeights, RulEstimate
 from app.solver import derive_tasks, ground_windows, solve
 from app.solver.cards import load_cards
+from app.solver.store import STORE
 from app.solver.golden import GOLDEN_COMPONENT, GOLDEN_TAIL, golden_state
 from app.solver.tasks import cycle_deadline, derive_tasks_ex
 from app.solver.windows import ground_windows_checked
-from helpers import T0, engine_task, hard_violations, hrs, mini_state, simple_station
+from solver_helpers import T0, assert_no_fallback, engine_task, hard_violations, hrs, mini_state, simple_station
 
 MODES = ["static_baseline", "greedy", "cpsat"]
+
+
+# ---- fixtures (defined per module so they can never clash with fixtures other people add under tests/) ----
+@pytest.fixture(autouse=True)
+def fresh_store(monkeypatch):
+    """Empty plan store for every test; tests never use mock flags (they exercise the real CP-SAT solver)."""
+    monkeypatch.delenv("MOCK", raising=False)
+    monkeypatch.delenv("MOCK_SOLVER", raising=False)
+    STORE.reset()
+    yield
+    STORE.reset()
+
+
+@pytest.fixture(scope="session")
+def golden():
+    """The golden FleetState (stand-in). Read-only: tests that change it use apply_event_to_state or model_copy(deep=True)."""
+    return golden_state()
+
+
+@pytest.fixture(scope="session")
+def golden_tasks(golden):
+    return derive_tasks(golden)
 
 
 # ------------------------------------------------------------------ task cards
@@ -134,7 +157,7 @@ def test_derive_tasks_is_deterministic(golden):
 def test_golden_plan_is_feasible_meets_deadlines_and_breaks_no_hard_rule(golden, golden_tasks, mode):
     plan = solve(golden, golden_tasks, mode=mode)
     assert plan.feasible and plan.infeasible_reasons == []
-    assert plan.mode == mode                      # nothing silently fell back
+    assert_no_fallback(plan, mode)                # the solver itself is valid, not rescued by the engine's guard
     assert len(plan.assignments) == len(golden_tasks) == plan.metrics.tasks_total == plan.metrics.tasks_scheduled
     assert plan.metrics.late_or_unscheduled == 0
     assert hard_violations(golden, golden_tasks, plan) == []
@@ -268,6 +291,7 @@ def test_one_technician_cannot_do_two_jobs_at_once():
     tasks = [engine_task("T1", "SIM-001", 20), engine_task("T2", "SIM-002", 20)]
     for mode in MODES:
         p = solve(s, tasks, mode=mode)
+        assert_no_fallback(p, mode)
         assert p.feasible and hard_violations(s, tasks, p) == []
         a, b = sorted(p.assignments, key=lambda x: x.start)
         assert b.start >= a.end                                  # serialised on the single technician
@@ -280,6 +304,7 @@ def test_hangar_slots_cap_parallel_jobs():
     tasks = [engine_task("T1", "SIM-001", 20), engine_task("T2", "SIM-002", 20)]
     for mode in MODES:
         p = solve(s, tasks, mode=mode)
+        assert_no_fallback(p, mode)
         assert p.feasible and hard_violations(s, tasks, p) == []
         a, b = sorted(p.assignments, key=lambda x: x.start)
         assert b.start >= a.end
@@ -292,6 +317,7 @@ def test_part_stock_is_respected_and_shortfall_reported():
     tasks = [engine_task("T1", "SIM-001", 20), engine_task("T2", "SIM-002", 20)]
     for mode in MODES:
         p = solve(s, tasks, mode=mode)
+        assert_no_fallback(p, mode)
         assert len(p.assignments) == 1 and p.feasible is False
         text = " ".join(p.infeasible_reasons)
         assert "taken by other jobs" in text and "BORESCOPE-KIT at AAA used up by other jobs" in text
@@ -302,6 +328,7 @@ def test_extension_is_used_only_when_needed_and_is_capped():
     # window 3 h, job 4 h: needs a 1 h extension (allowed: cap 3 h). A 7 h job would need 4 h: refused.
     s = mini_state(windows={"SIM-001": [("AAA", 1.0, 4.0)]}, stations=[simple_station("AAA")])
     p = solve(s, [engine_task("T1", "SIM-001", 30, duration_h=4.0)], mode="cpsat")
+    assert_no_fallback(p, "cpsat")
     a = p.assignments[0]
     assert p.feasible and a.extension_h == pytest.approx(1.0)
     assert p.metrics.downtime_h == pytest.approx(1.0) and p.metrics.flights_affected == 1
@@ -322,6 +349,7 @@ def test_deadline_forces_the_early_slot_even_when_a_later_one_is_cheaper():
     stations[0].parts[0].ship_from, stations[0].parts[0].ship_hours, stations[0].parts[0].ship_cost_usd = "BBB", 2.0, 800.0
     s = mini_state(windows={"SIM-001": [("AAA", 6.0, 14.0), ("BBB", 40.0, 50.0)]}, stations=stations)
     p = solve(s, [engine_task("T1", "SIM-001", 20)], mode="cpsat")
+    assert_no_fallback(p, "cpsat")
     a = p.assignments[0]
     assert (a.station, a.part_source) == ("AAA", "BBB") and p.metrics.logistics_cost_usd == 800.0
     assert a.end <= T0 + hrs(20)
@@ -342,14 +370,102 @@ def test_technician_shift_is_respected():
 
 
 def test_stability_penalty_keeps_an_unaffected_assignment_in_place():
+    # two home windows; the prior plan used the LATER one (earliest constraint). Without a previous plan the optimizer moves
+    # the job to the earlier window (it finishes sooner); WITH the previous plan the change penalty (2.0) outweighs the
+    # small earliness gain (~1.0), so the assignment stays where it was.
     s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0), ("AAA", 20.0, 30.0)]}, stations=[simple_station("AAA")])
-    tasks = [engine_task("T1", "SIM-001", 60)]
-    prior = solve(s, tasks, mode="cpsat")
-    again = solve(s, tasks, mode="cpsat", previous=prior)
-    assert [(a.station, a.start) for a in again.assignments] == [(a.station, a.start) for a in prior.assignments]
-    assert again.metrics.schedule_changes == 0
+    task = engine_task("T1", "SIM-001", 60)
+    forced_late = task.model_copy(update={"earliest": T0 + hrs(18)})
+    prior = solve(s, [forced_late], mode="cpsat")
+    assert prior.assignments[0].start >= T0 + hrs(20)
+    free = solve(s, [task], mode="cpsat")
+    assert free.assignments[0].start < T0 + hrs(10)                               # no memory of the prior plan: moves earlier
+    stable = solve(s, [task], mode="cpsat", previous=prior)
+    assert_no_fallback(stable, "cpsat")
+    assert [(a.station, a.start) for a in stable.assignments] == [(a.station, a.start) for a in prior.assignments]
+    assert stable.metrics.schedule_changes == 0
 
 
+def test_one_aircraft_cannot_be_in_two_jobs_at_once():
+    st = simple_station("AAA", slots=2, skills=("engine", "avionics"), n_tech=2, kits=2)
+    s = mini_state(windows={"SIM-001": [("AAA", 1.0, 12.0)]}, stations=[st])
+    a = engine_task("T1", "SIM-001", 30, duration_h=4.0)
+    b = a.model_copy(update={"id": "T2", "component_id": "SIM-001/avionics", "required_skill": "avionics", "required_part": None, "part_qty": 0})
+    for mode in MODES:
+        p = solve(s, [a, b], mode=mode)
+        assert_no_fallback(p, mode)
+        assert p.feasible
+        first, second = sorted(p.assignments, key=lambda x: x.start)
+        assert second.start >= first.end                         # two technicians and two slots were free: only the aircraft rule stops overlap
+
+
+def test_baseline_takes_the_LAST_home_window_while_the_optimizers_take_an_earlier_one():
+    s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0), ("AAA", 20.0, 30.0)]}, stations=[simple_station("AAA")])
+    task = engine_task("T1", "SIM-001", 60)
+    base = solve(s, [task], mode="static_baseline").assignments[0]
+    assert base.start >= T0 + hrs(20) and "Baseline policy" in base.reason
+    for mode in ("greedy", "cpsat"):
+        assert solve(s, [task], mode=mode).assignments[0].start < T0 + hrs(10)
+
+
+# ------------------------------------------------------------------ the production guard and the engine's fallback
+def test_validate_plan_flags_every_kind_of_hard_violation(golden, golden_tasks):
+    from app.solver.plan_metrics import validate_plan
+    good = solve(golden, golden_tasks, mode="cpsat")
+    assert validate_plan(golden, golden_tasks, good.assignments, 3.0) == []
+    a = good.assignments[0]
+    t = next(t for t in golden_tasks if t.id == a.task_id)
+
+    def bad(**changes):
+        mutated = [x.model_copy(update=changes) if x.task_id == a.task_id else x for x in good.assignments]
+        return " | ".join(validate_plan(golden, golden_tasks, mutated, 3.0))
+
+    assert "after its deadline" in bad(start=t.deadline, end=t.deadline + hrs(t.duration_h))
+    assert "lacks skill" in bad(technician_id="ATL-T2")
+    assert "unknown technician" in bad(technician_id="NOPE")
+    assert "no valid source" in bad(part_source="MIA") or t.required_part is None
+    assert "not inside any ground window" in bad(start=a.start + hrs(0.01) - hrs(200), end=a.end - hrs(200))
+    dup = good.assignments + [good.assignments[0]]
+    msgs = " | ".join(validate_plan(golden, golden_tasks, dup, 3.0))
+    assert "assigned twice" in msgs and "double-booked" in msgs and "two jobs at once" in msgs
+    closed = golden.model_copy(deep=True)
+    next(s for s in closed.stations if s.iata == a.station).hangar_slots = 0
+    assert "no hangar capacity" in " | ".join(validate_plan(closed, golden_tasks, good.assignments, 3.0))
+    late_part = golden.model_copy(deep=True)
+    for s in late_part.stations:
+        for p in s.parts:
+            p.eta_hours = 500.0
+    if t.required_part:
+        assert "arrives after the job starts" in " | ".join(validate_plan(late_part, golden_tasks, good.assignments, 3.0))
+
+
+def test_engine_falls_back_to_greedy_and_says_so_if_cpsat_returns_an_invalid_plan(golden, golden_tasks, monkeypatch):
+    from app.solver import cpsat
+    from app.solver.reasons import Placement
+
+    def bogus(ctx, *a, **k):               # a "solver bug": schedules every task at its LATEST start, past the real deadline
+        task = ctx.tasks[0]
+        c = ctx.candidates(task)[0]
+        c = c.__class__(**{**c.__dict__, "hi": c.hi + 100000})
+        return cpsat.CpSatResult([Placement(c, c.hi)], {}, "optimal", "proven optimal", 0.0)
+
+    monkeypatch.setattr(cpsat, "run", bogus)
+    plan = solve(golden, golden_tasks, mode="cpsat")
+    assert plan.mode == "greedy" and plan.feasible
+    assert any("failed the hard-constraint check" in e.note for e in plan.evidence)
+    assert hard_violations(golden, golden_tasks, plan) == []
+
+
+def test_engine_falls_back_to_greedy_if_cpsat_crashes(golden, golden_tasks, monkeypatch):
+    from app.solver import cpsat
+
+    def boom(*a, **k):
+        raise RuntimeError("solver exploded")
+
+    monkeypatch.setattr(cpsat, "run", boom)
+    plan = solve(golden, golden_tasks, mode="cpsat")
+    assert plan.mode == "greedy" and plan.feasible
+    assert any("CP-SAT failed (RuntimeError: solver exploded)" in e.note for e in plan.evidence)
 def test_force_station_removes_other_stations_candidates():
     s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0), ("BBB", 12.0, 20.0)]},
                    stations=[simple_station("AAA"), simple_station("BBB")])
@@ -393,9 +509,43 @@ def test_random_worlds_never_break_a_hard_rule_and_cpsat_never_loses_to_greedy(s
     tasks = derive_tasks(st)
     plans = {m: solve(st, tasks, mode=m) for m in MODES}
     for m, p in plans.items():
-        assert p.mode == m, f"{m} silently fell back: {[e.note for e in p.evidence]}"
+        assert_no_fallback(p, m)
         assert hard_violations(st, tasks, p) == [], (seed, m)
         assert p.feasible == (p.metrics.late_or_unscheduled == 0)
         assert not [r for r in p.infeasible_reasons if r.startswith("internal check failed")]
     assert plans["cpsat"].objective_value <= plans["greedy"].objective_value + 1e-3
     assert plans["cpsat"].metrics.tasks_scheduled >= plans["greedy"].metrics.tasks_scheduled
+
+
+# ------------------------------------------------------------------ the candidate generator enforces the hard rules by itself
+def test_every_candidate_respects_deadline_shift_and_extension_cap(golden, golden_tasks):
+    from app.solver.candidates import SolveContext
+    ctx = SolveContext(golden, golden_tasks)
+    n = 0
+    for task in ctx.tasks:
+        dl = ctx.deadline_min(task)
+        for c in ctx.candidates(task):
+            n += 1
+            assert c.lo <= c.hi
+            assert c.hi + c.dur <= dl                                    # even the LATEST allowed start ends by the deadline
+            assert c.hi + c.dur <= c.win_e + ctx.max_ext_min             # extension cap
+            assert c.lo >= c.win_s and c.lo >= ctx.earliest_min(task)
+            assert ctx.stations[c.station].hangar_slots > 0
+            assert task.required_skill in next(t for t in ctx.stations[c.station].technicians if t.id == c.tech_id).skills
+    assert n > 50
+
+
+def test_candidates_exclude_closed_hangars_unavailable_technicians_and_missing_parts(golden, golden_tasks):
+    from app.solver.candidates import SolveContext
+    st = golden.model_copy(deep=True)
+    for s in st.stations:
+        if s.iata in ("DFW", "ATL"):
+            s.hangar_slots = 0
+        for t in s.technicians:
+            t.available = t.id != "ORD-T1"
+    ctx = SolveContext(st, derive_tasks(st))
+    for task in ctx.tasks:
+        for c in ctx.candidates(task):
+            assert c.station not in ("DFW", "ATL") and c.tech_id != "ORD-T1"
+    kit_task = next(t for t in ctx.tasks if t.required_part == "BORESCOPE-KIT")
+    assert all(c.opt.pool is not None for c in ctx.candidates(kit_task))       # a part option is always attached

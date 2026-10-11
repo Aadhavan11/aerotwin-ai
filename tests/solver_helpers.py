@@ -79,6 +79,15 @@ def hard_violations(state: FleetState, tasks: list[Task], plan: Plan, max_ext_h:
     return out
 
 
+def assert_no_fallback(plan: Plan, mode: str) -> None:
+    """The solver itself must produce a valid plan. The engine's safety net (validate -> fall back to greedy) is a
+    production guard; tests must not let it hide a bug in a solver."""
+    assert plan.mode == mode, f"asked for {mode} but got {plan.mode}: {[e.note for e in plan.evidence]}"
+    notes = [e.note for e in plan.evidence if "instead" in e.note or "failed" in e.note]
+    assert not notes, notes
+    assert not [r for r in plan.infeasible_reasons if r.startswith("internal check failed")], plan.infeasible_reasons
+
+
 def total_cost(plan: Plan) -> float:
     return plan.objective_value if plan.objective_value is not None else float("inf")
 
@@ -130,3 +139,4 @@ def engine_task(tid: str, tail: str, deadline_h: float, duration_h: float = 4.0,
     return Task(id=tid, tail=tail, component_id=f"{tail}/engine_1", title="Engine borescope inspection", duration_h=duration_h,
                 earliest=T0, deadline=T0 + hrs(deadline_h), required_skill="engine", required_part=part, part_qty=1 if part else 0,
                 source="rul", basis="test")
+
