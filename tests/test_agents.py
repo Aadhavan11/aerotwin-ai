@@ -36,15 +36,25 @@ def fresh(monkeypatch):
     monkeypatch.delenv("MOCK_SOLVER", raising=False)
     STORE.reset()
     RUNS.reset()
+    _reset_copilot_orders()
     yield
     STORE.reset()
     RUNS.reset()
+
+
+def _reset_copilot_orders() -> None:
+    try:    # once the copilot exists it owns the work-order store; start each test from an empty one
+        from app.copilot import workorders as store
+        store.reset()
+    except ImportError:
+        pass
 
 
 @pytest.fixture(scope="module")
 def golden_run():
     STORE.reset()
     RUNS.reset()
+    _reset_copilot_orders()
     run = run_workflow(GOAL, {}, "scripted")
     yield run
     STORE.reset()
@@ -142,8 +152,8 @@ def test_run_finds_the_golden_anomaly_and_plans_it_at_dfw(golden_run):
     risk = next(s for s in golden_run.steps if s.tool == "list_at_risk" and s.kind == "tool_result")
     assert "SIM-017/engine_2" in [r["component_id"] for r in risk.output["data"]]
     wo = next(o for o in golden_run.work_orders if o.tail == "SIM-017")
-    assert wo.station == "DFW" and "RUL p10 = 18" in wo.description
-    assert "SIM-017 engine_2" in golden_run.explanation and "DFW" in golden_run.explanation
+    assert wo.station == "DFW" and wo.task_id == "T-SIM-017-engine_2-001"
+    assert "SIM-017 engine_2" in golden_run.explanation and "RUL p10 18" in golden_run.explanation and "DFW" in golden_run.explanation
 
 
 def test_steps_are_ordered_numbered_and_every_tool_call_has_a_result(golden_run):

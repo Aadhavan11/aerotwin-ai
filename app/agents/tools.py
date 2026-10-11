@@ -265,8 +265,13 @@ def replan_with_event(event: dict) -> dict:
 def draft_work_orders(plan_id: Optional[str] = None) -> dict:
     plan = _plan(plan_id)
     state, _ = _state()
-    orders = workorders.draft(plan, state, _tasks(state))
-    return _out(orders, EvidenceRef(kind="plan", ref=plan.id, note=f"{len(orders)} work order(s), pending approval"))
+    notes: list[str] = []
+    try:    # the copilot owns the audited work-order store (approve / reject / supersede); use it when it exists
+        from app.copilot import workorders as store  # type: ignore[import-not-found]
+        orders, notes = store.draft_from_plan(plan, actor="agent:coordinator")
+    except ImportError:
+        orders = workorders.draft(plan, state, _tasks(state))
+    return _out(orders, EvidenceRef(kind="plan", ref=plan.id, note=f"{len(orders)} work order(s), pending approval"), notes)
 
 
 def search_kb(query: str) -> dict:
