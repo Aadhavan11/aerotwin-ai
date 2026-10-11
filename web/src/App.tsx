@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
@@ -30,12 +30,25 @@ const Extra = {
   CrewRoster: lazy(() => import("./pages/Extra").then((m) => ({ default: m.CrewRoster }))),
   Release: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Release }))),
 };
+const wallFormat = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+
+/** The real time where you are, ticking: the top bar shows it beside the simulation clock so the two are never confused. */
+function useWallClock(): string {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return wallFormat.format(now);
+}
+
 export default function App() {
   const health = usePoll<HealthInfo>("/health", 4000);
   const location = useLocation();
   const navigate = useNavigate();
   const { role, setRole } = useRole();
   const auth = useAuth();
+  const wall = useWallClock();
   const unread = useUnread(auth.status === "user");
   const h = health.data;
   // Land on the role's own home the first time the console opens at "/".
@@ -103,6 +116,7 @@ export default function App() {
             title={health.error ? "Connection to the API lost" : "Simulation clock (UTC), not the real date. It starts at Oct 12 12:00Z and only moves when the simulation is advanced."}
           >
             <i className={`conn ${health.error ? "down" : ""}`} />
+            <span className="clock-wall" title="The real time where you are">{wall}</span>
             <b className="clock-label">SIM</b>
             {fmtZ(h?.sim_now)}
           </span>

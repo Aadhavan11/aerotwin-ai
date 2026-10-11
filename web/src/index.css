@@ -2895,3 +2895,11 @@ aside.fixed {
   letter-spacing: 0.1em;
   color: #fcd34d;
 }
+
+.clock-wall {
+  margin-right: 8px;
+  padding-right: 10px;
+  border-right: 1px solid var(--line-strong);
+  color: var(--text);
+  font-weight: 500;
+}
