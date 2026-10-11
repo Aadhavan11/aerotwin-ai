@@ -65,3 +65,39 @@ DROPPED: dict[str, str] = {
 RAW_COLUMNS: list[str] = (
     ["unit", "cycle", "op1", "op2", "op3"] + [f"s{i}" for i in range(1, 22)]
 )
+
+
+# --------------------------------------------------------------------------
+# Non-engine components: rule-based demo models
+# --------------------------------------------------------------------------
+class GenericSpec(NamedTuple):
+    kind: str          # ComponentKind
+    wear_signal: str   # key in TelemetryRow.values; the signal the rule watches
+    worsens: str       # "up" or "down": which way the signal moves as it wears
+    healthy: float     # typical value when new
+    limit: float       # value at which health is 0 (the component is at its limit)
+    unit: str
+    extras: tuple[str, ...]  # other keys the telemetry source should send
+
+
+# SYNTHETIC DEMO VALUES. Not real limits, not from any manual. The rule is
+# "health falls linearly from `healthy` to `limit`"; the label is
+# "rule-based demo model" everywhere it is shown.
+GENERIC: dict[str, GenericSpec] = {
+    "brakes": GenericSpec("brakes", "pad_wear_mm", "up", 0.0, 12.0, "mm", ("disc_temp_c",)),
+    "landing_gear": GenericSpec("landing_gear", "strut_pressure_kpa", "down", 1800.0, 1200.0, "kPa", ("shock_load_g",)),
+    "hydraulics": GenericSpec("hydraulics", "pump_pressure_kpa", "down", 20700.0, 17200.0, "kPa", ("fluid_temp_c",)),
+    "avionics": GenericSpec("avionics", "error_rate_per_khr", "up", 0.2, 5.0, "1/kh", ("box_temp_c",)),
+}
+
+# Keys of TelemetryRow.values per component kind (engine uses SENSOR_NAMES).
+TELEMETRY_KEYS: dict[str, list[str]] = {
+    "engine": SENSOR_NAMES,
+    **{k: [g.wear_signal, *g.extras] for k, g in GENERIC.items()},
+}
+
+
+def kind_from_component_id(component_id: str) -> str:
+    """'SIM-017/engine_2' -> 'engine'; 'SIM-017/brakes' -> 'brakes'."""
+    name = component_id.split("/")[-1]
+    return "engine" if name.startswith("engine") else name
