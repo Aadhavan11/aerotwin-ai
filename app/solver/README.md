@@ -69,9 +69,9 @@ The tools read the same state as the planner (`service.get_state()`): the twin s
 
 Objective (same formula for every mode, reported as `Plan.objective_value`):
 `downtime*alpha(10) + flights_affected*beta(25) + logistics_usd*gamma(0.01) + schedule_changes*delta(2) + 0.05 per hour until each job ends + 10 000 per unscheduled task`.
-The `0.05/h` earliness term is my addition (a soft preference for fixing sooner; deadlines stay hard). Without it the optimizer would wait four days to save a shipment.
+The `0.05/h` earliness term is my addition (a soft preference for fixing sooner; deadlines stay hard). Confirmed by Pardhu. Without it the optimizer would wait four days to save a shipment.
 
-## Decisions I had to make where the docs were silent or contradictory (please confirm)
+## Decisions I had to make where the docs were silent or contradictory (rows 1 and the earliness term CONFIRMED by Pardhu on 2026-10-11; the rest are documented defaults)
 
 | # | Topic | What the code does |
 |---|---|---|

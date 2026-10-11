@@ -1,5 +1,7 @@
 # AI-assistance disclosure: DRAFT (check the event's real rules before using)
 
+**Source to check:** the Hacklanta 2026 Hacker Guide (https://aluminum-soprano-222.notion.site/Hacklanta-2026-Hacker-Guide-3b81ccc4ed5c80f4b717c0ccc4b5df54), shared by Pardhu. It could not be opened from the build environment, so its AI policy, pre-written-code rule and deadline are STILL UNVERIFIED here.
+
 **Status:** the Hacklanta '26 rules on AI assistance, pre-written code and the submission deadline are **unverified**. A search on 2026-10-11 found only a
 secondhand listing (Oct 9 to 11, Georgia State University, teams of up to 4, separate application at hacklanta.dev); `hacklanta.dev` was not reachable from the
 build environment. Someone on the team must read the official rules and adjust this text. Nothing here is a claim about what the rules require.
