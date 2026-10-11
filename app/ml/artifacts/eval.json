@@ -3,6 +3,7 @@
  "data_source": "nasa-cmapss-fd001",
  "seed": 1234,
  "n_test_engines": 100,
+ "n_test": 100,
  "n_test_windows": 10196,
  "n_fit_units": 85,
  "n_calib_units": 15,

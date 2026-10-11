@@ -88,6 +88,7 @@ def test_late_life_window_is_flagged(traj, late_unit):
     assert s.rul_cycles.p10 <= s.rul_cycles.p50 <= s.rul_cycles.p90
 
 
+@pytest.mark.skipif(not cmapss.data_available(), reason="needs the NASA FD001 files (python -m app.ml.cmapss --download)")
 def test_late_life_truth_inside_band(traj):
     """On every end-of-recording window of engines with true RUL <= 30, the truth is in [p10, p90] or close to it."""
     hits = total = 0
