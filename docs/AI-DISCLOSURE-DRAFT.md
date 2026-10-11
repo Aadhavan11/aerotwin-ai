@@ -15,7 +15,7 @@ build environment. Someone on the team must read the official rules and adjust t
 ## Per-module note (scheduler, what-if, agent tools: Pardhu)
 
 > The scheduler (`app/solver`), what-if engine (`app/whatif`) and agent tool registry (`app/agents`) were written with Claude. They were checked by
-> 135 automated tests, an independent constraint checker, and a script (`scripts/mutation_check.py`) that deliberately breaks 27 rules one at a time
+> 290 automated tests, an independent constraint checker, and a script (`scripts/mutation_check.py`) that deliberately breaks 28 rules one at a time
 > to confirm the tests catch each one.
 
 ## Still to confirm

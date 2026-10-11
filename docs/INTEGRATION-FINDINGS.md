@@ -57,3 +57,9 @@ scheduler, what-if and agent code. Every item below was reproduced; the patches 
 * `draft_work_orders` delegates to the copilot's audited store, so `POST /workorders/{id}/decision` finds the orders my agents draft.
 * `get_sensor_trend` uses the twin's `get_telemetry` and says so when there is none.
 * An infeasible task gets a "least-bad" suggestion (earliest slot after the deadline), labelled NOT a plan and never scheduled.
+
+### Shamit (web app): one small thing I saw by rendering the screens against my live API
+
+9. The Lab's scenario "Force service at ATL" sends `constraints: {force_station: "ATL"}` without a tail, which forces EVERY aircraft's work to ATL, so it always shows "not feasible".
+   Add `"tail": "SIM-017"` to that constraint (my backend supports it) and it becomes the intended what-if (feasible, about $1,400 logistics on the golden fleet).
+   Planning and Lab otherwise render correctly with the real solver: cost cards ($600 optimized vs $2,200 baseline), the Gantt, the replan diff with its "why", and the compare table.

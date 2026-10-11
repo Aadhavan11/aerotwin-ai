@@ -6,11 +6,11 @@ Owner: Pardhu. Everything here is **SIMULATED** and uses synthetic task cards; i
 
 ```
 pip install ortools simpy pyyaml pydantic fastapi httpx pytest      # tested: Python 3.13, ortools 9.15, simpy 4.1, pydantic 2.13
-python -m pytest tests -q                                           # 135 tests, about 15 s
+python -m pytest tests -q                                           # 290 tests in the merged repo, about 2 min (mine alone: about 20 s)
 python scripts/agent_demo.py [--export] [--replan]                   # runs the 5 scripted agents with the 17 tools; --export writes fixtures/agent_run_golden.json
 python scripts/plan_demo.py                                          # prints the baseline-vs-optimized table, replan, compare, simulation
 python scripts/plan_demo.py --export                                 # also rewrites fixtures/plan_current.json, plan_baseline.json, replan_result.json
-python scripts/mutation_check.py                                     # breaks 27 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
+python scripts/mutation_check.py                                     # breaks 28 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
 ```
 
 Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat exactly; use 4 for big fleets), `SEED` (default 1234),
@@ -45,6 +45,14 @@ Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat e
 
 The tools read the same state as the planner (`service.get_state()`): the twin snapshot when it exists, otherwise the golden stand-in, plus disruptions already applied.
 `get_sensor_trend` needs the digital twin and says so (in `missing_info`) instead of inventing a trend. A scripted run on the golden fleet takes about 0.6 s.
+
+## Stretch goals (all built, advisory where they suggest)
+
+* **Technician skill levels:** skills stay plain strings: `"engine"` = level 1, `"engine:2"` = level 2 (a technician with a higher level covers a lower requirement).
+  A card may carry `min_level: 2`; `derive_tasks` then sets `required_skill: "engine:2"`. No model change. Code: `app/solver/skills.py`.
+* **Spare-part repositioning:** `suggest_repositioning(horizon_cycles=120)` (also the 17th agent tool): forecasts demand per home station, compares with stock on hand, and suggests moving
+  surplus from the donor named in the stock record (time and cost copied from it). Never moves or books anything. Code: `app/solver/reposition.py`.
+* **Several simultaneous faults, fleet-wide:** the model always handled them; tests now prove 6 and 10 simultaneous faults and a chain of four disruptions stay valid, CP-SAT never loses to greedy, and the 5 s limit holds.
 
 ## How a plan is made
 

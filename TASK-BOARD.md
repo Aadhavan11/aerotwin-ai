@@ -41,7 +41,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 ### Block 4: 1:30 to 3:15 AM, finish the six features, then freeze
 - [ ] **Shamit:** LLM mode for agents (tool loop + number check + cache); copilot chat; work orders + audit; Operations agent using `simulate`.
 - [ ] **Aashirth:** tests + `HEALTH.md`; help Shamit with `search_kb` and the numeric-claims check; polish predicted curves.
-- [x] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning. [ ] then the doc's stretch goals if all six are green (not started).
+- [x] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning. [x] the doc's stretch goals: skill levels, spare-part repositioning, multi-fault (built and tested).
 - [ ] **Aadhavan:** Simulation Lab screen; Copilot drawer + Agent Activity + work-order approval; error/loading states.
 - [ ] **3:15 AM: FEATURE FREEZE (C2).** Sleep shift 1: Aashirth + Pardhu (3:15 to 5:00). Shamit + Aadhavan continue.
 
