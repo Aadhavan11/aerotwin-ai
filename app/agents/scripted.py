@@ -81,7 +81,7 @@ def run_scripted(run_id: str, goal: str, scope: Optional[dict] = None, store: Ru
                  lambda d: f"plan {d['id']} ({d['mode']}), feasible={d['feasible']}, {d['metrics']['tasks_scheduled']}/{d['metrics']['tasks_total']} tasks scheduled")
     base = r.tool(s, "solve_schedule", {"mode": "static_baseline"}, "Solving the baseline: home base, last window before the deadline.",
                   lambda d: f"baseline {d['id']}, feasible={d['feasible']}")
-    r.tool(s, "compare_plans", {"names": ["baseline", "greedy", "optimized"]}, "Comparing baseline, greedy and optimized on the same snapshot.",
+    cmp_ = r.tool(s, "compare_plans", {"names": ["baseline", "greedy", "optimized"]}, "Comparing baseline, greedy and optimized on the same snapshot.",
                   lambda d: "; ".join(f"{x['name']}: logistics ${x['metrics']['logistics_cost_usd']:g}" for x in d["rows"]))
     r.step(s, "summary", f"Optimized plan {opt['data']['id']} is {'feasible' if opt['data']['feasible'] else 'NOT feasible'}; baseline {base['data']['id']} compared.")
     plan = Plan.model_validate(opt["data"])
@@ -120,7 +120,7 @@ def run_scripted(run_id: str, goal: str, scope: Optional[dict] = None, store: Ru
     first_rul = next((t for t in tasks if t["source"] == "rul"), tasks[0] if tasks else None)
     r.tool(co, "search_kb", {"query": first_rul["title"] if first_rul else "inspection"}, "Looking up the task card for the most urgent job.",
            lambda d: f"{len(d)} card(s): " + ", ".join(x["doc_id"] for x in d))
-    explanation = _explain(plan, tasks, at_risk, base["data"], short["data"] or [], orders, first_rul, rep["data"] or [])
+    explanation = _explain(plan, tasks, at_risk, base["data"], short["data"] or [], orders, first_rul, rep["data"] or [], cmp_["data"])
     r.step(co, "summary", explanation)
 
     store.add_work_orders(run_id, orders)
@@ -134,7 +134,7 @@ def fmt_iso(iso: str) -> str:
 
 
 def _explain(plan: Plan, tasks: list[dict], at_risk: list[dict], base: dict, short: list[dict], orders: list[WorkOrder],
-             first_rul: Optional[dict], reposition: Optional[list] = None) -> str:
+             first_rul: Optional[dict], reposition: Optional[list] = None, comparison: Optional[dict] = None) -> str:
     """Template text. Every number below is copied from a tool result."""
     m = plan.metrics
     out = [f"Plan {plan.id} ({plan.mode}) is {'feasible' if plan.feasible else 'NOT feasible'}: {m.tasks_scheduled} of {m.tasks_total} tasks scheduled, "
@@ -157,6 +157,7 @@ def _explain(plan: Plan, tasks: list[dict], at_risk: list[dict], base: dict, sho
         out.append(f"Baseline (home base, last window before the deadline): logistics ${bm['logistics_cost_usd']:g}, downtime {bm['downtime_h']:g} h, "
                    f"flights affected {bm['flights_affected']}. Optimized: logistics ${m.logistics_cost_usd:g}, downtime {m.downtime_h:g} h, "
                    f"flights affected {m.flights_affected}. Savings are simulated relative to that baseline.")
+        out.append(_exposure_sentence(first_rul, comparison))
     else:
         out.append("No plan can meet every hard deadline, so no work order is drafted for the tasks that failed; deadlines are never relaxed by the system.")
         for x in short:
@@ -175,3 +176,17 @@ def _explain(plan: Plan, tasks: list[dict], at_risk: list[dict], base: dict, sho
             f"move {x['qty']} {x['part']} from {x['from_station']} to {x['to_station']} ({x['ship_hours']:g} h, ${x['cost_usd']:,.0f})" for x in moves[:3]) + ".")
     out.append(f"{len(orders)} work order(s) drafted, all pending human approval. Advisory only; this does not replace approved procedures.")
     return " ".join(out)
+
+
+def _exposure_sentence(first_rul: Optional[dict], comparison: Optional[dict]) -> str:
+    """Risk contrast that cost metrics can hide (both numbers come from the compare_plans tool output)."""
+    if not first_rul or not comparison:
+        return ""
+    rows = {x["name"]: x for x in comparison.get("rows", [])}
+    pick = lambda name: next((e for e in rows.get(name, {}).get("exposure", []) if e["task_id"] == first_rul["id"] and e.get("scheduled")), None)  # noqa: E731
+    b, o = pick("baseline"), pick("optimized")
+    if not b or not o:
+        return ""
+    return (f"Time to fix {first_rul['tail']} {first_rul['component_id'].split('/')[-1]}: baseline {b['hours_to_fix']:g} h "
+            f"({b['flights_before_fix']} more flight(s) with the fault open, {b['slack_to_deadline_h']:g} h before the hard deadline); "
+            f"optimized {o['hours_to_fix']:g} h ({o['flights_before_fix']} flight(s), {o['slack_to_deadline_h']:g} h before the deadline).")

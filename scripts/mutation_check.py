@@ -38,6 +38,8 @@ MUTATIONS = [
     ("replan diff forgets added tasks", "app/solver/plan_metrics.py", "added = [new[t] for t in sorted(new) if t not in old]", "added = []"),
     ("part delay not applied", "app/whatif/events.py", "ps.eta_hours = lead + float(event.delay_hours)", "ps.eta_hours = 0.0"),
     ("technician skill level ignored", "app/solver/skills.py", "any(n == need_name and lvl >= need_level for", "any(n == need_name for"),
+    ("exposure margin sign flipped", "app/solver/exposure.py", "minutes_between(t.deadline, a.end)", "minutes_between(a.end, t.deadline)"),
+    ("exposure counts flights after the fix", "app/solver/exposure.py", "now <= aware(l.sched_dep) < start", "aware(l.sched_dep) >= start"),
     # agents (piece 11)
     ("work orders drafted already approved", "app/copilot/workorders.py", 'status="pending_approval", plan_id=plan.id, evidence=evidence', 'status="approved", plan_id=plan.id, evidence=evidence'),
     ("work orders without evidence", "app/copilot/workorders.py", 'status="pending_approval", plan_id=plan.id, evidence=evidence', 'status="pending_approval", plan_id=plan.id, evidence=[]'),

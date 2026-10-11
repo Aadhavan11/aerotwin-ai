@@ -344,3 +344,10 @@ def test_repositioning_tool_is_advisory_and_shows_up_in_the_run(golden_run):
     step = next(s for s in golden_run.steps if s.tool == "suggest_repositioning" and s.kind == "tool_result")
     assert step.agent == "logistics" and "Advisory, not applied" in golden_run.explanation
     assert "move 1 BORESCOPE-KIT from DFW to ATL" in golden_run.explanation
+
+
+def test_the_run_explains_the_time_to_fix_contrast_with_tool_numbers_only(golden_run):
+    assert "Time to fix SIM-017 engine_2: baseline" in golden_run.explanation and "optimized" in golden_run.explanation
+    cmp_rows = next(s for s in golden_run.steps if s.tool == "compare_plans" and s.kind == "tool_result").output["data"]["rows"]
+    o = next(r for r in cmp_rows if r["name"] == "optimized")["exposure"][0]
+    assert f"optimized {o['hours_to_fix']:g} h" in golden_run.explanation

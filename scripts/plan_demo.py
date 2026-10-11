@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.solver import derive_tasks, solve  # noqa: E402
 from app.solver.common import fmt  # noqa: E402
+from app.solver.exposure import exposure  # noqa: E402
 from app.solver.golden import golden_part_delay  # noqa: E402
 from app.solver.plan_metrics import validate_plan  # noqa: E402
 from app.solver.service import get_state  # noqa: E402
@@ -75,6 +76,11 @@ def main() -> None:
         row("objective (lower is better)", lambda p: f"{p.objective_value:.2f}"),
         row("solve time (s)", lambda p: f"{p.solve_seconds:.3f}"),
     ])
+    print("\n  RISK VIEW (cost can tie while risk does not): time until each condition-driven fault is fixed")
+    eb, eo = exposure(state, tasks, base), exposure(state, tasks, opt)
+    table(["task", "plan", "hours to fix", "flights flown with fault open", "margin before hard deadline (h)"],
+          [[b["task_id"], "baseline", f"{b.get('hours_to_fix', '-')}", f"{b.get('flights_before_fix', '-')}", f"{b.get('slack_to_deadline_h', '-')}"] for b in eb]
+          + [[o["task_id"], "optimized", f"{o.get('hours_to_fix', '-')}", f"{o.get('flights_before_fix', '-')}", f"{o.get('slack_to_deadline_h', '-')}"] for o in eo])
     a_b = next(a for a in base.assignments if a.task_id == CRITICAL)
     a_o = next(a for a in opt.assignments if a.task_id == CRITICAL)
     gain_h = (a_b.end - a_o.end).total_seconds() / 3600

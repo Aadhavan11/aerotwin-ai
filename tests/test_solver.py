@@ -641,3 +641,49 @@ def test_repositioning_changes_nothing_and_is_deterministic(golden):
     before = golden.model_dump()
     a, b = suggest_repositioning(golden), suggest_repositioning(golden)
     assert a == b and golden.model_dump() == before
+
+
+# ------------------------------------------------------------------ exposure: risk that cost metrics can hide
+def test_exposure_numbers_on_a_tiny_world():
+    from app.solver.exposure import exposure
+    s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0)]}, stations=[simple_station("AAA")])
+    task = engine_task("T1", "SIM-001", 60, duration_h=4.0)
+    plan = solve(s, [task], mode="cpsat")
+    row = exposure(s, [task], plan)[0]
+    assert row["scheduled"] and row["hours_to_fix"] == 6.0                 # starts at hour 2, 4 h job
+    assert row["flights_before_fix"] == 1                                  # the leg that lands at hour 2 departed at hour 1
+    assert row["slack_to_deadline_h"] == 54.0                              # 60 - 6
+    gone = exposure(s, [task], solve(_without_skill(s, "engine"), [task], mode="cpsat"))[0]
+    assert gone["scheduled"] is False and "hours_to_fix" not in gone       # nothing is invented for an unscheduled task
+
+
+def test_exposure_only_covers_condition_driven_tasks(golden, golden_tasks):
+    from app.solver.exposure import exposure
+    rows = exposure(golden, golden_tasks, solve(golden, golden_tasks, mode="cpsat"))
+    assert {r["task_id"] for r in rows} == {t.id for t in golden_tasks if t.source == "rul"}
+    assert [r["task_id"] for r in rows][0] == "T-SIM-017-engine_2-001"      # most urgent deadline first
+
+
+def test_optimized_fixes_the_critical_fault_sooner_with_more_margin_than_the_baseline(golden, golden_tasks):
+    from app.solver.exposure import exposure
+    b = exposure(golden, golden_tasks, solve(golden, golden_tasks, mode="static_baseline"))[0]
+    o = exposure(golden, golden_tasks, solve(golden, golden_tasks, mode="cpsat"))[0]
+    assert o["hours_to_fix"] < b["hours_to_fix"] and o["flights_before_fix"] < b["flights_before_fix"]
+    assert o["slack_to_deadline_h"] > b["slack_to_deadline_h"] >= 0
+
+
+def test_on_the_real_generated_fleet_costs_tie_but_the_risk_view_shows_the_contrast():
+    """Aadhavan's fleet: SIM-017 is homed at DFW (kits on hand), so baseline and optimized both cost $0 and 0 h of downtime.
+    The difference is WHEN: the baseline waits for the last home window, the optimizer acts early."""
+    from app.contracts.models import RulEstimate
+    from app.sim.fleet import generate_fleet
+    from app.solver.exposure import exposure
+    st = generate_fleet()
+    next(c for c in st.components if c.component_id == "SIM-017/engine_2").rul_cycles = RulEstimate(p10=18, p50=22, p90=25)
+    tasks = derive_tasks(st)
+    base, opt = solve(st, tasks, mode="static_baseline"), solve(st, tasks, mode="cpsat")
+    assert base.feasible and opt.feasible
+    assert (base.metrics.logistics_cost_usd, base.metrics.downtime_h) == (opt.metrics.logistics_cost_usd, opt.metrics.downtime_h) == (0.0, 0.0)
+    b, o = exposure(st, tasks, base)[0], exposure(st, tasks, opt)[0]
+    assert o["hours_to_fix"] + 24 < b["hours_to_fix"]                      # at least a day earlier
+    assert o["slack_to_deadline_h"] > b["slack_to_deadline_h"] + 24
