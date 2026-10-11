@@ -5,7 +5,6 @@ import type { FleetOverview, Leg, MaintItem, MaintSuggestion, MaintView, QueueRo
 import { Btn, Card, ErrorBox, Loading, StatusPill } from "../components/ui";
 import { profileFor } from "../components/aircraftModels";
 import { fmtUsd, fmtZ, STATUS_ORDER } from "../lib/format";
-import { Airplane, ClipboardText, ListChecks, Timer, Wrench } from "@phosphor-icons/react";
 
 const HOUR = 3_600_000;
 const SKILL: Record<string, string> = { engine: "engine", gear: "landing gear and brakes", hydraulics: "hydraulics", avionics: "avionics" };
@@ -120,9 +119,6 @@ function NextUp({ item, now, user, setUser, onChanged, first }: { item: MaintIte
     <Card className="hero">
       <div className="comp-head">
         <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-          <i className="hero-icon">
-            <Wrench size={22} weight="duotone" />
-          </i>
           <div>
           <div className="eyebrow-line">{first ? "Next planned maintenance" : "Selected task"}</div>
           <h2 style={{ margin: "2px 0 0", fontSize: 22, letterSpacing: "-0.02em" }}>{item.title}</h2>
@@ -287,7 +283,7 @@ function Gantt({ now, legs, view, items, focus }: { now: string; legs: Leg[]; vi
         </div>
       </div>
       <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
-        Next five days, UTC. Blue: planned maintenance. Red line: hard deadline. Green: time on the ground between flights.
+        Next five days, UTC. Solid blue: planned maintenance. Red line: hard deadline. Pale blue: time on the ground between flights.
       </p>
     </Card>
   );
@@ -591,27 +587,27 @@ export default function Maintenance() {
 
       <dl className="figures">
         <div>
-          <dt><i className="fig-icon"><Airplane size={16} weight="duotone" /></i>Aircraft</dt>
+          <dt>Aircraft</dt>
           <dd style={{ fontSize: 20, paddingTop: 4 }}>{tail}</dd>
           <small className="muted">
             {profile?.label ?? summary?.type ?? ""} {summary ? <StatusPill status={summary.status} /> : null}
           </small>
         </div>
         <div>
-          <dt><i className="fig-icon"><ListChecks size={16} weight="duotone" /></i>Open tasks</dt>
+          <dt>Open tasks</dt>
           <dd>{items.length}</dd>
         </div>
         <div>
-          <dt><i className="fig-icon"><Timer size={16} weight="duotone" /></i>Next slot</dt>
+          <dt>Next slot</dt>
           <dd style={{ fontSize: 20, paddingTop: 4 }}>{next?.assignment ? rel(next.assignment.start, now) : "none"}</dd>
           <small className="muted">{next?.assignment ? `${next.assignment.station}, ${fmtZ(next.assignment.start)}` : "nothing scheduled"}</small>
         </div>
         <div>
-          <dt><i className="fig-icon warn"><Timer size={16} weight="duotone" /></i>Least margin</dt>
+          <dt>Least margin</dt>
           <dd>{margin.length ? Math.round(Math.min(...margin)) : "-"}{margin.length ? <small>h</small> : null}</dd>
         </div>
         <div>
-          <dt><i className="fig-icon ok"><ClipboardText size={16} weight="duotone" /></i>Work orders</dt>
+          <dt>Work orders</dt>
           <dd style={{ fontSize: 20, paddingTop: 4 }}>
             {approved} approved
           </dd>

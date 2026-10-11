@@ -28,9 +28,11 @@ export type Profile = {
   nose: {
     len: number; radome: number; wLen: number; wExp: number;
     top: [number, number][]; bot: [number, number][];
-    // Flight-deck glazing as quads [front-top, aft-top, aft-bottom, front-bottom]. The windshield is given as
-    // (distance from the tip, section angle in degrees: 0 = side, 90 = crown); the side windows as (distance, height above the axis).
-    windshield: [number, number][]; sliding: [number, number][]; fixed: [number, number][];
+    // Flight-deck glazing: one continuous band per side, given by its upper and lower edge as (distance from the tip,
+    // section angle in degrees: 0 = side, 90 = crown) control points for the upper edge and (distance, height above the axis)
+    // for the lower edge (the sill), both ordered front to aft, plus the positions
+    // (0..1 along the band) of the thin mullions between windshield and side windows.
+    glazing: { top: [number, number][]; bottom: [number, number][]; mullions: number[] };
   };
   tailLen: number;
   wing: {
@@ -68,9 +70,11 @@ export const profiles: Record<"a320" | "b738", Profile> = {
       len: 6.8, radome: 1.4, wLen: 4.7, wExp: 2.1,
       top: [[0, -0.12], [0.02, 0.0], [0.06, 0.1], [0.16, 0.22], [0.4, 0.34], [0.9, 0.5], [1.6, 0.68], [2.2, 0.84], [2.8, 1.12], [3.5, 1.62], [4.4, 1.92], [5.5, 2.04]],
       bot: [[0, -0.12], [0.02, -0.26], [0.06, -0.38], [0.16, -0.6], [0.4, -0.76], [0.9, -1.02], [1.6, -1.34], [2.6, -1.66], [3.8, -1.92], [5.0, -2.04]],
-      windshield: [[2.3, 87], [3.15, 88], [3.37, 19], [2.58, 33]],
-      sliding: [[3.3, 1.36], [3.98, 1.22], [3.98, 0.5], [3.44, 0.54]],
-      fixed: [[4.04, 1.2], [4.42, 1.1], [4.42, 0.54], [4.08, 0.5]],
+      glazing: {
+        top: [[2.3, 87], [2.8, 86.5], [3.15, 80], [3.42, 62], [3.7, 47], [3.98, 40], [4.42, 36]],
+        bottom: [[2.58, 0.66], [2.85, 0.6], [3.15, 0.56], [3.37, 0.54], [3.7, 0.52], [3.98, 0.5], [4.42, 0.52]],
+        mullions: [0.5, 0.79],
+      },
     },
     tailLen: 11.6,
     wing: {
@@ -110,9 +114,11 @@ export const profiles: Record<"a320" | "b738", Profile> = {
       len: 7.0, radome: 1.55, wLen: 5.0, wExp: 2.0,
       top: [[0, -0.2], [0.02, -0.08], [0.06, 0.02], [0.15, 0.14], [0.35, 0.27], [0.8, 0.45], [1.5, 0.65], [2.2, 0.82], [2.8, 1.12], [3.5, 1.64], [4.4, 1.91], [5.6, 1.99]],
       bot: [[0, -0.2], [0.02, -0.32], [0.06, -0.44], [0.15, -0.68], [0.35, -0.84], [0.8, -1.1], [1.5, -1.42], [2.5, -1.72], [3.6, -1.88], [5.0, -1.975]],
-      windshield: [[2.5, 87], [3.35, 88], [3.57, 19], [2.78, 33]],
-      sliding: [[3.5, 1.32], [4.12, 1.2], [4.12, 0.46], [3.64, 0.5]],
-      fixed: [[4.18, 1.18], [4.58, 1.08], [4.58, 0.5], [4.22, 0.47]],
+      glazing: {
+        top: [[2.5, 87], [3.0, 86.5], [3.35, 80], [3.62, 62], [3.9, 47], [4.18, 40], [4.58, 36]],
+        bottom: [[2.78, 0.62], [3.05, 0.58], [3.35, 0.54], [3.57, 0.52], [3.9, 0.5], [4.18, 0.48], [4.58, 0.5]],
+        mullions: [0.5, 0.79],
+      },
     },
     tailLen: 12.4,
     wing: {
@@ -390,19 +396,35 @@ export function buildAircraft(type: string) {
     }
     return loft(rings, false);
   };
-  const grow = (c: [number, number][], dd: number, da: number): [number, number][] => {
-    const cd = c.reduce((s, p) => s + p[0], 0) / c.length;
-    const ca = c.reduce((s, p) => s + p[1], 0) / c.length;
-    return c.map(([d, a]) => [d + Math.sign(d - cd) * dd, a + Math.sign(a - ca) * da]);
-  };
-  const frame = new T.MeshStandardMaterial({ color: 0x5c6268, roughness: 0.5, metalness: 0.4, side: T.DoubleSide });
-  const cockpitGlass = new T.MeshPhysicalMaterial({ color: 0x16212c, roughness: 0.04, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.4, side: T.DoubleSide });
-  const toAngles = (quad: [number, number][]): [number, number][] => quad.map(([d, y]) => [d, (thetaAt(d, y, true) * 180) / Math.PI]);
-  for (const right of [true, false]) {
-    for (const quad of [N.windshield, toAngles(N.sliding), toAngles(N.fixed)]) {
-      add(patchDT(grow(quad, 0.03, 1.2), 0.011, right, 8, 6), frame, cockpit);
-      add(patchDT(quad, 0.017, right), cockpitGlass, cockpit);
+  // One smooth band per side: both edges are splines through the control points, so there are no separate panels;
+  // the mullions are thin dividers laid over the same glass.
+  const GL = N.glazing;
+  const edge = (pts: [number, number][]) => new T.SplineCurve(pts.map(([d, a]) => new T.Vector2(d, a)));
+  const topEdge = edge(GL.top);
+  const botEdge = edge(GL.bottom.map(([d, y]) => [d, (thetaAt(d, y, true) * 180) / Math.PI] as [number, number]));
+  const bandPatch = (s0: number, s1: number, grow: number, off: number, right: boolean, nu = 48, nv = 10) => {
+    const rings: T.Vector3[][] = [];
+    for (let i = 0; i <= nu; i++) {
+      const s = Math.min(1, Math.max(0, lerp(s0, s1, i / nu)));
+      const tp = topEdge.getPoint(s);
+      const bt = botEdge.getPoint(s);
+      const ring: T.Vector3[] = [];
+      for (let j = 0; j <= nv; j++) {
+        const v = j / nv;
+        const d = lerp(tp.x, bt.x, v);
+        const ang = Math.min(lerp(tp.y + grow, bt.y - grow, v), 89.6);
+        ring.push(ringPoint(d, right ? deg(ang) : Math.PI - deg(ang), off));
+      }
+      rings.push(ring);
     }
+    return loft(rings, false);
+  };
+  const frame = new T.MeshStandardMaterial({ color: 0x4a5057, roughness: 0.5, metalness: 0.4, side: T.DoubleSide });
+  const cockpitGlass = new T.MeshPhysicalMaterial({ color: 0x141d27, roughness: 0.04, metalness: 0.35, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.5, side: T.DoubleSide });
+  for (const right of [true, false]) {
+    add(bandPatch(-0.015, 1.015, 1.6, 0.011, right, 56, 6), frame, cockpit);
+    add(bandPatch(0, 1, 0, 0.017, right), cockpitGlass, cockpit);
+    for (const m of GL.mullions) add(bandPatch(m - 0.008, m + 0.008, 0.4, 0.02, right, 4, 8), frame, cockpit);
   }
 
   // Cabin windows: rounded, sitting on the shell on both sides.

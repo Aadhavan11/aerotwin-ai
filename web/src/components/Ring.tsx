@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const COLOR: Record<string, [string, string]> = {
-  ok: ["#34c759", "#248a3d"],
+  ok: ["#4aa3ff", "#0066cc"],
   watch: ["#ffb340", "#b25000"],
   alert: ["#ff6b60", "#d70015"],
 };
