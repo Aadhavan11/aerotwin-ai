@@ -1,0 +1,9 @@
+[
+ {
+  "ts": "2026-10-12T12:00:00Z",
+  "actor": "system",
+  "action": "scenario_reset",
+  "ref": "golden",
+  "detail": "fixtures loaded"
+ }
+]

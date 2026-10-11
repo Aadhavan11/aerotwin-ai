@@ -1,0 +1,181 @@
+[
+ {
+  "match": [
+   "72",
+   "likely",
+   "next"
+  ],
+  "response": {
+   "synthetic": true,
+   "answer": "In the next 72 hours the components closest to their deadlines are SIM-017 engine 2 (RUL p10 18 cycles) and SIM-004 brakes (12 cycles).",
+   "evidence": [
+    {
+     "kind": "health",
+     "ref": "SIM-017/engine_2",
+     "note": "RUL p10 18"
+    },
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": ""
+    }
+   ],
+   "missing_info": [],
+   "proposed_work_orders": [],
+   "run_id": null
+  }
+ },
+ {
+  "match": [
+   "why",
+   "prioritized",
+   "priority"
+  ],
+  "response": {
+   "synthetic": true,
+   "answer": "SIM-017 engine 2 ranks first: anomaly score 0.91 and RUL p10 of 18 cycles, versus 12 cycles for SIM-004 brakes but a cheaper, shorter job.",
+   "evidence": [
+    {
+     "kind": "health",
+     "ref": "SIM-017/engine_2",
+     "note": "RUL p10 18"
+    },
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": ""
+    }
+   ],
+   "missing_info": [],
+   "proposed_work_orders": [],
+   "run_id": null
+  }
+ },
+ {
+  "match": [
+   "window",
+   "tomorrow"
+  ],
+  "response": {
+   "synthetic": true,
+   "answer": "Best feasible window for SIM-017: DFW 2026-10-12T20:30:00Z to 2026-10-13T02:30:00Z.",
+   "evidence": [
+    {
+     "kind": "health",
+     "ref": "SIM-017/engine_2",
+     "note": "RUL p10 18"
+    },
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": ""
+    }
+   ],
+   "missing_info": [],
+   "proposed_work_orders": [
+    {
+     "synthetic": true,
+     "id": "WO-1",
+     "tail": "SIM-017",
+     "task_id": "T-SIM-017-engine_2-001",
+     "station": "DFW",
+     "start": "2026-10-12T20:30:00Z",
+     "end": "2026-10-13T02:30:00Z",
+     "description": "Engine 2 borescope inspection (SIM-017) at DFW",
+     "status": "pending_approval",
+     "plan_id": "P-2",
+     "evidence": [
+      {
+       "kind": "plan",
+       "ref": "P-2",
+       "note": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT "
+      },
+      {
+       "kind": "kb",
+       "ref": "TC-ENG-001",
+       "note": "synthetic task card"
+      }
+     ],
+     "decided_by": null,
+     "decided_at": null,
+     "note": ""
+    }
+   ],
+   "run_id": null
+  }
+ },
+ {
+  "match": [
+   "parts",
+   "technician"
+  ],
+  "response": {
+   "synthetic": true,
+   "answer": "Engine job needs 1 engine technician (DFW-T2) and 1 BORESCOPE-KIT (2 arriving at DFW in 8 h).",
+   "evidence": [
+    {
+     "kind": "tool_call",
+     "ref": "TC-15",
+     "note": ""
+    }
+   ],
+   "missing_info": [],
+   "proposed_work_orders": [],
+   "run_id": null
+  }
+ },
+ {
+  "match": [
+   "unavailable",
+   "closed",
+   "facility"
+  ],
+  "response": {
+   "synthetic": true,
+   "answer": "If DFW's hangar closes, the engine job moves to the next window with a free hangar; see the Simulation Lab for the exact plan.",
+   "evidence": [
+    {
+     "kind": "health",
+     "ref": "SIM-017/engine_2",
+     "note": "RUL p10 18"
+    },
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": ""
+    }
+   ],
+   "missing_info": [
+    "No alternative hangar slot data beyond the 5-day horizon."
+   ],
+   "proposed_work_orders": [],
+   "run_id": null
+  }
+ },
+ {
+  "match": [
+   "compare",
+   "optimized",
+   "schedule"
+  ],
+  "response": {
+   "synthetic": true,
+   "answer": "Optimized vs static baseline: downtime 0.0 h vs 13.43 h, flights affected 0 vs 5.",
+   "evidence": [
+    {
+     "kind": "health",
+     "ref": "SIM-017/engine_2",
+     "note": "RUL p10 18"
+    },
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": ""
+    }
+   ],
+   "missing_info": [],
+   "proposed_work_orders": [],
+   "run_id": null
+  }
+ }
+]

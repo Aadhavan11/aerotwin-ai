@@ -1,0 +1,621 @@
+{
+ "synthetic": true,
+ "id": "R-1",
+ "goal": "Plan maintenance for the aircraft that need attention",
+ "mode": "scripted",
+ "status": "done",
+ "steps": [
+  {
+   "n": 1,
+   "agent": "health",
+   "kind": "thought",
+   "tool": null,
+   "input": null,
+   "output": null,
+   "text": "Scan the fleet for components with low RUL or anomalies.",
+   "ts": "2026-10-12T12:00:03Z"
+  },
+  {
+   "n": 2,
+   "agent": "health",
+   "kind": "tool_call",
+   "tool": "list_at_risk",
+   "input": {
+    "horizon_cycles": 60
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:06Z"
+  },
+  {
+   "n": 3,
+   "agent": "health",
+   "kind": "tool_result",
+   "tool": "list_at_risk",
+   "input": null,
+   "output": {
+    "count": 3,
+    "top": [
+     {
+      "component_id": "SIM-017/engine_2",
+      "health": 0.18,
+      "rul_p10": 18,
+      "is_anomaly": true
+     }
+    ]
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:09Z"
+  },
+  {
+   "n": 4,
+   "agent": "health",
+   "kind": "tool_call",
+   "tool": "get_sensor_trend",
+   "input": {
+    "component_id": "SIM-017/engine_2",
+    "last": 30
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:12Z"
+  },
+  {
+   "n": 5,
+   "agent": "health",
+   "kind": "tool_result",
+   "tool": "get_sensor_trend",
+   "input": null,
+   "output": {
+    "T50_change": "+29",
+    "Nc_change": "+15",
+    "note": "rising LPT outlet temperature (T50)"
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:15Z"
+  },
+  {
+   "n": 6,
+   "agent": "health",
+   "kind": "summary",
+   "tool": null,
+   "input": null,
+   "output": null,
+   "text": "SIM-017 engine 2 shows an abnormal T50 (LPT outlet temperature) trend. RUL p10/p50/p90 = 18/22/25 cycles; deadline is set from p10.",
+   "ts": "2026-10-12T12:00:18Z"
+  },
+  {
+   "n": 7,
+   "agent": "scheduling",
+   "kind": "tool_call",
+   "tool": "derive_tasks",
+   "input": {},
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:21Z"
+  },
+  {
+   "n": 8,
+   "agent": "scheduling",
+   "kind": "tool_result",
+   "tool": "derive_tasks",
+   "input": null,
+   "output": {
+    "tasks": 5,
+    "first": "T-SIM-017-engine_2-001",
+    "deadline": "2026-10-17T00:00:00Z"
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:24Z"
+  },
+  {
+   "n": 9,
+   "agent": "scheduling",
+   "kind": "tool_call",
+   "tool": "find_ground_windows",
+   "input": {
+    "tail": "SIM-017",
+    "horizon_h": 108
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:27Z"
+  },
+  {
+   "n": 10,
+   "agent": "scheduling",
+   "kind": "tool_result",
+   "tool": "find_ground_windows",
+   "input": null,
+   "output": {
+    "windows": [
+     {
+      "station": "DFW",
+      "start": "2026-10-12T19:23:00Z",
+      "hours": 11.1
+     },
+     {
+      "station": "DFW",
+      "start": "2026-10-13T19:23:00Z",
+      "hours": 11.1
+     }
+    ]
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:30Z"
+  },
+  {
+   "n": 11,
+   "agent": "scheduling",
+   "kind": "tool_call",
+   "tool": "solve_schedule",
+   "input": {
+    "mode": "cpsat"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:33Z"
+  },
+  {
+   "n": 12,
+   "agent": "scheduling",
+   "kind": "tool_result",
+   "tool": "solve_schedule",
+   "input": null,
+   "output": {
+    "plan_id": "P-2",
+    "feasible": true,
+    "solve_seconds": 0.8
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:36Z"
+  },
+  {
+   "n": 13,
+   "agent": "scheduling",
+   "kind": "tool_call",
+   "tool": "solve_schedule",
+   "input": {
+    "mode": "static_baseline"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:39Z"
+  },
+  {
+   "n": 14,
+   "agent": "scheduling",
+   "kind": "tool_result",
+   "tool": "solve_schedule",
+   "input": null,
+   "output": {
+    "plan_id": "P-1",
+    "feasible": true,
+    "downtime_h": 13.43
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:42Z"
+  },
+  {
+   "n": 15,
+   "agent": "scheduling",
+   "kind": "summary",
+   "tool": null,
+   "input": null,
+   "output": null,
+   "text": "Best window for the engine job: DFW 2026-10-12T20:30:00Z; baseline would delay 5 flights.",
+   "ts": "2026-10-12T12:00:45Z"
+  },
+  {
+   "n": 16,
+   "agent": "logistics",
+   "kind": "tool_call",
+   "tool": "check_parts",
+   "input": {
+    "station": "DFW",
+    "part": "BORESCOPE-KIT"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:48Z"
+  },
+  {
+   "n": 17,
+   "agent": "logistics",
+   "kind": "tool_result",
+   "tool": "check_parts",
+   "input": null,
+   "output": {
+    "on_hand": 2,
+    "eta_hours": 8.0,
+    "ship_from": null
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:51Z"
+  },
+  {
+   "n": 18,
+   "agent": "logistics",
+   "kind": "tool_call",
+   "tool": "match_technicians",
+   "input": {
+    "station": "DFW",
+    "skill": "engine"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:00:54Z"
+  },
+  {
+   "n": 19,
+   "agent": "logistics",
+   "kind": "tool_result",
+   "tool": "match_technicians",
+   "input": null,
+   "output": {
+    "technicians": [
+     "DFW-T2",
+     "DFW-T3"
+    ]
+   },
+   "text": "",
+   "ts": "2026-10-12T12:00:57Z"
+  },
+  {
+   "n": 20,
+   "agent": "logistics",
+   "kind": "summary",
+   "tool": null,
+   "input": null,
+   "output": null,
+   "text": "DFW has 2 borescope kits arriving in 8 h and two engine technicians; ATL has none on hand (ship from DFW, $800).",
+   "ts": "2026-10-12T12:01:00Z"
+  },
+  {
+   "n": 21,
+   "agent": "operations",
+   "kind": "tool_call",
+   "tool": "simulate_plan",
+   "input": {
+    "plan_id": "P-2"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:01:03Z"
+  },
+  {
+   "n": 22,
+   "agent": "operations",
+   "kind": "tool_result",
+   "tool": "simulate_plan",
+   "input": null,
+   "output": {
+    "downtime_h": 0.0,
+    "flights_affected": 0,
+    "logistics_cost_usd": 0.0,
+    "tech_utilization": 0.011,
+    "hangar_utilization": 0.012,
+    "schedule_changes": 0,
+    "tasks_total": 5,
+    "tasks_scheduled": 5,
+    "late_or_unscheduled": 0
+   },
+   "text": "",
+   "ts": "2026-10-12T12:01:06Z"
+  },
+  {
+   "n": 23,
+   "agent": "operations",
+   "kind": "summary",
+   "tool": null,
+   "input": null,
+   "output": null,
+   "text": "Plan P-2: downtime 0.0 h, flights affected 0, logistics $0.",
+   "ts": "2026-10-12T12:01:09Z"
+  },
+  {
+   "n": 24,
+   "agent": "coordinator",
+   "kind": "tool_call",
+   "tool": "search_kb",
+   "input": {
+    "query": "engine borescope inspection"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:01:12Z"
+  },
+  {
+   "n": 25,
+   "agent": "coordinator",
+   "kind": "tool_result",
+   "tool": "search_kb",
+   "input": null,
+   "output": {
+    "results": [
+     {
+      "doc_id": "TC-ENG-001",
+      "title": "Engine borescope inspection (synthetic task card)"
+     }
+    ]
+   },
+   "text": "",
+   "ts": "2026-10-12T12:01:15Z"
+  },
+  {
+   "n": 26,
+   "agent": "coordinator",
+   "kind": "tool_call",
+   "tool": "draft_work_orders",
+   "input": {
+    "plan_id": "P-2"
+   },
+   "output": null,
+   "text": "",
+   "ts": "2026-10-12T12:01:18Z"
+  },
+  {
+   "n": 27,
+   "agent": "coordinator",
+   "kind": "tool_result",
+   "tool": "draft_work_orders",
+   "input": null,
+   "output": {
+    "work_orders": [
+     "WO-1",
+     "WO-2",
+     "WO-3",
+     "WO-4",
+     "WO-5"
+    ],
+    "status": "pending_approval"
+   },
+   "text": "",
+   "ts": "2026-10-12T12:01:21Z"
+  },
+  {
+   "n": 28,
+   "agent": "coordinator",
+   "kind": "summary",
+   "tool": null,
+   "input": null,
+   "output": null,
+   "text": "Recommend engine 2 borescope inspection on SIM-017 at DFW, Oct 12 20:30Z to 02:30Z: the first window with an engine technician and the kit on hand, 11.12 h ground time, no flight delay. Waiting for the static home-base policy would delay 5 flights and cost $800 in shipping. Work orders are drafted for human approval.",
+   "ts": "2026-10-12T12:01:24Z"
+  }
+ ],
+ "plan": {
+  "synthetic": true,
+  "id": "P-2",
+  "created": "2026-10-12T12:05:00Z",
+  "mode": "cpsat",
+  "feasible": true,
+  "infeasible_reasons": [],
+  "assignments": [
+   {
+    "task_id": "T-SIM-017-engine_2-001",
+    "tail": "SIM-017",
+    "station": "DFW",
+    "start": "2026-10-12T20:30:00Z",
+    "end": "2026-10-13T02:30:00Z",
+    "technician_id": "DFW-T2",
+    "part_source": null,
+    "window_hours": 11.12,
+    "extension_h": 0.0,
+    "reason": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT on hand (ready 8.0 h after now); 0 h of extension; finishes 93.5 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-004-brakes-001",
+    "tail": "SIM-004",
+    "station": "DEN",
+    "start": "2026-10-12T19:42:00Z",
+    "end": "2026-10-12T22:42:00Z",
+    "technician_id": "DEN-T1",
+    "part_source": null,
+    "window_hours": 10.8,
+    "extension_h": 0.0,
+    "reason": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on hand (in stock); 0 h of extension; finishes 61.3 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-011-hydraulics-001",
+    "tail": "SIM-011",
+    "station": "LAX",
+    "start": "2026-10-12T19:39:00Z",
+    "end": "2026-10-13T00:39:00Z",
+    "technician_id": "LAX-T2",
+    "part_source": null,
+    "window_hours": 10.85,
+    "extension_h": 0.0,
+    "reason": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP on hand (in stock); 0 h of extension; finishes 71.3 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-020-avionics-001",
+    "tail": "SIM-020",
+    "station": "SEA",
+    "start": "2026-10-12T19:50:00Z",
+    "end": "2026-10-12T21:50:00Z",
+    "technician_id": "SEA-T1",
+    "part_source": null,
+    "window_hours": 10.67,
+    "extension_h": 0.0,
+    "reason": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU on hand (in stock); 0 h of extension; finishes 38.2 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-008-landing_gear-001",
+    "tail": "SIM-008",
+    "station": "MIA",
+    "start": "2026-10-12T19:07:00Z",
+    "end": "2026-10-12T23:07:00Z",
+    "technician_id": "MIA-T1",
+    "part_source": null,
+    "window_hours": 11.38,
+    "extension_h": 0.0,
+    "reason": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; finishes 84.9 h before the deadline."
+   }
+  ],
+  "metrics": {
+   "downtime_h": 0.0,
+   "flights_affected": 0,
+   "logistics_cost_usd": 0.0,
+   "tech_utilization": 0.011,
+   "hangar_utilization": 0.012,
+   "schedule_changes": 0,
+   "tasks_total": 5,
+   "tasks_scheduled": 5,
+   "late_or_unscheduled": 0
+  },
+  "objective_value": 0.0,
+  "solve_seconds": 0.8,
+  "evidence": [
+   {
+    "kind": "health",
+    "ref": "SIM-017/engine_2",
+    "note": "RUL p10 18 cycles, anomaly 0.91"
+   },
+   {
+    "kind": "tool_call",
+    "ref": "TC-3",
+    "note": "solve_schedule(cpsat)"
+   }
+  ]
+ },
+ "work_orders": [
+  {
+   "synthetic": true,
+   "id": "WO-1",
+   "tail": "SIM-017",
+   "task_id": "T-SIM-017-engine_2-001",
+   "station": "DFW",
+   "start": "2026-10-12T20:30:00Z",
+   "end": "2026-10-13T02:30:00Z",
+   "description": "Engine 2 borescope inspection (SIM-017) at DFW",
+   "status": "pending_approval",
+   "plan_id": "P-2",
+   "evidence": [
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT "
+    },
+    {
+     "kind": "kb",
+     "ref": "TC-ENG-001",
+     "note": "synthetic task card"
+    }
+   ],
+   "decided_by": null,
+   "decided_at": null,
+   "note": ""
+  },
+  {
+   "synthetic": true,
+   "id": "WO-2",
+   "tail": "SIM-004",
+   "task_id": "T-SIM-004-brakes-001",
+   "station": "DEN",
+   "start": "2026-10-12T19:42:00Z",
+   "end": "2026-10-12T22:42:00Z",
+   "description": "Brake assembly replacement (SIM-004) at DEN",
+   "status": "pending_approval",
+   "plan_id": "P-2",
+   "evidence": [
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on ha"
+    },
+    {
+     "kind": "kb",
+     "ref": "TC-GEN-001",
+     "note": "synthetic task card"
+    }
+   ],
+   "decided_by": null,
+   "decided_at": null,
+   "note": ""
+  },
+  {
+   "synthetic": true,
+   "id": "WO-3",
+   "tail": "SIM-011",
+   "task_id": "T-SIM-011-hydraulics-001",
+   "station": "LAX",
+   "start": "2026-10-12T19:39:00Z",
+   "end": "2026-10-13T00:39:00Z",
+   "description": "Hydraulic pump replacement (SIM-011) at LAX",
+   "status": "pending_approval",
+   "plan_id": "P-2",
+   "evidence": [
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP o"
+    },
+    {
+     "kind": "kb",
+     "ref": "TC-GEN-001",
+     "note": "synthetic task card"
+    }
+   ],
+   "decided_by": null,
+   "decided_at": null,
+   "note": ""
+  },
+  {
+   "synthetic": true,
+   "id": "WO-4",
+   "tail": "SIM-020",
+   "task_id": "T-SIM-020-avionics-001",
+   "station": "SEA",
+   "start": "2026-10-12T19:50:00Z",
+   "end": "2026-10-12T21:50:00Z",
+   "description": "Avionics LRU swap (SIM-020) at SEA",
+   "status": "pending_approval",
+   "plan_id": "P-2",
+   "evidence": [
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU"
+    },
+    {
+     "kind": "kb",
+     "ref": "TC-GEN-001",
+     "note": "synthetic task card"
+    }
+   ],
+   "decided_by": null,
+   "decided_at": null,
+   "note": ""
+  },
+  {
+   "synthetic": true,
+   "id": "WO-5",
+   "tail": "SIM-008",
+   "task_id": "T-SIM-008-landing_gear-001",
+   "station": "MIA",
+   "start": "2026-10-12T19:07:00Z",
+   "end": "2026-10-12T23:07:00Z",
+   "description": "Landing gear actuator check (SIM-008) at MIA",
+   "status": "pending_approval",
+   "plan_id": "P-2",
+   "evidence": [
+    {
+     "kind": "plan",
+     "ref": "P-2",
+     "note": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; f"
+    },
+    {
+     "kind": "kb",
+     "ref": "TC-GEN-001",
+     "note": "synthetic task card"
+    }
+   ],
+   "decided_by": null,
+   "decided_at": null,
+   "note": ""
+  }
+ ],
+ "explanation": "Recommend engine 2 borescope inspection on SIM-017 at DFW, Oct 12 20:30Z to 02:30Z: the first window with an engine technician and the kit on hand, 11.12 h ground time, no flight delay. Waiting for the static home-base policy would delay 5 flights and cost $800 in shipping. Work orders are drafted for human approval.",
+ "missing_info": []
+}

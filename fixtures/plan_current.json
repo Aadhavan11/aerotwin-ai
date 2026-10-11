@@ -1,0 +1,95 @@
+{
+ "synthetic": true,
+ "id": "P-2",
+ "created": "2026-10-12T12:05:00Z",
+ "mode": "cpsat",
+ "feasible": true,
+ "infeasible_reasons": [],
+ "assignments": [
+  {
+   "task_id": "T-SIM-017-engine_2-001",
+   "tail": "SIM-017",
+   "station": "DFW",
+   "start": "2026-10-12T20:30:00Z",
+   "end": "2026-10-13T02:30:00Z",
+   "technician_id": "DFW-T2",
+   "part_source": null,
+   "window_hours": 11.12,
+   "extension_h": 0.0,
+   "reason": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT on hand (ready 8.0 h after now); 0 h of extension; finishes 93.5 h before the deadline."
+  },
+  {
+   "task_id": "T-SIM-004-brakes-001",
+   "tail": "SIM-004",
+   "station": "DEN",
+   "start": "2026-10-12T19:42:00Z",
+   "end": "2026-10-12T22:42:00Z",
+   "technician_id": "DEN-T1",
+   "part_source": null,
+   "window_hours": 10.8,
+   "extension_h": 0.0,
+   "reason": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on hand (in stock); 0 h of extension; finishes 61.3 h before the deadline."
+  },
+  {
+   "task_id": "T-SIM-011-hydraulics-001",
+   "tail": "SIM-011",
+   "station": "LAX",
+   "start": "2026-10-12T19:39:00Z",
+   "end": "2026-10-13T00:39:00Z",
+   "technician_id": "LAX-T2",
+   "part_source": null,
+   "window_hours": 10.85,
+   "extension_h": 0.0,
+   "reason": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP on hand (in stock); 0 h of extension; finishes 71.3 h before the deadline."
+  },
+  {
+   "task_id": "T-SIM-020-avionics-001",
+   "tail": "SIM-020",
+   "station": "SEA",
+   "start": "2026-10-12T19:50:00Z",
+   "end": "2026-10-12T21:50:00Z",
+   "technician_id": "SEA-T1",
+   "part_source": null,
+   "window_hours": 10.67,
+   "extension_h": 0.0,
+   "reason": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU on hand (in stock); 0 h of extension; finishes 38.2 h before the deadline."
+  },
+  {
+   "task_id": "T-SIM-008-landing_gear-001",
+   "tail": "SIM-008",
+   "station": "MIA",
+   "start": "2026-10-12T19:07:00Z",
+   "end": "2026-10-12T23:07:00Z",
+   "technician_id": "MIA-T1",
+   "part_source": null,
+   "window_hours": 11.38,
+   "extension_h": 0.0,
+   "reason": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; finishes 84.9 h before the deadline."
+  }
+ ],
+ "metrics": {
+  "downtime_h": 0.0,
+  "flights_affected": 0,
+  "logistics_cost_usd": 0.0,
+  "tech_utilization": 0.011,
+  "hangar_utilization": 0.012,
+  "schedule_changes": 0,
+  "tasks_total": 5,
+  "tasks_scheduled": 5,
+  "late_or_unscheduled": 0
+ },
+ "objective_value": 0.0,
+ "solve_seconds": 0.8,
+ "evidence": [
+  {
+   "kind": "health",
+   "ref": "SIM-017/engine_2",
+   "note": "RUL p10 18 cycles, anomaly 0.91"
+  },
+  {
+   "kind": "tool_call",
+   "ref": "TC-3",
+   "note": "solve_schedule(cpsat)"
+  }
+ ]
+}

@@ -1,8 +1,6 @@
-"""Shared AeroTwin models.
+"""AeroTwin AI data contracts. SINGLE SOURCE OF TRUTH (copied from CONTRACTS.md, tested with pydantic 2.14).
 
-STAND-IN: verbatim copy of the python block in CONTRACTS.md section 2, committed by Pardhu so the
-solver / what-if code and tests run before Shamit's app/contracts/models.py lands.
-When Shamit's version is merged, keep THEIRS (CONTRACTS.md wins); nothing here is customised.
+Do not redefine these models elsewhere. To change one: edit CONTRACTS.md, note it in CONTRACTS-CHANGELOG.md, tell the group.
 """
 from __future__ import annotations
 from datetime import datetime

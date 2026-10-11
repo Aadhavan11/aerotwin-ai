@@ -11,7 +11,14 @@ id_*
 __pycache__/
 node_modules/
 
-# local data and environments (never commit)
+# build output and local data
 data/
+web/dist/
+*.db
+*.db-wal
+*.db-shm
 .venv/
 .pytest_cache/
+
+# keep the template, ignore real env files
+!.env.example

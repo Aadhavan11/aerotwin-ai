@@ -57,3 +57,16 @@ the model, the twin, and the replan loop. Decide at C1 whether piece 12 continue
 - **LLM mode + copilot backend (Aashirth):** only after the model and twin reach L2. `ChatResponse` shape is fixed in `CONTRACTS.md` §2; Shamit's drawer renders it as-is.
 - **Shamit's screens** call: `/fleet`, `/plan`, `/plan/replan`, `/whatif/compare`, `/scenario/inject`, `/scenario/reset`, `/agents/run`, `/agents/runs/{id}`, `/copilot/chat`, `/workorders`, `/audit`. The mock covers all of them from minute one.
 - Endpoints and function signatures in `CONTRACTS.md` did not change; only the person behind each one did.
+
+## Delivered so far (Shamit's pieces 1-8, built 2026-10-10 ~10:30 PM)
+
+| Piece | Where | Verified how |
+|---|---|---|
+| 1 Contracts | `app/contracts/models.py`, `requests.py` | 39 models load; fixtures and JSON examples validate (`tests/test_contracts.py`) |
+| 2 DB, fixtures, Makefile, requirements | `app/db.py`, `scripts/reset_db.py`, `scripts/make_fixtures.py`, `fixtures/`, `Makefile`, `requirements.txt`, `.env.example` | `make reset` seeds 24 aircraft, 144 components, 624 legs; `tests/test_db_mode.py` |
+| 3 API skeleton + mock | `app/main.py`, `app/api/{core,mock,mockstate}.py` | every contract endpoint answers; `tests/test_api_mock.py`; `GET /health` shows which groups are mock |
+| 4-7 Web app | `web/` (Vite + React + TypeScript + Tailwind + Recharts): shell, Fleet Overview, Planning board, Simulation Lab, Copilot drawer (chat, agent activity, work orders, audit); Aircraft screen is a **placeholder for Aadhavan** | strict TypeScript build passes; driven in headless Chromium through the whole golden path (inject -> agents -> approve -> delay -> replan -> compare) |
+| 8 Golden check | `scripts/golden.py` (`make demo-check`) | 16/16 checks pass over real HTTP against the mock groups |
+
+**Everything above runs on MOCK data for the other people's groups until their real routers exist** (`INTEGRATION.md` section 13). Run it: `make setup`, `make reset`, `make api`, `make web`, open http://localhost:5173.
+
