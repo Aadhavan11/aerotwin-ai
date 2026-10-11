@@ -87,6 +87,14 @@ def test_integration_server_mounts_team_routes(monkeypatch):
         paths=client.get('/openapi.json').json()['paths']
         assert all(p in paths for p in ('/sim/step','/scenario/inject','/plan','/plan/replan','/agents/run'))
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _live_world(monkeypatch):
+    """tests/conftest.py sets MOCK=1 for the API-mock suite; the simulator integration needs the real modules."""
+    monkeypatch.delenv("MOCK", raising=False)
+
 
 def test_platform_sqlite_schema(monkeypatch,tmp_path):
     from app import db,settings
@@ -100,11 +108,3 @@ def test_platform_sqlite_schema(monkeypatch,tmp_path):
         assert conn.execute('SELECT COUNT(*) FROM telemetry').fetchone()[0]==152
         assert isinstance(conn.execute('SELECT id FROM audit').fetchone()[0],int)
         assert conn.execute('SELECT COUNT(*) FROM aircraft').fetchone()[0]==24
-
-import pytest
-
-
-@pytest.fixture(autouse=True)
-def _live_world(monkeypatch):
-    """tests/conftest.py sets MOCK=1 for the API-mock suite; the simulator integration needs the real modules."""
-    monkeypatch.delenv("MOCK", raising=False)

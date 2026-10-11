@@ -8,6 +8,7 @@ from app.contracts.models import Comparison, Plan
 from app.contracts.requests import SolveRequest
 from app.solver import service
 from app.solver.engine import solve
+from app.solver.exposure import exposure
 from app.solver.store import STORE
 from app.solver.tasks import derive_tasks
 
@@ -18,6 +19,8 @@ class PlanBundle(BaseModel):
     current: Plan
     baseline: Plan
     compare: Comparison
+    # risk view that cost metrics can hide: hours to fix, flights flown with the fault open, slack before the hard deadline
+    exposure: dict[str, list[dict]] = {}
 
 
 @router.get("/plan", response_model=PlanBundle)
@@ -29,8 +32,10 @@ def get_plan() -> PlanBundle:
     greedy = STORE.greedy_cache.get(current.id)
     if greedy is None:
         greedy = STORE.greedy_cache[current.id] = solve(state, derive_tasks(state), None, "greedy")
+    tasks = derive_tasks(state)
     return PlanBundle(current=current, baseline=baseline,
-                      compare=compare(state, {"baseline": baseline, "greedy": greedy, "optimized": current}))
+                      compare=compare(state, {"baseline": baseline, "greedy": greedy, "optimized": current}),
+                      exposure={"baseline": exposure(state, tasks, baseline), "optimized": exposure(state, tasks, current)})
 
 
 @router.post("/plan/solve", response_model=Plan)

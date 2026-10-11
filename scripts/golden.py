@@ -60,7 +60,10 @@ def run(h, poll_timeout: float = 90.0, verbose: bool = True) -> list[tuple[str, 
     else:
         check("GET /fleet", False, str(fleet)[:100])
 
-    ev = {"type": "anomaly", "at": "2026-10-12T12:00:00Z", "tail": "SIM-017", "component_id": "SIM-017/engine_2", "severity": 0.9}
+    def sim_now() -> str:  # events must be stamped with the current SIMULATION time (the real simulator enforces this)
+        return h.get("/health")[1]["sim_now"]
+
+    ev = {"type": "anomaly", "at": sim_now(), "tail": "SIM-017", "component_id": "SIM-017/engine_2", "severity": 0.9}
     s, r = h.post("/scenario/inject", ev)
     check("POST /scenario/inject (anomaly)", s == 200 and "event_id" in r, str(r)[:100])
 
@@ -101,11 +104,11 @@ def run(h, poll_timeout: float = 90.0, verbose: bool = True) -> list[tuple[str, 
         s, audit = h.get("/audit")
         check("Audit log records the approval", s == 200 and any(a["action"].endswith("approved") and a["ref"] == wid for a in audit), f"{len(audit) if s == 200 else '?'} entries")
 
-    s, rep = h.post("/plan/replan", {"event": {"type": "part_delay", "at": "2026-10-12T14:00:00Z", "station": "DFW", "part": "BORESCOPE-KIT", "delay_hours": 12}})
+    s, rep = h.post("/plan/replan", {"event": {"type": "part_delay", "at": sim_now(), "station": "DFW", "part": "BORESCOPE-KIT", "delay_hours": 36}})
     if s == 200:
         rr = ReplanResult.model_validate(rep)
         changed = len(rr.diff.moved) + len(rr.diff.added) + len(rr.diff.dropped) > 0
-        check("Replan after a 12 h kit delay: plan changed", changed, f"{len(rr.diff.moved)} moved, solve {rr.solve_seconds:.2f}s")
+        check("Replan after a 36 h kit delay: plan changed", changed, f"{len(rr.diff.moved)} moved, solve {rr.solve_seconds:.2f}s")
         check("Replan: new plan feasible (or explains why not)", rr.after.feasible or bool(rr.after.infeasible_reasons), f"feasible={rr.after.feasible} {rr.after.infeasible_reasons[:1]}")
     else:
         check("POST /plan/replan", False, str(rep)[:100])

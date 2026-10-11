@@ -4,12 +4,14 @@ I merged `main` (Shamit), `aadhavan/simulator-integration` (Aadhavan) and `aashi
 including `python -m scripts.golden` against a live `app.main`. This branch is therefore **a complete integration base**: it contains all three branches plus the
 scheduler, what-if and agent code. Every item below was reproduced; the patches were tested in a scratch copy and are NOT applied to anyone's files.
 
-## Where things stand
+## Where things stand (updated after merging `integration/backend`)
 
-* Full suite on this branch: **265 passed, 13 skipped, 2 failed** (both in `tests/test_db_mode.py`, see item 7; one also fails on plain `main`).
-* `python -m scripts.golden` against `app.main`:
-  * today (no `app/sim/router.py`): sim is still MOCK, **15/16** pass, the one failure is `GET /aircraft/SIM-017` (the twin is never fed because the simulator is not mounted);
-  * with items 1 and 2 below applied: **all six groups real, 13/16**, work order approved and audited end to end. The 3 failures are items 3 and 4.
+* Whole repo on this branch: **292 passed, 13 skipped, 0 failed**. Everything below under "Items" that was about wiring is now fixed upstream
+  (simulator mounted, telemetry ids aligned, order-dependent test fixed); items 3 to 6 are still open.
+* `python -m scripts.golden` against a live `app.main`: **all six groups real, 14/16**. The two failures ("Agents: plan feasible" and
+  "Replan: plan changed") have ONE cause: the injected anomaly comes back from the real model as **RUL p10 = 0** (p50 4, p90 10.8) when the NASA files are absent
+  (synthetic fallback), so the deadline is hours away and the planner correctly says "no feasible slot ... too short for the 6 h job". Nothing is force-fitted.
+  With RUL about 18 to 25 as in the concept doc the plan is feasible (that is what the golden fleet and the tests use).
 
 ## Items, by owner
 
@@ -57,3 +59,23 @@ scheduler, what-if and agent code. Every item below was reproduced; the patches 
 * `draft_work_orders` delegates to the copilot's audited store, so `POST /workorders/{id}/decision` finds the orders my agents draft.
 * `get_sensor_trend` uses the twin's `get_telemetry` and says so when there is none.
 * An infeasible task gets a "least-bad" suggestion (earliest slot after the deadline), labelled NOT a plan and never scheduled.
+
+### Correction (Pardhu): the Lab "Force service at ATL" scenario is fine as it is
+
+I earlier said it needed `"tail": "SIM-017"`. That was based on my stand-in fleet. On the real generated fleet SIM-017 is homed at DFW and only DFW can service it before its
+deadline, so the scenario is infeasible with or without the tail, and the Lab correctly shows the reasons. Nothing to change in the Lab. (Thanks to Shamit's review for catching it.)
+
+### Baseline contrast (agreed approach; answers "the optimized plan does not visibly beat the baseline")
+
+* **Policy unchanged:** baseline = each task at the aircraft's HOME BASE in the LAST ground window before its deadline. It is the honest "fixed schedule" comparison; a weaker straw man would be misleading.
+* **Why costs tie on the real fleet:** SIM-017 is homed at DFW (kits on hand), so both plans cost $0, 0 h downtime, 0 flights delayed. The real difference is TIMING and SAFETY MARGIN, which those metrics cannot show.
+* **New, no model change:** `GET /plan` now has an additive `exposure: {baseline: [...], optimized: [...]}`, and every `compare` row has `exposure`. Per condition-driven task:
+  `hours_to_fix`, `flights_before_fix` (departures flown with the fault open), `slack_to_deadline_h`. On the real fleet with RUL p10 = 18:
+
+  | | baseline | optimized |
+  |---|---|---|
+  | hours until SIM-017 engine_2 is fixed | 92 | 20 |
+  | flights flown with the fault open | 16 | 4 |
+  | margin before the hard deadline | 10 h | 82 h |
+
+* **For Shamit's Planning screen:** add one or two cards from `exposure.baseline[0]` and `exposure.optimized[0]` ("Time to fix", "Margin before deadline"). The scripted agent run and `scripts/plan_demo.py` already print it.

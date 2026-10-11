@@ -323,7 +323,7 @@ def test_get_plan_returns_current_baseline_and_compare(client):
     r = client.get("/plan")
     assert r.status_code == 200
     body = r.json()
-    assert set(body) == {"current", "baseline", "compare"}
+    assert set(body) == {"current", "baseline", "compare", "exposure"}
     assert body["current"]["mode"] == "cpsat" and body["baseline"]["mode"] == "static_baseline"
     assert [x["name"] for x in body["compare"]["rows"]] == ["baseline", "greedy", "optimized"]
     assert body["current"]["synthetic"] is True and body["current"]["feasible"] is True
@@ -435,3 +435,64 @@ def test_already_applied_replan_does_not_store_the_event_but_still_refreshes_the
     from app.solver.store import STORE as store
     assert store.world_events == []                                                # the platform owns that event
     assert client.get("/plan").json()["baseline"]["id"] != first["baseline"]["id"]
+
+
+# ------------------------------------------------------------------ several simultaneous faults, fleet-wide (stretch goal)
+def _many_faults(n: int, seed: int = 3):
+    import random
+    from app.contracts.models import RulEstimate
+    st = golden_state()
+    rng = random.Random(seed)
+    comps = [c for c in st.components if c.kind in ("engine", "hydraulics", "avionics", "brakes") and c.component_id != "SIM-017/engine_2"]
+    rng.shuffle(comps)
+    for c in comps[:n]:
+        p10 = rng.uniform(25, 55)
+        c.rul_cycles = RulEstimate(p10=p10, p50=p10 * 1.2, p90=p10 * 1.4)
+        c.status = "watch"
+    return st
+
+
+@pytest.mark.parametrize("faults", [6, 10])
+def test_many_simultaneous_faults_stay_valid_and_cpsat_never_loses_to_greedy(faults):
+    st = _many_faults(faults)
+    tasks = derive_tasks(st)
+    assert len(tasks) >= faults                                         # every fault became a task (plus the golden one and a routine check)
+    plans = {m: solve(st, tasks, mode=m, time_limit_s=5.0) for m in ("greedy", "cpsat")}
+    for m, p in plans.items():
+        assert_no_fallback(p, m)
+        assert hard_violations(st, tasks, p) == [], m
+        assert p.feasible == (p.metrics.late_or_unscheduled == 0)
+    assert plans["cpsat"].objective_value <= plans["greedy"].objective_value + 1e-3
+    assert plans["cpsat"].metrics.tasks_scheduled >= plans["greedy"].metrics.tasks_scheduled
+    assert plans["cpsat"].solve_seconds < 6.5                           # the 5 s limit holds even when the model is large
+    # competing jobs really do share people and kits: nobody is double-booked, kits are not over-used (checked by hard_violations)
+    kit_jobs = [a for a in plans["cpsat"].assignments if next(t for t in tasks if t.id == a.task_id).required_part == "BORESCOPE-KIT"]
+    assert len(kit_jobs) >= 2
+
+
+def test_a_chain_of_disruptions_keeps_every_intermediate_plan_valid_and_consistent(golden, golden_tasks):
+    events = [ev(id="E-31", type="part_delay", station="DFW", part="BORESCOPE-KIT", delay_hours=12),
+              ev(id="E-32", type="tech_unavailable", technician_id="DFW-T1"),
+              ev(id="E-33", type="anomaly", component_id="SIM-005/hydraulics", severity=0.4),
+              ev(id="E-34", type="facility_closed", station="LAX")]
+    state, plan = golden, solve(golden, golden_tasks, mode="cpsat")
+    for e in events:
+        r = replan(state, plan, e)
+        state = apply_event_to_state(state, e)                          # the world carries every earlier disruption forward
+        tasks = derive_tasks(state)
+        assert hard_violations(state, tasks, r.after) == [], e.id
+        assert r.after.feasible or r.after.infeasible_reasons
+        assert r.solve_seconds < 5.0
+        plan = r.after
+    assert not [a for a in plan.assignments if a.station == "LAX" or a.technician_id == "DFW-T1"]
+    assert next(a for a in plan.assignments if a.task_id == "T-SIM-017-engine_2-001").start >= T0 + hrs(14)
+
+
+def test_get_plan_and_compare_rows_carry_the_exposure_view(client):
+    body = client.get("/plan").json()
+    assert set(body["exposure"]) == {"baseline", "optimized"}
+    b, o = body["exposure"]["baseline"][0], body["exposure"]["optimized"][0]
+    assert b["task_id"] == o["task_id"] == "T-SIM-017-engine_2-001" and o["hours_to_fix"] < b["hours_to_fix"]
+    rows = {r["name"]: r for r in body["compare"]["rows"]}
+    assert rows["optimized"]["exposure"][0]["hours_to_fix"] == o["hours_to_fix"]
+    assert rows["baseline"]["exposure"][0]["slack_to_deadline_h"] == b["slack_to_deadline_h"]

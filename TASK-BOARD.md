@@ -1,6 +1,6 @@
 # TASK BOARD: who builds what, when, and who is waiting on whom
 
-Clock times are ET, Sat 2026-10-10 evening to Sun morning. They assume the event ends Sun ~7 AM (**unverified: confirm the real deadline**).
+Clock times are ET, Sat 2026-10-10 evening to Sun morning. The event ends **Sun 9:00 AM** (official guide, checked 2026-10-10, "no exceptions"); the times below were planned for a 7 AM finish, so the extra 2 hours are buffer: freeze code at 7:00 AM, submit by 8:15 AM. Rules, judging format and the submission checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md).
 Tick boxes by editing this file in a small commit (`[docs] tick ...`), so everyone sees progress in the repo.
 
 ## 1. Who owns which feature
@@ -41,7 +41,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 ### Block 4: 1:30 to 3:15 AM, finish the six features, then freeze
 - [ ] **Shamit:** LLM mode for agents (tool loop + number check + cache); copilot chat; work orders + audit; Operations agent using `simulate`.
 - [ ] **Aashirth:** tests + `HEALTH.md`; help Shamit with `search_kb` and the numeric-claims check; polish predicted curves.
-- [x] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning. [ ] then the doc's stretch goals if all six are green (not started).
+- [x] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning. [x] the doc's stretch goals: skill levels, spare-part repositioning, multi-fault (built and tested).
 - [ ] **Aadhavan:** Simulation Lab screen; Copilot drawer + Agent Activity + work-order approval; error/loading states.
 - [ ] **3:15 AM: FEATURE FREEZE (C2).** Sleep shift 1: Aashirth + Pardhu (3:15 to 5:00). Shamit + Aadhavan continue.
 

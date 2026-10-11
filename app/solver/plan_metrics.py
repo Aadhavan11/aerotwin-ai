@@ -25,6 +25,7 @@ from typing import Iterable, Optional
 
 from app.contracts.models import Assignment, FleetState, ObjectiveWeights, Plan, PlanMetrics, Task
 from app.solver.common import UNSCHEDULED_PENALTY, aware, minutes_between
+from app.solver.skills import has_skill
 
 EARLINESS_PER_H = 0.05   # cost units per hour a job finishes later; a gentle tie-breaker, never trades against a flight or a dollar bill
 
@@ -159,7 +160,7 @@ def validate_plan(state: FleetState, tasks: list[Task], assignments: list[Assign
             bad.append(f"{a.task_id}: unknown technician {a.technician_id}")
         else:
             tc, tstation = tech
-            if t.required_skill not in tc.skills:
+            if not has_skill(tc.skills, t.required_skill):
                 bad.append(f"{a.task_id}: technician {tc.id} lacks skill {t.required_skill}")
             if not tc.available:
                 bad.append(f"{a.task_id}: technician {tc.id} is unavailable")

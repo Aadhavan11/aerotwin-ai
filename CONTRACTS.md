@@ -384,7 +384,7 @@ TypeScript types with `npx openapi-typescript http://localhost:8000/openapi.json
 | `GET /aircraft/{tail}` | | `TwinView` | Aashirth |
 | `GET /aircraft/{tail}/telemetry?component=&last=60` | | `TelemetryRow[]` | Aashirth |
 | `GET /legs?tail=` | | `Leg[]` | Shamit |
-| `GET /plan` | | `{current: Plan, baseline: Plan, compare: Comparison}` | Pardhu |
+| `GET /plan` | | `{current: Plan, baseline: Plan, compare: Comparison, exposure: {baseline: Exposure[], optimized: Exposure[]}}`; `exposure` is optional and additive (default `{}`); `Exposure = {task_id, tail, component_id, scheduled, station, hours_to_fix, flights_before_fix, slack_to_deadline_h}`. It is the risk view that cost metrics can hide when costs tie (hours until the fix, flights flown with the fault open, hours of slack before the hard deadline). Each `compare.rows[]` entry also carries an `exposure` list | Pardhu |
 | `POST /plan/solve` | `{mode: SolveMode, weights?: ObjectiveWeights}` | `Plan` | Pardhu |
 | `POST /plan/replan` | `{event: ScenarioEvent}` | `ReplanResult` | Pardhu |
 | `POST /whatif/compare` | `{scenarios: Scenario[]}` (empty list = the five default what-ifs; `constraints`: `force_station`, `earliest`, optional `tail` to limit them to one aircraft) | `Comparison` | Pardhu |
@@ -504,6 +504,7 @@ Each tool returns JSON-serializable data and an `evidence` reference. Names are 
 | Scheduling | `compare_plans(names)` | | `Comparison` | `whatif.compare` |
 | Logistics | `check_parts(station, part)` | str, str | `{on_hand, eta_hours, ship_from, ship_cost}` | `db` |
 | Logistics | `match_technicians(station, skill, start, end)` | | `[Technician]` | `db` |
+| Logistics | `suggest_repositioning(horizon_cycles?)` | float | `[{kind, part, from_station, to_station, qty, ship_hours, cost_usd, benefit, note}]` advisory only (added by Pardhu) | `solver.reposition` |
 | Logistics | `shortage_report()` | | `[{task_id, missing: "part"|"technician"|"hangar", detail}]` | `solver` |
 | Operations | `simulate_plan(plan_id)` | | `PlanMetrics` | `whatif.simulate` |
 | Operations | `flights_affected(plan_id)` | | `[Leg]` | `whatif` |

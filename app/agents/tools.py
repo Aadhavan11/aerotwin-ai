@@ -1,4 +1,4 @@
-"""The agent tool registry: the 16 deterministic tools of CONTRACTS.md section 6.
+"""The agent tool registry: the 16 deterministic tools of CONTRACTS.md section 6 (+ suggest_repositioning).
 
 Every tool returns ``{"data": <json>, "evidence": <EvidenceRef>, "missing_info": [str]}``. The LLM (later) only chooses tools and
 explains; every number comes from here. Tools read the same state as the planner (``app.solver.service.get_state``: the twin snapshot,
@@ -24,6 +24,8 @@ from app.solver.candidates import SolveContext
 from app.solver.common import aware
 from app.solver.engine import solve
 from app.solver.leastbad import least_bad
+from app.solver.reposition import suggest_repositioning as _suggest_repositioning
+from app.solver.skills import has_skill
 from app.solver.store import STORE
 from app.solver.tasks import derive_tasks_ex
 from app.solver.windows import ground_windows
@@ -202,7 +204,7 @@ def match_technicians(station: str, skill: str, start: str, end: str) -> dict:
     cur = STORE.current
     busy = {a.technician_id for a in (cur.assignments if cur else []) if aware(a.start) < e and s < aware(a.end)}
     techs = [{**t.model_dump(mode="json"), "busy_in_current_plan": t.id in busy} for t in st.technicians
-             if skill in t.skills and t.available and aware(t.shift_start) <= s and e <= aware(t.shift_end)]
+             if has_skill(t.skills, skill) and t.available and aware(t.shift_start) <= s and e <= aware(t.shift_end)]
     return _out(techs, EvidenceRef(kind="tool_call", ref="match_technicians", note=f"{station} {skill}"),
                 [] if techs else [f"no available {skill} technician at {station} for that window"])
 
@@ -234,6 +236,14 @@ def shortage_report() -> dict:
             rows.append({"task_id": a.task_id, "missing": "window",
                          "detail": f"ground window too short; the job overruns it by {a.extension_h:g} h and delays the next departure"})
     return _out(rows, EvidenceRef(kind="plan", ref=plan.id, note=f"{len(rows)} shortage(s)"))
+
+
+def suggest_repositioning(horizon_cycles: float = 120.0) -> dict:
+    """Advisory: parts to move between stations BEFORE a shortage reaches the critical path. Nothing is moved or booked."""
+    state, _ = _state()
+    rows = _suggest_repositioning(state, horizon_cycles)
+    missing = [r["benefit"] for r in rows if r["kind"] == "shortage_no_donor"]
+    return _out(rows, EvidenceRef(kind="tool_call", ref="suggest_repositioning", note=f"{len(rows)} suggestion(s), horizon {horizon_cycles:g} cycles"), missing)
 
 
 # ---------------------------------------------------------------- Operations agent
@@ -305,6 +315,8 @@ TOOLS: dict[str, ToolSpec] = {t.name: t for t in [
              _schema({"station": {"type": "string"}, "skill": {"type": "string"}, "start": {"type": "string"}, "end": {"type": "string"}},
                      ["station", "skill", "start", "end"]), match_technicians),
     ToolSpec("shortage_report", "logistics", "Tasks the plan could not place and parts that must be shipped.", _schema({}), shortage_report),
+    ToolSpec("suggest_repositioning", "logistics", "Advisory: spare parts to move between stations ahead of a predicted shortage (nothing is moved).",
+             _schema({"horizon_cycles": {"type": "number"}}), suggest_repositioning),
     ToolSpec("simulate_plan", "operations", "Metrics of a plan (runs=1 analytic; runs>=2 discrete-event simulation).",
              _schema({"plan_id": {"type": "string"}, "runs": {"type": "integer"}}), simulate_plan),
     ToolSpec("flights_affected", "operations", "Flights whose departure the plan delays.",

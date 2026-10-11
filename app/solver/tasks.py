@@ -21,6 +21,7 @@ from typing import Optional
 
 from app.contracts.models import ComponentState, FleetState, Leg, Task
 from app.solver.cards import TaskCard, load_cards, rul_card_for, scheduled_cards_for
+from app.solver.skills import with_level
 from app.solver.common import DEFAULT_LEGS_PER_DAY, RUL_THRESHOLD_CYCLES, aware, fmt
 
 log = logging.getLogger(__name__)
@@ -77,7 +78,7 @@ def _rul_task(comp: ComponentState, card: TaskCard, state: FleetState, now: date
         id=f"T-{comp.tail}-{_short(comp.component_id)}-{seq:03d}",
         tail=comp.tail, component_id=comp.component_id, title=card.title,
         duration_h=card.duration_h, earliest=now, deadline=deadline,
-        required_skill=card.skill, required_part=card.part,
+        required_skill=with_level(card.skill, card.min_level), required_part=card.part,
         part_qty=card.part_qty if card.part else 1,
         source="rul", basis=basis, synthetic=True,
     )
@@ -132,7 +133,7 @@ def derive_tasks_ex(
         scheduled_tasks.append(Task(
             id=f"T-{tail}-{_short(cid)}-{2 + idx:03d}",
             tail=tail, component_id=cid, title=card.title, duration_h=card.duration_h,
-            earliest=now, deadline=due, required_skill=card.skill, required_part=card.part,
+            earliest=now, deadline=due, required_skill=with_level(card.skill, card.min_level), required_part=card.part,
             part_qty=card.part_qty if card.part else 1, source="scheduled",
             basis=(f"{card.title} every {card.interval_days:g} days after the last maintenance "
                    f"({fmt(aware(comp.last_maintenance))}): due {fmt(due)}, in about {days:.1f} days (synthetic interval)"),

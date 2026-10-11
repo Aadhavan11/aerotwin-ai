@@ -50,8 +50,33 @@ def _rows(sql: str):
         return c.execute(sql).fetchall()
 
 
+def fleet_from_twin() -> FleetOverview:
+    """Aircraft status and worst-component RUL from the twin, stations from the simulator, task deadlines from the planner."""
+    from app.twin import state as twin
+
+    summaries = twin.aircraft_summaries()
+    snap = twin.snapshot()
+    due72 = 0
+    try:
+        from app.solver.service import get_state
+        from app.solver.tasks import derive_tasks
+
+        state, _src = get_state()
+        due72 = sum(1 for t in derive_tasks(state) if t.deadline <= state.now + timedelta(hours=72))
+    except Exception:  # noqa: BLE001  (planner not ready: show 0 rather than fail the page)
+        pass
+    n = len(summaries)
+    kpis = FleetKpis(aircraft=n, needing_attention=sum(1 for a in summaries if a.status in ("watch", "alert")), predicted_maintenance_72h=due72,
+                     in_maintenance=sum(1 for a in summaries if a.status == "in_maintenance"),
+                     readiness_pct=round(100 * sum(1 for a in summaries if a.status not in ("in_maintenance", "aog")) / max(1, n), 1))
+    return FleetOverview(kpis=kpis, aircraft=summaries, stations=snap.stations)
+
+
 @router.get("/fleet", response_model=FleetOverview)
 def fleet(response: Response):
+    if registry.MODULES.get("twin") == "real" and registry.MODULES.get("sim") == "real":
+        response.headers["X-Data-Source"] = "twin"
+        return fleet_from_twin()
     if _use_db():
         response.headers["X-Data-Source"] = "database"
         return fleet_from_db()
@@ -82,25 +107,28 @@ def legs(response: Response, tail: Optional[str] = Query(None)):
 
 @router.get("/metrics", response_model=MetricsBundle)
 def metrics(response: Response):
-    """ML block from app.ml.health.evaluate() when the module exists (Aashirth); plan block from the stored current/baseline plans (Pardhu) else fixtures."""
+    """ML block: app.ml.health.evaluate() (Aashirth) when real. Plan block: app.whatif.metrics.plan_block() (Pardhu) when real; the mock plan state when the
+    solver is mock; otherwise fixtures. The header X-Data-Source says which parts are real."""
     out = fixtures.load("metrics", MetricsBundle)
-    src = "fixture"
-    if settings.MOCK or str(registry.MODULES.get("solver", "mock")).startswith("mock"):  # plan block follows the mock plan state
+    parts = []
+    if registry.MODULES.get("whatif") == "real":
+        try:
+            from app.whatif.metrics import plan_block
+
+            out.plan = plan_block()
+            parts.append("plan:real")
+        except Exception:  # noqa: BLE001
+            pass
+    if not parts and (settings.MOCK or str(registry.MODULES.get("solver", "mock")).startswith("mock")):
         out.plan = {"baseline": STATE.plan_baseline.metrics, "optimized": STATE.plan_current.metrics, "replan_seconds": 1.1, "note": "mock plan state, not results"}
-        src = "mock-state"
-    if not settings.MOCK:
+        parts.append("plan:mock-state")
+    if not settings.MOCK and registry.MODULES.get("twin") == "real":
         try:
             from app.ml.health import evaluate  # type: ignore
 
             out.ml = evaluate()
-            src = "ml:real"
-        except Exception:
+            parts.append("ml:real")
+        except Exception:  # noqa: BLE001
             pass
-        cur, base = db.kv_get("current_plan_id"), db.kv_get("baseline_plan_id")
-        if cur and base:
-            c, b = db.get("plans", "id", cur, Plan), db.get("plans", "id", base, Plan)
-            if c and b:
-                out.plan = {"baseline": b.metrics, "optimized": c.metrics, "replan_seconds": float(db.kv_get("last_replan_seconds", "0") or 0)}
-                src += "+plan:real"
-    response.headers["X-Data-Source"] = src
+    response.headers["X-Data-Source"] = "+".join(parts) or "fixture"
     return out
