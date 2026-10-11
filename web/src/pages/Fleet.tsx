@@ -95,7 +95,7 @@ export default function Fleet() {
           title="Fleet network"
           right={
             <span className="font-mono text-[9px] text-slate-500">
-              NORTH AMERICA / UTC
+              SCHEMATIC MAP / UTC
             </span>
           }
         >

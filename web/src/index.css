@@ -2859,3 +2859,28 @@ aside.fixed {
     height: 40px;
   }
 }
+
+/* map: sample international destinations */
+.map-toggle {
+  padding: 4px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 11px var(--mono);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+.map-toggle[aria-pressed="true"] {
+  color: #bcd3ff;
+  border-color: rgba(76, 141, 255, 0.7);
+  background: rgba(76, 141, 255, 0.1);
+}
+.map-note {
+  color: #8fb6ff;
+}
+.network-footer {
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+}
