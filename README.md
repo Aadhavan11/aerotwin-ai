@@ -5,7 +5,9 @@
 An AI-powered aircraft digital twin that predicts component degradation, simulates future aircraft health, and keeps re-planning maintenance across an airline fleet
 as conditions change (a delayed part, a closed facility, a new fault). Concept by Aadhavan; built for a 36-hour hackathon.
 
-**Status: documentation so far.** Code lands in per-owner folders (`app/`, `web/`). Everything about aircraft health is simulated and labeled so.
+**Status on `aadhavan/simulator-integration`: integrated backend.** Simulator, ML/twin, scheduler, what-if and scripted agents run together. The web UI and shared platform persistence remain pending. Everything about aircraft health is simulated and labeled so.
+
+Run instructions: [`docs/SIMULATOR-INTEGRATION.md`](docs/SIMULATOR-INTEGRATION.md).
 
 | Read in this order | |
 |---|---|
