@@ -34,7 +34,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
     [loaded, setLoaded] = useState(false),
     [orbit, setOrbit] = useState(false),
     [view, setView] = useState("perspective");
-  const controller = useRef<{ view: (v: string) => void; orbit: (v: boolean) => void } | null>(null);
+  const controller = useRef<{ view: (v: string) => void; orbit: (v: boolean) => void; replay: () => void } | null>(null);
   const profile = useMemo(() => profileFor(aircraftType), [aircraftType]);
   const drawnAs737 = !!profile && !/B738|737/i.test(aircraftType);
 
@@ -92,6 +92,34 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
     const meshes: THREE.Mesh[] = [];
     let disposed = false;
     let pulse: THREE.Mesh | null = null;
+    // Close-up fly-in: the camera starts wide on the whole aircraft, then swoops to the engine while the rest of the airframe fades out.
+    type Fade = { mat: THREE.MeshStandardMaterial; from: number; to: number; transparent: boolean; depthWrite: boolean };
+    const fades: Fade[] = [];
+    const markers: THREE.Mesh[] = [];
+    type Swoop = { from: THREE.Vector3; fromTarget: THREE.Vector3; to: THREE.Vector3; toTarget: THREE.Vector3; swing: THREE.Vector3; t0: number; dur: number; done: boolean };
+    let swoop: Swoop | null = null;
+    let onScreen = false;
+    const calm = !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const applyFade = (k: number) => {
+      for (const f of fades) {
+        f.mat.opacity = f.from + (f.to - f.from) * k;
+        f.mat.transparent = k > 0 || f.transparent;
+        f.mat.depthWrite = k > 0.5 ? false : f.depthWrite;
+      }
+      for (const m of markers) m.visible = k > 0.85;
+    };
+    const startSwoop = () => {
+      if (!swoop) return;
+      swoop.t0 = -1;
+      swoop.done = false;
+      applyFade(0);
+      camera.position.copy(swoop.from);
+      controls.target.copy(swoop.fromTarget);
+      controls.enabled = false;
+      controls.minDistance = 1.2;
+      controls.maxDistance = 45;
+      controls.update();
+    };
     new GLTFLoader().load(
       MODEL_URL,
       (gltf) => {
@@ -140,19 +168,17 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
             const size3 = (m: THREE.Mesh) => new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());
             const nacelle = [...group].sort((a, b) => size3(b).x * size3(b).y * size3(b).z - size3(a).x * size3(a).y * size3(a).z)[0];
             const ns = size3(nacelle);
-            const mat = nacelle.material as THREE.MeshStandardMaterial;
-            mat.transparent = true; // see into the engine so the marker shows
-            mat.opacity = 0.32;
-            mat.depthWrite = false;
+            const seen = new Set<THREE.Material>();
+            const fade = (m: THREE.Mesh, to: number) => {
+              const mat = m.material as THREE.MeshStandardMaterial;
+              if (seen.has(mat)) return;
+              seen.add(mat);
+              fades.push({ mat, from: mat.transparent ? mat.opacity : 1, to, transparent: mat.transparent, depthWrite: mat.depthWrite });
+            };
+            fade(nacelle, 0.32); // see into the engine so the marker shows
             // fade the rest of the aircraft so the engine stands alone
             const inGroup = new Set<THREE.Object3D>(group);
-            for (const m of meshes) {
-              if (inGroup.has(m)) continue;
-              const other = m.material as THREE.MeshStandardMaterial;
-              other.transparent = true;
-              other.opacity = 0.08;
-              other.depthWrite = false;
-            }
+            for (const m of meshes) if (!inGroup.has(m)) fade(m, 0.08);
             const at = new THREE.Vector3(center.x, center.y, box.min.z + f.fraction * extent.z);
             if (f.marker) {
               const red = (opacity: number) => new THREE.MeshBasicMaterial({ color: 0xff3b3b, transparent: true, opacity, depthTest: false });
@@ -163,14 +189,26 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
               ring.position.copy(at);
               ring.renderOrder = 9;
               scene.add(dot, ring);
+              markers.push(dot, ring);
               pulse = dot;
             }
             const side = Math.sign(center.x) || 1;
-            camera.position.set(center.x + side * 3.0, center.y + 1.1, center.z - 3.0);
-            controls.target.copy(center);
-            controls.minDistance = 1.2;
-            controls.maxDistance = 9;
-            controls.update();
+            const to = new THREE.Vector3(center.x + side * 3.0, center.y + 1.1, center.z - 3.0);
+            const from = new THREE.Vector3(14, 8, -18);
+            const dir = to.clone().sub(from);
+            const swing = new THREE.Vector3(-dir.z, 0, dir.x).normalize().multiplyScalar(dir.length() * 0.2);
+            if (swing.dot(new THREE.Vector3(from.x, 0, from.z)) < 0) swing.negate();
+            swing.y = 1.6;
+            swoop = { from, fromTarget: new THREE.Vector3(0, 0.3, 0), to, toTarget: center.clone(), swing, t0: -1, dur: 3400, done: false };
+            if (calm) {
+              camera.position.copy(to);
+              controls.target.copy(center);
+              applyFade(1);
+              swoop.done = true;
+              controls.minDistance = 1.2;
+              controls.maxDistance = 9;
+              controls.update();
+            } else startSwoop();
           }
         }
         setLoaded(true);
@@ -190,7 +228,14 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
       orbit(enabled) {
         controls.autoRotate = enabled;
       },
+      replay() {
+        startSwoop();
+      },
     };
+    const watch = new IntersectionObserver(([e]) => {
+      onScreen = !!e?.isIntersecting;
+    }, { threshold: 0.45 });
+    watch.observe(element);
     const ray = new THREE.Raycaster();
     let down = [0, 0];
     const pointerDown = (e: PointerEvent) => {
@@ -221,8 +266,22 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
     const tintOf = new THREE.Color();
     function animate(t: number) {
       frame = requestAnimationFrame(animate);
-      if (document.hidden || t - last < 32) return;
+      if (document.hidden || t - last < (swoop && !swoop.done ? 12 : 32)) return;
       last = t;
+      if (swoop && !swoop.done && onScreen) {
+        if (swoop.t0 < 0) swoop.t0 = t;
+        const raw = Math.min(1, (t - swoop.t0) / swoop.dur);
+        const e = raw < 0.5 ? 4 * raw ** 3 : 1 - (-2 * raw + 2) ** 3 / 2; // ease in and out
+        camera.position.lerpVectors(swoop.from, swoop.to, e).addScaledVector(swoop.swing, Math.sin(Math.PI * e));
+        controls.target.lerpVectors(swoop.fromTarget, swoop.toTarget, e);
+        applyFade(THREE.MathUtils.smoothstep(e, 0.3, 0.95));
+        if (raw >= 1) {
+          swoop.done = true;
+          controls.enabled = true;
+          controls.minDistance = 1.2;
+          controls.maxDistance = 9;
+        }
+      }
       // Glow the engines and gear by status; the selected system is brighter.
       for (const [comp, group] of Object.entries(groups)) {
         const state = latest.current.components.find((x) => x.component_id.endsWith("/" + comp));
@@ -251,6 +310,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
       disposed = true;
       cancelAnimationFrame(frame);
       resize.disconnect();
+      watch.disconnect();
       controls.dispose();
       renderer.dispose();
       renderer.domElement.removeEventListener("pointerdown", pointerDown);
@@ -307,6 +367,11 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
                 {mode === "perspective" ? "3/4 view" : mode}
               </button>
             ))}
+            {focus && (
+              <button onClick={() => controller.current?.replay()} title="Fly in from the whole aircraft again">
+                Replay fly-in
+              </button>
+            )}
             <button
               aria-pressed={orbit}
               onClick={() => {
@@ -317,7 +382,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
               Rotate
             </button>
           </div>
-          <div className="scene-hint">Drag to orbit · Scroll to zoom · Click an engine or the landing gear</div>
+          <div className="scene-hint">{focus ? "Drag to orbit · Scroll to zoom" : "Drag to orbit · Scroll to zoom · Click an engine or the landing gear"}</div>
         </div>
       )}
     </div>

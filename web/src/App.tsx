@@ -1,11 +1,14 @@
-import { Suspense, lazy, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
 import { fmtZ } from "./lib/format";
-import CopilotDrawer from "./components/CopilotDrawer";
+import AccountMenu from "./components/AccountMenu";
+import AskBar from "./components/AskBar";
 import Icon from "./components/Icon";
+import { useAuth } from "./lib/auth";
 import { ROLES, useRole, type RoleId } from "./lib/role";
+import { setSimNow } from "./lib/screen";
 import Fleet from "./pages/Fleet";
 const Aircraft = lazy(() => import("./pages/Aircraft"));
 const Planning = lazy(() => import("./pages/Planning"));
@@ -15,24 +18,30 @@ const Maintenance = lazy(() => import("./pages/Maintenance"));
 const FlightBrief = lazy(() => import("./pages/FlightBrief"));
 const Dispatch = lazy(() => import("./pages/Dispatch"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Copilot = lazy(() => import("./pages/Copilot"));
+const Extra = {
+  Trips: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Trips }))),
+  Duty: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Duty }))),
+  Weather: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Weather }))),
+  Report: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Report }))),
+  CrewRoster: lazy(() => import("./pages/Extra").then((m) => ({ default: m.CrewRoster }))),
+  Release: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Release }))),
+  Messages: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Messages }))),
+};
 export default function App() {
-  const [open, setOpen] = useState(false);
   const health = usePoll<HealthInfo>("/health", 4000);
   const location = useLocation();
   const navigate = useNavigate();
   const { role, setRole } = useRole();
+  const auth = useAuth();
   const h = health.data;
   // Land on the role's own home the first time the console opens at "/".
   useEffect(() => {
     if (location.pathname === "/" && role.home !== "/") navigate(role.home, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Any page can open the agent workspace with window.dispatchEvent(new Event("aerotwin:open-agents")).
-  useEffect(() => {
-    const openIt = () => setOpen(true);
-    window.addEventListener("aerotwin:open-agents", openIt);
-    return () => window.removeEventListener("aerotwin:open-agents", openIt);
-  }, []);
+  // The AI sees the simulation clock too: keep the screen-context helper current.
+  useEffect(() => setSimNow(h?.sim_now), [h?.sim_now]);
   const modules = h ? Object.entries(h.modules) : [];
   const mocked = modules.filter(([, value]) => value.startsWith("mock"));
   const broken = h ? Object.keys(h.errors) : [];
@@ -57,26 +66,32 @@ export default function App() {
           ))}
         </nav>
         <div className="topbar-right">
-          <label className="sr-only" htmlFor="role-select">
-            Viewing as
-          </label>
-          <select
-            id="role-select"
-            className="role-select"
-            value={role.id}
-            title={role.blurb}
-            onChange={(e) => {
-              const next = ROLES.find((r) => r.id === (e.target.value as RoleId));
-              setRole(e.target.value as RoleId);
-              if (next) navigate(next.home);
-            }}
-          >
-            {ROLES.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+          {auth.status === "user" ? (
+            <AccountMenu />
+          ) : (
+            <>
+            <label className="sr-only" htmlFor="role-select">
+              Viewing as
+            </label>
+            <select
+              id="role-select"
+              className="role-select"
+              value={role.id}
+              title={role.blurb}
+              onChange={(e) => {
+                const next = ROLES.find((r) => r.id === (e.target.value as RoleId));
+                setRole(e.target.value as RoleId);
+                if (next) navigate(next.home);
+              }}
+            >
+              {ROLES.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            </>
+          )}
           <span className="sim-pill" title="Every aircraft, flight and sensor value is simulated">
             Simulated
           </span>
@@ -84,10 +99,7 @@ export default function App() {
             <i className={`conn ${health.error ? "down" : ""}`} />
             {fmtZ(h?.sim_now)}
           </span>
-          <button className="agent-trigger" onClick={() => setOpen(!open)}>
-            <Icon name="agents" size={16} />
-            <span>{open ? "Close agents" : "Agents"}</span>
-          </button>
+          <AskBar />
         </div>
       </header>
       {broken.length > 0 && <div className="console-alert">Module import errors: {broken.join(", ")}</div>}
@@ -98,7 +110,7 @@ export default function App() {
         </div>
       )}
       {h?.mock && <div className="console-notice">Fixture mode: scenarios and plans shown here are mock outputs</div>}
-      <main className={`page ${open ? "agents-open" : ""}`}>
+      <main className="page">
         <Suspense
           fallback={
             <div className="console-loading">
@@ -118,6 +130,14 @@ export default function App() {
               <Route path="/brief" element={<FlightBrief />} />
               <Route path="/departures" element={<Dispatch />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/copilot" element={<Copilot />} />
+              <Route path="/trips" element={<Extra.Trips />} />
+              <Route path="/duty" element={<Extra.Duty />} />
+              <Route path="/weather" element={<Extra.Weather />} />
+              <Route path="/report" element={<Extra.Report />} />
+              <Route path="/crew" element={<Extra.CrewRoster />} />
+              <Route path="/release" element={<Extra.Release />} />
+              <Route path="/messages" element={<Extra.Messages />} />
             </Routes>
           </div>
         </Suspense>
@@ -132,7 +152,6 @@ export default function App() {
           </span>
         </footer>
       </main>
-      <CopilotDrawer open={open} onClose={() => setOpen(false)} />
     </div>
   );
 }

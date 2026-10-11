@@ -6,6 +6,8 @@ import { Card, ErrorBox, Kpi, Loading, StatusPill } from "../components/ui";
 import Icon from "../components/Icon";
 import USMap from "../components/USMap";
 import StationsTable from "../components/StationsTable";
+import { Answer } from "../components/AskPanel";
+import { looksLikeQuestion } from "../lib/ask";
 import { STATUS_STYLE, STATUS_ORDER } from "../lib/format";
 
 export default function Fleet() {
@@ -15,6 +17,7 @@ export default function Fleet() {
   const health = usePoll<HealthInfo>("/health", 4000);
   const plan = usePoll<PlanBundle>("/plan", 6000);
   const [query, setQuery] = useState("");
+  const [asked, setAsked] = useState<string | null>(null);
   const data = fleet.data;
   if (!data)
     return fleet.error ? (
@@ -209,16 +212,6 @@ export default function Fleet() {
         </div>
       </div>
       <Card
-        title="Maintenance stations"
-        right={<span className="font-mono text-[9px] text-slate-500">AS OF SIM TIME</span>}
-      >
-        <StationsTable stations={data.stations} aircraft={data.aircraft} assignments={plan.data?.current.assignments ?? []} now={health.data?.sim_now} />
-        <p className="mt-3 text-xs text-slate-500">
-          Bays free = hangar slots minus jobs running now and aircraft already in maintenance there. Technicians are counted on shift at the simulation clock;
-          re-supply lists parts that are out of stock (with where they ship from, how long it takes and what it costs) or already on their way.
-        </p>
-      </Card>
-      <Card
         title="Aircraft registry"
         right={
           <span className="font-mono text-[9px] text-slate-500">
@@ -229,12 +222,36 @@ export default function Fleet() {
         <div className="fleet-search">
           <Icon name="search" size={15} />
           <input
-            aria-label="Search aircraft registry"
-            placeholder="Search tail number, station, aircraft type or status…"
+            aria-label="Search aircraft registry or ask a question"
+            placeholder="Search a tail, station or status, or ask a question…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && looksLikeQuestion(query)) {
+                setAsked(query.trim());
+                setQuery("");
+              }
+            }}
           />
         </div>
+        {looksLikeQuestion(query) && (
+          <button
+            className="ask-inline"
+            onClick={() => {
+              setAsked(query.trim());
+              setQuery("");
+            }}
+          >
+            <Icon name="spark" size={14} />
+            <span>Ask the AI: {query.trim()}</span>
+            <kbd>Enter</kbd>
+          </button>
+        )}
+        {asked && (
+          <div className="mb-4">
+            <Answer question={asked} onClear={() => setAsked(null)} />
+          </div>
+        )}
         <div className="max-h-[380px] overflow-auto">
           <table className="w-full whitespace-nowrap text-left text-xs">
             <thead className="sticky top-0 bg-white">
@@ -284,6 +301,16 @@ export default function Fleet() {
             </p>
           )}
         </div>
+      </Card>
+      <Card
+        title="Maintenance stations"
+        right={<span className="font-mono text-[9px] text-slate-500">AS OF SIM TIME</span>}
+      >
+        <StationsTable stations={data.stations} aircraft={data.aircraft} assignments={plan.data?.current.assignments ?? []} now={health.data?.sim_now} />
+        <p className="mt-3 text-xs text-slate-500">
+          Bays free = hangar slots minus jobs running now and aircraft already in maintenance there. Technicians are counted on shift at the simulation clock;
+          re-supply lists parts that are out of stock (with where they ship from, how long it takes and what it costs) or already on their way.
+        </p>
       </Card>
     </div>
   );

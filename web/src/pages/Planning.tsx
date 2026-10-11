@@ -22,6 +22,7 @@ import type {
 } from "../api/types";
 import { Btn, Card, Chip, ErrorBox, Loading } from "../components/ui";
 import { STATION_COLORS, fmtH, fmtUsd, fmtZ } from "../lib/format";
+import AskPanel from "../components/AskPanel";
 
 const LABEL_W = 104,
   CH_W = 1000,
@@ -134,6 +135,7 @@ export default function Planning() {
         </div>
       </div>
       <ErrorBox error={plan.error} />
+      <AskPanel placeholder="Ask why a slot was chosen, or what changes if something closes…" suggestions={["Why was this slot chosen?", "What changes if the DFW hangar closes?", "Compare the current plan with the baseline."]} />
       {!cur.feasible && (
         <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
           <b>No feasible plan.</b>{" "}

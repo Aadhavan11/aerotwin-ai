@@ -19,3 +19,18 @@ For an engine, the page leads with a close-up of the real engine from the suppli
 
 ## Fleet overview statistics (fixed 2026-10-11)
 Healthy (no open watch or alert) and available (not in maintenance or AOG) are two different numbers and are labeled as such; the priority card only shows an aircraft that needs something and names the component in the worst status; the status bar has a fixed order. A maintenance stations table shows bays free, technicians on shift now by skill, parts on hand and what is out of stock or on its way with where it re-supplies from.
+
+
+## The AI inside the product (2026-10-11)
+
+There is no side drawer any more. The AI is where the question comes up:
+
+* **Ask bar** (top right, `Ctrl/Cmd+K` or `/`): search aircraft, pages and work orders, or ask a question and read the answer in place. Suggestions follow the page.
+* **Ask fields** on the Fleet registry search (type a question), the aircraft fault close-up, Control room, Maintenance plan, Work orders, Departures, Flight release, Trips and the readiness brief.
+* **Copilot page** (`/copilot`): *Ask* (conversation, optional "focus on one aircraft"), *Agents* (the five agents' timeline, built-in or language-model mode), *Work orders* (approve or reject) and *Audit trail*.
+  The conversation and the agent timeline scroll to the newest content as it arrives, and stop following if you scroll up to read.
+* Every question carries the screen (page, aircraft, selection, clock, visible text), so "this aircraft" and "it" mean what you are looking at.
+* If the language model's agent summary quotes a number no tool returned, the run now asks the model once to restate it without that number before falling back to the built-in workflow (`app/agents/llm_mode.py`).
+
+The aircraft twin shows the whole aircraft first. Below it, "Where the fault is" opens wide on the airframe and the camera swoops in on the engine while the rest fades;
+"Replay fly-in" runs it again, and reduced-motion settings skip the animation.

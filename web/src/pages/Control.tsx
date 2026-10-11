@@ -5,7 +5,7 @@ import { Btn, Card, Chip, ErrorBox, Kpi, Loading, StatusPill } from "../componen
 import WorkOrderCard from "../components/WorkOrderCard";
 import { hoursText, ms, niceComponent, partText } from "../lib/derive";
 import { STATUS_ORDER, fmtZ } from "../lib/format";
-import { openAgentWorkspace } from "../lib/role";
+import AskPanel from "../components/AskPanel";
 
 /** Operations control: what needs a decision right now, which aircraft to watch, what the plan does, and what waiting would cost. */
 export default function Control() {
@@ -37,6 +37,7 @@ export default function Control() {
         </div>
       </div>
       <ErrorBox error={fleet.error ?? plan.error ?? orders.error} />
+      <AskPanel placeholder="Ask about the fleet, the plan or a decision…" suggestions={["Which work orders need a decision first?", "Which aircraft are most likely to need maintenance in the next 72 hours?", "Why is the plan scheduled this way?"]} />
 
       <div className="facts">
         <Kpi label="Decisions waiting" value={pending.length} tone={pending.length ? "amber" : "emerald"} hint="Work orders pending approval" />
@@ -57,9 +58,9 @@ export default function Control() {
             <div className="space-y-3 text-sm text-slate-500">
               <p>Nothing is waiting for approval. Work orders appear here when the agents draft them for an aircraft that needs service.</p>
               <div className="flex flex-wrap gap-2">
-                <Btn tone="primary" onClick={openAgentWorkspace}>
-                  Open the agent workspace
-                </Btn>
+                <Link to="/copilot?tab=agents&run=1">
+                  <Btn tone="primary">Run the agents</Btn>
+                </Link>
                 <Link to="/lab">
                   <Btn>Inject a fault in the lab</Btn>
                 </Link>

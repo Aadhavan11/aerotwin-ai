@@ -13,7 +13,7 @@ Mount with ``app.include_router(app.copilot.router.router)``. Errors are
 """
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app.contracts.models import AuditEntry, ChatRequest, ChatResponse, WorkOrder
@@ -49,9 +49,11 @@ def get_workorders():
 
 
 @router.post("/workorders/{work_order_id}/decision", response_model=WorkOrder)
-def post_decision(work_order_id: str, body: DecisionRequest):
+def post_decision(work_order_id: str, body: DecisionRequest, request: Request):
+    # With sign-in on, the audit log records the signed-in person, whatever the request body says.
+    actor = request.scope.get("state", {}).get("auth_name") or body.user
     try:
-        return workorders.decide(work_order_id, body.decision, body.user, body.note, persist.sim_now())
+        return workorders.decide(work_order_id, body.decision, actor, body.note, persist.sim_now())
     except workorders.WorkOrderError as exc:
         return JSONResponse(status_code=exc.status, content={"error": exc.code, "detail": exc.message})
 

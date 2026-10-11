@@ -4,7 +4,8 @@ import type { FleetOverview, HealthInfo, Leg, PlanBundle, TwinView } from "../ap
 import { Btn, Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
 import { hoursText, legsOf, ms, niceComponent, partText } from "../lib/derive";
 import { STATUS_ORDER, fmtZ } from "../lib/format";
-import { openAgentWorkspace } from "../lib/role";
+import { openAsk } from "../lib/role";
+import AskPanel from "../components/AskPanel";
 
 const BANNER: Record<string, { box: string; head: string }> = {
   ok: { box: "border-emerald-300", head: "No open health alerts for this aircraft in the twin." },
@@ -58,6 +59,7 @@ export default function FlightBrief() {
         </label>
       </div>
       <ErrorBox error={twin.error ?? legsAll.error} />
+      <AskPanel placeholder="Ask about this aircraft…" suggestions={["Is this aircraft ready to fly?", "What is the open maintenance item and when is it due?", "What happens if we delay the maintenance?"]} />
 
       <div className={`rounded-xl border-2 p-4 ${banner.box}`}>
         <div className="flex flex-wrap items-center gap-3">
@@ -89,7 +91,7 @@ export default function FlightBrief() {
           <Link to={`/aircraft/${tail}`}>
             <Btn tone="primary">Open the 3D twin</Btn>
           </Link>
-          <Btn onClick={openAgentWorkspace}>Ask the copilot</Btn>
+          <Btn onClick={() => openAsk()}>Ask the copilot</Btn>
         </div>
       </div>
 

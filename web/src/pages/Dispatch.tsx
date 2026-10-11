@@ -5,6 +5,7 @@ import type { FleetOverview, HealthInfo, Leg, PlanBundle } from "../api/types";
 import { Card, Chip, ErrorBox, Kpi, Loading, StatusPill } from "../components/ui";
 import { hoursText, legsOf, ms, overlaps } from "../lib/derive";
 import { fmtZ } from "../lib/format";
+import AskPanel from "../components/AskPanel";
 
 const HORIZONS = [12, 24, 48, 72];
 const PAGE = 60;
@@ -51,6 +52,7 @@ export default function Dispatch() {
         </div>
       </div>
       <ErrorBox error={legs.error ?? fleet.error ?? plan.error} />
+      <AskPanel placeholder="Ask about departures, windows or aircraft that need attention…" suggestions={["Which departures touch a maintenance window?", "Which aircraft need attention before they fly?", "Where are the free hangar bays tonight?"]} />
 
       <div className="facts">
         <Kpi label={`Departures, next ${hours} h`} value={window.length} hint={station === "ALL" ? "All stations" : `From ${station}`} />

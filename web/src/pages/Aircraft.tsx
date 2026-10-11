@@ -516,8 +516,6 @@ export default function Aircraft() {
         {a.cycles.toLocaleString()} flights · {number(a.hours)} flight hours
       </p>
       <ErrorBox error={error} />
-      {/* A system with an open item leads the page: where it is, and every sensor against its healthy baseline. */}
-      {isEngine && component.status !== "ok" && <FaultFocus key={component.component_id} tail={a.tail} component={component} aircraftType={a.type} />}
       <div className="grid items-start gap-4 xl:grid-cols-[1.15fr_1fr]">
         <div className="space-y-4">
           <Card title="Aircraft" right={<Chip>3D MODEL</Chip>}>
@@ -556,35 +554,6 @@ export default function Aircraft() {
               ))}
             </div>
           </Card>
-          <Card title="Aircraft timeline">
-            <ol className="max-h-96 space-y-4 overflow-auto">
-              {data.timeline.length === 0 && (
-                <li className="text-sm text-slate-500">
-                  No events recorded. Flights, injected faults and maintenance
-                  events appear here.
-                </li>
-              )}
-              {[...data.timeline]
-                .sort((x, y) => Date.parse(y.ts) - Date.parse(x.ts))
-                .map((e, i) => (
-                  <li
-                    key={`${e.ts}-${e.ref}-${i}`}
-                    className="border-l-2 border-slate-200 pl-3"
-                  >
-                    <p className="text-xs text-slate-500">{fmtZ(e.ts)}</p>
-                    <p className="mt-1 text-xs font-semibold capitalize">
-                      {e.kind.replaceAll("_", " ")}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">{e.summary}</p>
-                    {e.ref && (
-                      <span className="mt-1 block text-xs text-slate-400">
-                        {e.ref}
-                      </span>
-                    )}
-                  </li>
-                ))}
-            </ol>
-          </Card>
         </div>
         {component ? (
           <ComponentDetail
@@ -600,7 +569,37 @@ export default function Aircraft() {
           </Card>
         )}
       </div>
-      {isEngine && component.status === "ok" && <FaultFocus key={component.component_id} tail={a.tail} component={component} aircraftType={a.type} />}
+      {/* The whole aircraft first; then, for an engine, the close-up flies in on it with every sensor against its healthy baseline. */}
+      {isEngine && <FaultFocus key={component.component_id} tail={a.tail} component={component} aircraftType={a.type} />}
+      <Card title="Aircraft timeline">
+        <ol className="max-h-96 space-y-4 overflow-auto">
+          {data.timeline.length === 0 && (
+            <li className="text-sm text-slate-500">
+              No events recorded. Flights, injected faults and maintenance
+              events appear here.
+            </li>
+          )}
+          {[...data.timeline]
+            .sort((x, y) => Date.parse(y.ts) - Date.parse(x.ts))
+            .map((e, i) => (
+              <li
+                key={`${e.ts}-${e.ref}-${i}`}
+                className="border-l-2 border-slate-200 pl-3"
+              >
+                <p className="text-xs text-slate-500">{fmtZ(e.ts)}</p>
+                <p className="mt-1 text-xs font-semibold capitalize">
+                  {e.kind.replaceAll("_", " ")}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">{e.summary}</p>
+                {e.ref && (
+                  <span className="mt-1 block text-xs text-slate-400">
+                    {e.ref}
+                  </span>
+                )}
+              </li>
+            ))}
+        </ol>
+      </Card>
     </div>
   );
 }

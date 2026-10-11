@@ -13,7 +13,10 @@ const TONE: Record<string, string> = {
 };
 
 /** One work order with its evidence. Only roles that may decide get the buttons; the API records who decided and writes the audit log. */
-export default function WorkOrderCard({ w, onDone }: { w: WorkOrder; onDone: () => void }) {
+export default function WorkOrderCard({ w: fresh, onDone }: { w: WorkOrder; onDone: () => void }) {
+  // Show a decision straight away, even where nothing refreshes the list (an answer in the ask bar); the server copy wins once it has one.
+  const [local, setLocal] = useState<WorkOrder | null>(null);
+  const w = fresh.status !== "pending_approval" ? fresh : (local ?? fresh);
   const { role } = useRole();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -22,7 +25,8 @@ export default function WorkOrderCard({ w, onDone }: { w: WorkOrder; onDone: () 
     setBusy(true);
     setErr("");
     try {
-      await post(`/workorders/${w.id}/decision`, { decision, user: actorName(), note });
+      const { data } = await post<WorkOrder>(`/workorders/${w.id}/decision`, { decision, user: actorName(), note });
+      if (data?.status) setLocal(data);
       setNote("");
       onDone();
     } catch (e) {

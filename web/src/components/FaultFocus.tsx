@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { usePoll } from "../api/client";
 import type { TwinComponent } from "../api/types";
 import { niceComponent } from "../lib/derive";
+import AskPanel from "./AskPanel";
 import { Card, Chip, StatusPill } from "./ui";
 
 const AircraftScene = lazy(() => import("./AircraftScene"));
@@ -69,7 +70,7 @@ export default function FaultFocus({ tail, component, aircraftType }: { tail: st
   const tone = (r: (typeof rows)[number], i: number) => (r.toward >= 3 && i < 3 ? "bg-red-100 text-red-800" : r.toward >= 1.5 ? "bg-amber-100 text-amber-800" : "");
 
   return (
-    <Card title={`Where the fault is: ${niceComponent(component.component_id)}`} right={<StatusPill status={component.status} />}>
+    <Card title={component.status === "ok" ? `Close-up: ${niceComponent(component.component_id)}` : `Where the fault is: ${niceComponent(component.component_id)}`} right={<StatusPill status={component.status} />}>
       <div className="grid gap-5 xl:grid-cols-[1fr_1.15fr]">
         <div>
           <Suspense fallback={<div className="scene-loading">Loading the close-up…</div>}>
@@ -187,6 +188,11 @@ export default function FaultFocus({ tail, component, aircraftType }: { tail: st
           </p>
         </div>
       </div>
+      <AskPanel
+        className="mt-5"
+        placeholder={`Ask about ${niceComponent(component.component_id)} on ${tail}…`}
+        suggestions={component.status === "ok" ? ["Is anything wrong with this engine?", "When is the next planned check?"] : ["Why is this engine a concern?", "Which sensors moved the most?", "What happens if we delay the maintenance?"]}
+      />
     </Card>
   );
 }

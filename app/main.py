@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import db, registry, settings
 from .api import core, mock
+from .auth import core as auth_core, router as auth_router
 
 app = FastAPI(title="AeroTwin AI API", version=settings.VERSION,
               description="Advisory-only maintenance planning prototype on SIMULATED data. See CONTRACTS.md for the spec.")
@@ -34,8 +35,12 @@ class _NoTrailingSlash:
         await self.inner(scope, receive, send)
 
 
-app.add_middleware(_NoTrailingSlash)
+app.add_middleware(auth_core.AuthGate)  # off unless AUTH_REQUIRED=1
+app.add_middleware(_NoTrailingSlash)  # outermost: the gate and the routes both see `/plan`, never `/plan/`
 db.init_db()
+if auth_core.enabled():
+    auth_core.seed()
+app.include_router(auth_router.router)
 app.include_router(core.router)
 
 for group, (path, who) in registry.GROUPS.items():

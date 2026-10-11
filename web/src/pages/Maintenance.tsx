@@ -7,6 +7,7 @@ import WorkOrderCard from "../components/WorkOrderCard";
 import { hoursText, ms, partText } from "../lib/derive";
 import { fmtZ } from "../lib/format";
 import { useRole } from "../lib/role";
+import AskPanel from "../components/AskPanel";
 
 type Tab = "pending_approval" | "approved" | "rejected" | "all";
 const TABS: [Tab, string][] = [
@@ -48,6 +49,7 @@ export default function Maintenance() {
         </div>
       </div>
       <ErrorBox error={orders.error ?? stations.error ?? plan.error} />
+      <AskPanel placeholder="Ask about parts, technicians or free bays…" suggestions={["Which parts and technicians do these jobs need?", "What is out of stock?", "Which station has the most free bays?"]} />
 
       <div className="facts">
         <Kpi label="Pending approval" value={count("pending_approval")} tone={count("pending_approval") ? "amber" : "emerald"} hint="Work orders" />

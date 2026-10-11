@@ -17,6 +17,7 @@ async function request<T>(
 ): Promise<{ data: T; source: string }> {
   const r = await fetch(BASE + path, init);
   const text = await r.text();
+  if (r.status === 401) window.dispatchEvent(new Event("aerotwin:auth-lost")); // the session ended: back to the sign-in screen
   if (!r.ok)
     throw new ApiError(r.status, `${r.status} ${path}: ${text.slice(0, 200)}`);
   return {
