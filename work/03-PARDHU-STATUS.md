@@ -3,6 +3,12 @@
 Branch: `claude/great-albattani-bv8i0b` (not merged to `main`, no pull request opened). Written 2026-10-11.
 Scope of this branch: **only my package** (3.3 scheduler, 3.5 what-if, task cards, their tests). Nothing of Shamit's, Aashirth's or Aadhavan's was built.
 
+## 00. Update 3: integrated with everyone's branches (read `docs/INTEGRATION-FINDINGS.md`)
+
+* This branch now contains `main`, `aadhavan/simulator-integration` and `aashirth/ml-core`, so it can be merged as the **integration base**. 265 tests pass, 2 fail (Shamit's order-dependent `test_db_mode`).
+* Ran Shamit's `scripts.golden` on a live `app.main`: 15/16 as the repo stands; **13/16 with all six module groups real** after two small Aadhavan fixes (missing `app/sim/router.py`, a telemetry-id clash with Shamit's table). Patches are tested and written out in `docs/INTEGRATION-FINDINGS.md`.
+* Fixed on my side: shared request models, work orders go through the copilot's audited store, `MOCK=1` no longer hides the live twin, least-bad suggestion for impossible deadlines.
+
 ## 0. Update (Sun 2026-10-11, second pass)
 
 * Merged `origin/main` (the Shamit/Aadhavan job swap, `work/OWNERSHIP.md`): clean merge. I also read Aashirth's `aashirth/ml-core` branch; nothing there conflicts, and I did not merge it.
