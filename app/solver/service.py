@@ -26,10 +26,12 @@ def _snapshot() -> tuple[FleetState, str]:
     if os.getenv("MOCK") == "1" or os.getenv("MOCK_SOLVER") == "1":
         return golden_state(), "golden stand-in (MOCK)"
     try:
-        from app.twin.state import snapshot  # type: ignore[import-not-found]
+        from app.twin.state import snapshot, list_aircraft  # type: ignore[import-not-found]
     except ImportError:
         log.warning("app.twin.state.snapshot not available: using the golden stand-in state")
         return golden_state(), "golden stand-in (twin snapshot not available)"
+    if not list_aircraft():
+        return golden_state(), "golden stand-in (twin is empty)"
     return snapshot(), "twin.snapshot"
 
 

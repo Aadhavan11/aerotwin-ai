@@ -13,6 +13,7 @@ class TelemetrySource:
         self.trajectories = trajectories or {}
         self.positions = {}
         self.origins = {}
+        self.units = {}
         self.wear = {}
         self.faults = {}
         self.now = START
@@ -31,7 +32,7 @@ class TelemetrySource:
             if '/engine_' in component_id:
                 if self.trajectories:
                     units = sorted(self.trajectories)
-                    unit = units[int.from_bytes(hashlib.sha256(component_id.encode()).digest()[:4],'big')%len(units)]
+                    unit = self.units.get(component_id, units[int.from_bytes(hashlib.sha256(component_id.encode()).digest()[:4],'big')%len(units)])
                     trajectory = self.trajectories[unit]
                     position = min(max(int(age)-1,0),len(trajectory)-1)
                     values = dict(trajectory[position]['values'])
@@ -41,7 +42,12 @@ class TelemetrySource:
                     values['Nc'] -= age*2
                     values['Ps30'] -= age*.04
             else:
-                values = {'wear_index': min(1., .05+age*.003), 'temperature': 40+age*.2+rng.gauss(0,.2), 'vibration': .1+age*.002}
+                from app.ml.sensors import GENERIC
+                kind = component_id.split('/')[-1]
+                spec = GENERIC[kind]
+                fraction = min(1., .05+age*.003)
+                values = {spec.wear_signal: spec.healthy+(spec.limit-spec.healthy)*fraction}
+                values.update({name: 40+age*.2+rng.gauss(0,.2) for name in spec.extras})
             rows.append(TelemetryRow(tail=tail,component_id=component_id,cycle=cycle,ts=self.now,values=values))
         return rows
 
@@ -49,9 +55,16 @@ class TelemetrySource:
         if event_type=='anomaly':
             if self.trajectories:
                 units = sorted(self.trajectories)
-                unit = units[int.from_bytes(hashlib.sha256(component_id.encode()).digest()[:4],'big')%len(units)]
-                length = len(self.trajectories[unit])
-                self.faults[component_id] = max(0,length-30-(self.positions.get(component_id,0)-self.origins.get(component_id,0)))
+                unit = self.units.get(component_id, units[int.from_bytes(hashlib.sha256(component_id.encode()).digest()[:4],'big')%len(units)])
+                # A held-out test trajectory may end with 137 cycles remaining.
+                # Select a genuinely late-life held-out unit for the injected scenario.
+                eligible = [u for u in units if self.trajectories[u][-1].get('true_rul',0)<=22]
+                if eligible:
+                    unit = eligible[int.from_bytes(hashlib.sha256(component_id.encode()).digest()[:4],'big')%len(eligible)]
+                    self.units[component_id] = unit
+                trajectory = self.trajectories[unit]
+                target = min(range(len(trajectory)),key=lambda i:abs(trajectory[i].get('true_rul',len(trajectory)-i)-30))
+                self.faults[component_id] = max(0,target-(self.positions.get(component_id,0)-self.origins.get(component_id,0)))
             else:
                 self.faults[component_id] = 150*severity
         elif event_type=='accelerated_degradation':

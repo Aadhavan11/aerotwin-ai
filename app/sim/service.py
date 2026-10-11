@@ -38,8 +38,8 @@ class Simulator:
         if saved:
             self.state = FleetState.model_validate_json(saved[0])
             checkpoint = json.loads(self.connection.execute("SELECT value FROM kv WHERE key='sim_source'").fetchone()[0])
-            for attr in ('positions','origins','wear','faults'):
-                setattr(self.source,attr,checkpoint[attr])
+            for attr in ('positions','origins','units','wear','faults'):
+                setattr(self.source,attr,checkpoint.get(attr, {}))
         else:
             self.reset()
         self.source.now = self.state.now
@@ -48,7 +48,7 @@ class Simulator:
     def _atomic(self):
         with self.lock:
             state = self.state.model_copy(deep=True)
-            source = deepcopy({attr:getattr(self.source,attr) for attr in ('positions','origins','wear','faults','now')})
+            source = deepcopy({attr:getattr(self.source,attr) for attr in ('positions','origins','units','wear','faults','now')})
             try:
                 yield
             except Exception:
@@ -69,7 +69,7 @@ class Simulator:
         for station in self.state.stations:
             db.execute('INSERT OR REPLACE INTO stations VALUES (?,?)',(station.iata,station.model_dump_json()))
         db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_snapshot',?)",(self.state.model_dump_json(),))
-        db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_source',?)",(json.dumps({attr:getattr(self.source,attr) for attr in ('positions','origins','wear','faults')}),))
+        db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_source',?)",(json.dumps({attr:getattr(self.source,attr) for attr in ('positions','origins','units','wear','faults')}),))
         db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_now',?)",(self.state.now.isoformat(),))
         db.commit()
 
@@ -84,7 +84,7 @@ class Simulator:
                     self.connection.execute(f'DELETE FROM {table}')
             self.state = generate_fleet(self.seed)
             self.source.now = self.state.now
-            for attr in ('positions','origins','wear','faults'):
+            for attr in ('positions','origins','units','wear','faults'):
                 getattr(self.source,attr).clear()
             self.source.positions.update({c.component_id:c.cycles for c in self.state.components})
             self.source.origins.update(self.source.positions)

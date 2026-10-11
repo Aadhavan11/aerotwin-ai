@@ -102,7 +102,7 @@ def test_replay_restart_and_faults(tmp_path):
     a=source.advance('SIM-001','SIM-001/brakes',2)
     source.inject('SIM-001/brakes','accelerated_degradation')
     b=source.advance('SIM-001','SIM-001/brakes',1)
-    assert b[0].values['wear_index']>a[-1].values['wear_index']
+    assert b[0].values['pad_wear_mm']>a[-1].values['pad_wear_mm']
     sim.inject(ScenarioEvent(type='tech_unavailable',at=sim.state.now,station='DFW',technician_id='DFW-engine-0'))
     assert not next(t for s in sim.state.stations if s.iata=='DFW' for t in s.technicians if t.id=='DFW-engine-0').available
 

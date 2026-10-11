@@ -132,6 +132,15 @@ def seed_components(states: Iterable[ComponentState]) -> None:
                 _timeline.setdefault(s.tail, [])
 
 
+def update_component_operations(component_id: str, cycles: int, hours: float) -> None:
+    """Simulator supplies observed cycle/block-hour counters without clearing health history."""
+    with _LOCK:
+        comp = _comps.get(component_id)
+        if comp is not None:
+            comp.state.cycles = cycles
+            comp.state.hours = hours
+
+
 def _stub_aircraft(tail: str) -> Aircraft:
     log.warning("telemetry for unregistered aircraft %s: creating a stub record", tail)
     return Aircraft(tail=tail, type="unknown", home="---", location="---", status="ok", cycles=0, hours=0.0)

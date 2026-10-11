@@ -115,7 +115,11 @@ def get_sensor_trend(component_id: str, last: int = 30) -> dict:
         return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="twin not available"),
                     [f"sensor trend for {component_id}: the digital twin is not available yet"])
     tail = component_id.split("/", 1)[0]
-    comp = next((c for c in get_twin(tail).components if c.component_id == component_id), None)
+    view = get_twin(tail)
+    if view is None:
+        return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="twin not available"),
+                    [f"sensor trend for {component_id}: the digital twin is not available yet"])
+    comp = next((c for c in view.components if c.component_id == component_id), None)
     if comp is None:
         raise ToolError(f"unknown component {component_id!r}")
     rows = [h.model_dump(mode="json") for h in comp.history[-last:]]
