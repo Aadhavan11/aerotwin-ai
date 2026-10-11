@@ -371,6 +371,13 @@ class Toolbox:
                 "evidence": [_ev("plan", plan.id, "drafted from this plan")]
                 + [_ev("event", w.id, "work order draft") for w in orders[:3]]}
 
+    def list_requests(self, status: Optional[str] = None, tail: Optional[str] = None) -> dict:
+        """The maintenance requests (work orders) with their ids, so a proposal can name the right one."""
+        rows = [w for w in workorders.list_orders(status) if not tail or w.tail == tail]
+        return {"requests": [{"id": w.id, "tail": w.tail, "title": w.title or w.task_id, "station": w.station, "start": _t(w.start), "end": _t(w.end), "status": w.status,
+                              "part": w.part, "order_part": w.order_part} for w in rows[-30:]],
+                "evidence": [_ev("event", w.id, "work order") for w in rows[:3]]}
+
     # ---- proposals: the copilot prepares a change, the person allows it ------------------------
     def propose_request_edit(self, work_order_id: str, title: Optional[str] = None, work: Optional[str] = None, part: Optional[str] = None,
                              part_qty: Optional[int] = None, order_part: Optional[bool] = None, start: Optional[str] = None, end: Optional[str] = None) -> dict:
@@ -437,6 +444,9 @@ class Toolbox:
                  s({}), self.compare_plans, "operations"),
             Tool("draft_work_orders", "Draft work orders (always pending human approval) from the current plan, optionally for some aircraft.",
                  s({"tails": {"type": "array", "items": {"type": "string"}}}), self.draft_work_orders, "coordinator"),
+            Tool("list_requests", "List maintenance requests (work orders) with their ids, status, aircraft, station and times; optionally only one status (pending_approval, approved, rejected) or one aircraft. "
+                 "Use it to find the id before proposing a change.",
+                 s({"status": {"type": "string"}, "tail": {"type": "string"}}), self.list_requests, "coordinator"),
             Tool("propose_request_edit", "Propose a change to a maintenance request that is waiting for a decision (name, work, part, quantity, whether the part must be ordered, "
                  "start and end as ISO UTC times). This does NOT change anything: the person is shown the proposal and must allow it. Use the work order id, for example WO-1.",
                  s({"work_order_id": {"type": "string"}, "title": {"type": "string"}, "work": {"type": "string"}, "part": {"type": "string"}, "part_qty": {"type": "integer"},
