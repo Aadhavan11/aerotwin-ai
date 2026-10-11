@@ -12,7 +12,7 @@ part, a closed facility) the plan is **recomputed automatically**. A human appro
 
 ## What to do right now
 
-1. Read [`SCOPE.md`](SCOPE.md) (10 minutes), then **your work package** in [`work/`](work/): `01` Shamit, `02` Aashirth, `03` Pardhu, `04` Aadhavan.
+1. Read [`SCOPE.md`](SCOPE.md) (10 minutes), then [`work/OWNERSHIP.md`](work/OWNERSHIP.md) (**who owns what now**), then **your work package** in [`work/`](work/): `01` Shamit, `02` Aashirth, `03` Pardhu, `04` Aadhavan.
 2. Use [`CLAUDE-PROMPT.md`](CLAUDE-PROMPT.md) with your Claude so it starts from the same facts and rules.
 3. Check the event rules (pre-written code, AI policy, deadline) and tell the group.
 4. Set up the dev environment (`INTEGRATION.md` section 10) and wait for **C0** (Shamit's skeleton + mock API, target 9:15 PM). Meanwhile do the first task in your package.

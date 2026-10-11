@@ -1,5 +1,8 @@
 # Work package 3: Pardhu. Fleet-aware scheduler (3.3) and what-if simulation (3.5)
 
+> **New: Pardhu also owns the fleet generator (`sim/fleet.py`, `SimClock`): spec in `work/01` sections B.1 to B.3, including the golden constraints your scheduler depends on. Build it right after the task cards (about 90 minutes).**
+> Details: [`OWNERSHIP.md`](OWNERSHIP.md).
+
 You build the **decision engine**: given the fleet state and the maintenance that is needed, find where and when to do it, and recompute when
 reality changes. This is the heart of the "self-adjusting plan" story.
 

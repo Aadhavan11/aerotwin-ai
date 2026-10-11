@@ -1,5 +1,8 @@
 # Work package 2: Aashirth. Health intelligence (3.1) and the digital twin state engine (3.2 backend)
 
+> **New: Aashirth also owns the telemetry source (`sim/telemetry.py`), `POST /sim/step` and scenario injection (`sim/scenarios.py`, `/scenario/inject`, `/scenario/reset`): spec in `work/01` sections B.4 to B.7. Do them after the L1 stubs above; they sit next to your C-MAPSS loader and twin ingest.**
+> Details: [`OWNERSHIP.md`](OWNERSHIP.md).
+
 You build the **brain of the twin**: the models that say how healthy each component is and how long it has left, and the state engine that
 keeps every aircraft's components up to date. Everyone downstream (scheduler, agents, UI) reads what you produce.
 

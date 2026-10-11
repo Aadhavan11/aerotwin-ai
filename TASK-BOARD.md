@@ -5,23 +5,29 @@ Tick boxes by editing this file in a small commit (`[docs] tick ...`), so everyo
 
 ## 1. Who owns which feature
 
+> **Owners changed Sat night (Shamit and Aadhavan swapped jobs). `work/OWNERSHIP.md` is the source of truth for who builds what; where this file names a different owner, follow OWNERSHIP.md. The specs themselves are unchanged.**
+
 | Feature | Owner | Support |
 |---|---|---|
-| Foundation: contracts, DB, simulator, API skeleton, scenario injection, mock mode, `make` targets | **Shamit** | |
-| **3.1** Health intelligence (anomaly + RUL, data quality) | **Aashirth** | Shamit supplies the telemetry shape |
-| **3.2** Digital twin: state engine (backend) | **Aashirth** | |
-| **3.2** Digital twin: interactive UI | **Aadhavan** | Aashirth explains `TwinView` |
-| **3.3** Scheduling (CP-SAT, greedy, static baseline, derive tasks) | **Pardhu** | Aashirth supplies RUL; Shamit supplies the DB snapshot |
-| **3.4** Agents (tool registry, runner, scripted + LLM) | **Shamit** | Pardhu/Aashirth supply tool functions |
+| Foundation: contracts, database, API skeleton, mock mode, fixtures, `make` targets | **Shamit** | |
+| Fleet generator (aircraft, rotations, stations, technicians, parts, golden constraints), `SimClock` | **Pardhu** | Shamit supplies the DB tables |
+| Telemetry source (C-MAPSS replay), `/sim/step`, scenario injection | **Aashirth** | Shamit's Lab screen calls it |
+| **3.1** Health intelligence (anomaly + RUL, data quality) | **Aashirth** | |
+| **3.2** Digital twin state engine (backend) | **Aashirth** | |
+| **3.2** Aircraft Twin screen | **Aadhavan** | Aashirth explains `TwinView` |
+| **3.3** Scheduling (CP-SAT, greedy, static baseline, derive tasks) | **Pardhu** | Aashirth supplies RUL |
+| **3.4** Agents (tool registry, runner, scripted + LLM) | **Aadhavan** | Pardhu/Aashirth supply tool functions |
 | **3.5** What-if (apply event, simulate, replan, compare) | **Pardhu** | |
-| **3.6** Copilot: backend, KB, work orders, audit | **Shamit** | Pardhu authors the KB task cards |
-| **3.6** Copilot + agent-activity + planning + lab UI | **Aadhavan** | Shamit supplies fixtures and endpoints |
-| Demo story, video, Devpost | **Aadhavan** (lead), everyone reviews | |
-| Stretch goals from the doc (after all six reach L2): technician skill matching depth, spare-part repositioning, multiple simultaneous faults | **Pardhu** | Aashirth |
+| **3.6** Copilot backend, KB, work orders, audit | **Aadhavan** | Pardhu authors the KB task cards |
+| Web shell, Fleet Overview, Planning board, Simulation Lab, Copilot drawer + Agent Activity + approvals UI | **Shamit** | Aadhavan supplies the endpoints' shapes |
+| Demo story, video, Devpost; concept owner | **Aadhavan** (lead), everyone reviews | |
+| Stretch goals from the doc (after all six reach L2) | **Pardhu** | Aashirth |
 
 Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least one person from each pair is awake until 3:15 AM.
 
 ## 2. Timeline by person
+
+> The checklists below were written before the ownership swap. **Keep the time boxes, but take the items from `work/OWNERSHIP.md`** (e.g. the agent and copilot items are Aadhavan's, the screens except the Aircraft Twin are Shamit's, the telemetry/scenario items are Aashirth's, the fleet generator is Pardhu's).
 
 ### Block 0: Sat 8:30 to 9:15 PM (everyone)
 - [ ] Everyone: read your work package (`work/0x-*.md`), `FEATURES-3.1-3.6.md` (your features) and `CONTRACTS.md` sections 1, 2 and 5. 15 min.

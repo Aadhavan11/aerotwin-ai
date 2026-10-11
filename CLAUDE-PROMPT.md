@@ -22,17 +22,17 @@ The concept was written by my teammate Aadhavan; it defines the scope. A separat
 
 FILES YOU HAVE: SCOPE.md (READ FIRST: scope, roles, schedule, demo), docs/AEROTWIN-CONCEPT.md (the concept doc), FEATURES-3.1-3.6.md (what we build per feature),
 TASK-BOARD.md (who does what, when), CONTRACTS.md (the single interface spec: models, tables, endpoints, function signatures, agent tools), INTEGRATION.md (how modules connect),
-YOUR work package in work/ (01 Shamit, 02 Aashirth, 03 Pardhu, 04 Aadhavan), GLOSSARY.md.
+YOUR work package in work/ (01 Shamit, 02 Aashirth, 03 Pardhu, 04 Aadhavan) AND work/OWNERSHIP.md (who owns what now; it wins), GLOSSARY.md.
 Read ALL of them completely before you answer. These docs were written by another Claude from a short brief; they can be wrong. Where documents disagree: CONTRACTS.md wins for
 interfaces, TASK-BOARD.md for roles and order, SCOPE.md for scope. If something conflicts with the event rules or with what I tell you, say so and propose a fix.
 
 ABOUT ME
 - Name: [YOUR NAME]
-- My role (see SCOPE.md section 4): [Shamit: platform + integration + agents + copilot backend | Aashirth: ML + twin state | Pardhu: scheduler + what-if | Aadhavan: front end + story]
+- My role (see SCOPE.md section 4): [Shamit: platform + front end (shell, fleet, planning, lab, copilot UI) | Aashirth: ML + twin state + telemetry/scenarios | Pardhu: scheduler + what-if + fleet generator | Aadhavan: agents + copilot backend + twin screen + story]
 - My skills and languages: [e.g. Python, React, optimization, ML]
 - My laptop and OS: [ ]
 - Time left in the event: [ ]
-- Teammates: Shamit (platform/integration/agents), Aashirth (ML + twin state), Pardhu (scheduler + what-if), Aadhavan (front end + story, concept owner)
+- Teammates (details in work/OWNERSHIP.md, which wins): Shamit (platform + front end + integration), Aashirth (ML + twin state + telemetry/scenarios), Pardhu (scheduler + what-if + fleet generator), Aadhavan (agents + copilot backend + twin screen + story, concept owner)
 
 YOUR FIRST REPLY (no code yet)
 1. Summarize the project in 8 lines in your own words.

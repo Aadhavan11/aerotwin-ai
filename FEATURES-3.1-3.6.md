@@ -1,5 +1,7 @@
 # The six core features (AeroTwin doc sections 3.1 to 3.6): what we build, concretely
 
+> **Owners changed Sat night (Shamit and Aadhavan swapped jobs). `work/OWNERSHIP.md` is the source of truth for who builds what; where this file names a different owner, follow OWNERSHIP.md. The specs themselves are unchanged.**
+
 These come **first**. The doc's stretch goals (technician skill matching, spare-part repositioning, multiple simultaneous faults) start only after all six reach Level 2 (`INTEGRATION.md` section 3).
 Each feature below says: what the doc asks for, exactly what we build in ~10 hours, who owns it, what it needs from others, what it gives
 to others, the acceptance test, and the moment in the demo.
@@ -89,7 +91,7 @@ exceed hangar slots at once; part quantities are respected; an impossible case (
 **Doc asks for:** Health, Scheduling, Logistics, Operations and Coordinator agents using structured tools, producing one explained plan and
 proposed work orders for human approval.
 
-**We build** (owner: **Shamit**; module `app/agents/`)
+**We build** (owner: **Aadhavan**; module `app/agents/`)
 - A **tool registry** (`CONTRACTS.md` section 6) wrapping the real module functions, each returning data plus an evidence reference.
 - **Five agents** = (system prompt, allowed tools). The runner executes them in order Health -> Scheduling -> Logistics -> Operations ->
   Coordinator; each appends `AgentStep`s (thought, tool_call, tool_result, summary) to the database as it goes.
@@ -129,7 +131,7 @@ explains why not; a closed hangar is never used; `compare` returns >= 4 scenario
 **Doc asks for:** a conversational assistant answering the six example questions, explaining with structured data and approved documentation,
 identifying missing information, generating auditable maintenance proposals.
 
-**We build** (backend owner: **Shamit** `app/copilot/`; UI owner: **Aadhavan**)
+**We build** (backend owner: **Aadhavan** `app/copilot/`; UI owner: **Shamit**)
 - `POST /copilot/chat`: LLM with the tool registry (read tools + `solve_schedule` + `replan_with_event` + `draft_work_orders` + `search_kb`).
   Response = `answer`, `evidence[]`, `missing_info[]`, `proposed_work_orders[]`.
 - **Approved documentation** = a small **synthetic knowledge base** (`copilot/kb/*.yaml`, ~10 task cards: title, ATA-style chapter, duration, skill,

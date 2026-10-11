@@ -15,6 +15,7 @@ as conditions change (a delayed part, a closed facility, a new fault). Concept b
 | [`TASK-BOARD.md`](TASK-BOARD.md) | Who builds what and when, dependencies, checkpoints |
 | [`CONTRACTS.md`](CONTRACTS.md) | Every model, table, endpoint and function signature (the single spec) |
 | [`INTEGRATION.md`](INTEGRATION.md) | How the modules connect, runtime flows, LLM rules, git, testing |
+| [`work/OWNERSHIP.md`](work/OWNERSHIP.md) | **Who owns what (wins over every other doc)** |
 | [`work/`](work/) | One work package per person: Shamit, Aashirth, Pardhu, Aadhavan |
 | [`CLAUDE-PROMPT.md`](CLAUDE-PROMPT.md) | Prompt to paste into your Claude so it starts from the same facts and rules |
 | [`GLOSSARY.md`](GLOSSARY.md) | Plain-English terms |
