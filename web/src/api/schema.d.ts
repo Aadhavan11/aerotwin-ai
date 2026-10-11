@@ -837,6 +837,7 @@ export interface components {
             cost_parts_usd?: number;
             cost_labor_usd?: number;
             cost_bay_usd?: number;
+            cost_overhead_usd?: number;
             cost_delay_usd?: number;
             cost_exposure_usd?: number;
             total_cost_usd?: number;

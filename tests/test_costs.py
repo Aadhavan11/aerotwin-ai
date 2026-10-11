@@ -22,7 +22,8 @@ def test_job_cost_follows_the_price_list():
     assert c["parts"] == costs.PART_PRICE_USD["BORESCOPE-KIT"]
     assert c["labor"] == pytest.approx(h * costs.CREW_SIZE * costs.LABOR_RATE_USD_H, abs=0.01)
     assert c["bay"] == pytest.approx(h * costs.BAY_RATE_USD_H, abs=0.01)
-    assert c["total"] == pytest.approx(c["parts"] + c["labor"] + c["bay"] + 700.0 + c["delay"], abs=0.01)
+    assert c["overhead"] == costs.JOB_OVERHEAD_USD
+    assert c["total"] == pytest.approx(c["parts"] + c["labor"] + c["bay"] + c["overhead"] + 700.0 + c["delay"], abs=0.01)
 
 
 def test_plan_metrics_add_up_and_baseline_pays_for_unscheduled_work():
@@ -31,7 +32,7 @@ def test_plan_metrics_add_up_and_baseline_pays_for_unscheduled_work():
     opt = solve(st, tasks, mode="cpsat").metrics
     base = solve(st, tasks, mode="static_baseline").metrics
     for m in (opt, base):
-        parts = m.cost_parts_usd + m.cost_labor_usd + m.cost_bay_usd + m.logistics_cost_usd + m.cost_delay_usd + m.cost_exposure_usd
+        parts = m.cost_parts_usd + m.cost_labor_usd + m.cost_bay_usd + m.cost_overhead_usd + m.logistics_cost_usd + m.cost_delay_usd + m.cost_exposure_usd
         assert m.total_cost_usd == pytest.approx(parts, abs=0.05)
         assert m.cost_exposure_usd == (m.late_or_unscheduled * costs.DEFERRAL_ALLOWANCE_USD)
     # the same work costs the same parts; the baseline's extra cost is shipping, delay and the deferral allowance

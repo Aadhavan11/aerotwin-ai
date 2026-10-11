@@ -197,9 +197,9 @@ def simulate_detailed(plan: Plan, state: FleetState, runs: int = 20, seed: int =
         schedule_changes=plan.metrics.schedule_changes, tasks_total=base.tasks_total, tasks_scheduled=base.tasks_scheduled,
         late_or_unscheduled=unscheduled + int(round(mean([float(r[4]) for r in results]))),
         cost_parts_usd=base.cost_parts_usd, cost_labor_usd=base.cost_labor_usd, cost_bay_usd=base.cost_bay_usd,
-        cost_delay_usd=round(mean(down) * costs.DELAY_COST_USD_H, 2), cost_exposure_usd=base.cost_exposure_usd,
+        cost_delay_usd=round(mean(down) * costs.DELAY_COST_USD_H, 2), cost_exposure_usd=base.cost_exposure_usd, cost_overhead_usd=base.cost_overhead_usd,
         total_cost_usd=costs.total_cost(base.cost_parts_usd, base.cost_labor_usd, base.cost_bay_usd, base.logistics_cost_usd,
-                                        mean(down) * costs.DELAY_COST_USD_H, base.cost_exposure_usd),
+                                        mean(down) * costs.DELAY_COST_USD_H, base.cost_exposure_usd, base.cost_overhead_usd),
     )
     return SimSummary(runs=n, metrics=metrics, downtime_mean_h=round(mean(down), 4), downtime_p90_h=round(_percentile(down, 0.9), 4),
                       flights_mean=round(mean(flights), 3), flights_p90=_percentile(flights, 0.9),

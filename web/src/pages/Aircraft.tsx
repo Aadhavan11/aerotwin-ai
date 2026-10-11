@@ -224,11 +224,11 @@ function ComponentDetail({
         )}
         <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-slate-100 pt-3 text-xs">
           <div>
-            <dt className="text-slate-500">Cycles</dt>
+            <dt className="text-slate-500" title="Flights flown with this part fitted">Flights on this part</dt>
             <dd className="font-medium">{component.cycles.toLocaleString()}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">Flight hours</dt>
+            <dt className="text-slate-500" title="Hours flown with this part fitted">Hours on this part</dt>
             <dd className="font-medium">{number(component.hours)}</dd>
           </div>
           <div>
@@ -256,21 +256,29 @@ function ComponentDetail({
                 ["Conservative · p10", rul.p10],
                 ["Median · p50", rul.p50],
                 ["Upper · p90", rul.p90],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className={`rounded-lg p-3 ${String(label).includes("p10") ? "bg-amber-50" : "bg-slate-50"}`}
-                >
-                  <div className="text-xs text-slate-500">{label}</div>
-                  <div className="mt-1 text-2xl font-semibold">
-                    {number(Number(value))}
+              ].map(([label, value]) => {
+                // The model caps remaining life (125 flights for engines, 500 for other systems), so a value at the cap means "at least this much".
+                const cap = component.kind === "engine" ? 125 : 500;
+                const capped = Number(value) >= cap - 0.05;
+                return (
+                  <div
+                    key={label}
+                    className={`rounded-lg p-3 ${String(label).includes("p10") ? "bg-amber-50" : "bg-slate-50"}`}
+                    title={capped ? `The model does not predict beyond ${cap} flights, so this means at least ${cap}.` : undefined}
+                  >
+                    <div className="text-xs text-slate-500">{label}</div>
+                    <div className="mt-1 text-2xl font-semibold">
+                      {number(Number(value))}
+                      {capped ? "+" : ""}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <p className="mt-3 text-xs text-slate-500">
               Maintenance deadlines use conservative p10. The interval expresses
-              model uncertainty; it is not an approved operating limit.
+              model uncertainty; it is not an approved operating limit. A “+” means the
+              model stops predicting at {component.kind === "engine" ? 125 : 500} flights, so the real figure is at least that.
             </p>
           </>
         ) : (

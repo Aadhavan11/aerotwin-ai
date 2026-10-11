@@ -216,9 +216,10 @@ class PlanMetrics(BaseModel):
     cost_parts_usd: float = 0.0
     cost_labor_usd: float = 0.0
     cost_bay_usd: float = 0.0
+    cost_overhead_usd: float = 0.0              # a fixed amount per job (consumables, tooling, paperwork, release sign-off)
     cost_delay_usd: float = 0.0                 # delay hours x cost per hour of delay
     cost_exposure_usd: float = 0.0              # allowance for each task the plan cannot do before its deadline
-    total_cost_usd: float = 0.0                 # parts + labor + bay + shipping (logistics_cost_usd) + delay + exposure
+    total_cost_usd: float = 0.0                 # parts + labor + bay + overhead + shipping (logistics_cost_usd) + delay + exposure
 
 class ObjectiveWeights(BaseModel):
     downtime: float = 10.0                      # alpha

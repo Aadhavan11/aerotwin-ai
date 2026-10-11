@@ -91,6 +91,7 @@ export default function Planning() {
     { name: "Parts", Optimized: o.cost_parts_usd ?? 0, Baseline: b.cost_parts_usd ?? 0 },
     { name: "Labor", Optimized: o.cost_labor_usd ?? 0, Baseline: b.cost_labor_usd ?? 0 },
     { name: "Bay time", Optimized: o.cost_bay_usd ?? 0, Baseline: b.cost_bay_usd ?? 0 },
+    { name: "Job overhead", Optimized: o.cost_overhead_usd ?? 0, Baseline: b.cost_overhead_usd ?? 0 },
     { name: "Shipping", Optimized: o.logistics_cost_usd, Baseline: b.logistics_cost_usd },
     { name: "Delay", Optimized: o.cost_delay_usd ?? 0, Baseline: b.cost_delay_usd ?? 0 },
     { name: "Not done in time", Optimized: o.cost_exposure_usd ?? 0, Baseline: b.cost_exposure_usd ?? 0 },
@@ -197,7 +198,7 @@ export default function Planning() {
 
       <Card title="Optimized vs baseline">
         <div className="metrics">
-          <Metric label="Estimated cost" opt={o.total_cost_usd ?? 0} base={b.total_cost_usd ?? 0} fmt={fmtUsd} hint="Parts, labor, bay time, shipping, delay and the cost of jobs not done in time" />
+          <Metric label="Estimated cost" opt={o.total_cost_usd ?? 0} base={b.total_cost_usd ?? 0} fmt={fmtUsd} hint="Parts, labor, bay time, job overhead, shipping, delay and the cost of jobs not done in time" />
           <Metric label="Downtime" opt={o.downtime_h} base={b.downtime_h} fmt={fmtH} hint="Hours past the planned ground time" />
           <Metric label="Flights affected" opt={o.flights_affected} base={b.flights_affected} fmt={(n) => String(Math.round(n))} />
           <Metric label="Jobs not done in time" opt={o.late_or_unscheduled} base={b.late_or_unscheduled} fmt={(n) => String(Math.round(n))} hint="Late or without a slot before the deadline" />
@@ -223,7 +224,7 @@ export default function Planning() {
         </div>
         <p className="mt-2 text-xs text-slate-500">
           Baseline = static policy: each task at the aircraft's home base in the last window before its deadline. Costs come from a simulated price list (docs/COST-MODEL.md); two plans that
-          do the same work pay the same parts, labor and bay time, so the difference is shipping, delay and the allowance for any job the plan cannot do before its deadline.
+          do the same work pay the same parts, labor, bay time and overhead, so the difference is shipping, delay and the allowance for any job the plan cannot do before its deadline.
         </p>
       </Card>
 

@@ -6,7 +6,7 @@ Definitions (documented because the demo numbers come from here):
                           departure is delayed by that much). Cascades onto later legs are ignored (simplification).
 * ``flights_affected``    1 per assignment with ``extension_h > 0`` (same simplification).
 * ``logistics_cost_usd``  sum of ``ship_cost_usd`` of the parts that are shipped in (not on hand).
-* ``total_cost_usd``      estimated cost from a simulated price list: parts + labor + bay time + shipping + delay + a deferral allowance per late or
+* ``total_cost_usd``      estimated cost from a simulated price list: parts + labor + bay time + a fixed overhead per job + shipping + delay + a deferral allowance per late or
                           unscheduled task (see ``app/solver/costs.py``).
 * ``tech_utilization``    technician busy hours / available technician hours over the first ``horizon_h`` hours.
 * ``hangar_utilization``  hangar busy hours / (hangar slots x horizon hours), over stations that are open.
@@ -87,6 +87,7 @@ def compute_metrics(state: FleetState, tasks: list[Task], assignments: list[Assi
     jobs = [costs.job_cost(task_by_id.get(a.task_id), a) for a in assignments]
     c_parts, c_labor, c_bay = (round(sum(j[k] for j in jobs), 2) for k in ("parts", "labor", "bay"))
     c_delay = round(sum(j["delay"] for j in jobs), 2)
+    c_overhead = round(sum(j["overhead"] for j in jobs), 2)
     c_exposure = round((late + unscheduled) * costs.DEFERRAL_ALLOWANCE_USD, 2)
 
     return PlanMetrics(
@@ -99,8 +100,8 @@ def compute_metrics(state: FleetState, tasks: list[Task], assignments: list[Assi
         tasks_total=len(tasks),
         tasks_scheduled=len(assignments),
         late_or_unscheduled=late + unscheduled,
-        cost_parts_usd=c_parts, cost_labor_usd=c_labor, cost_bay_usd=c_bay, cost_delay_usd=c_delay, cost_exposure_usd=c_exposure,
-        total_cost_usd=costs.total_cost(c_parts, c_labor, c_bay, round(logistics, 2), c_delay, c_exposure),
+        cost_parts_usd=c_parts, cost_labor_usd=c_labor, cost_bay_usd=c_bay, cost_delay_usd=c_delay, cost_exposure_usd=c_exposure, cost_overhead_usd=c_overhead,
+        total_cost_usd=costs.total_cost(c_parts, c_labor, c_bay, round(logistics, 2), c_delay, c_exposure, c_overhead),
     )
 
 

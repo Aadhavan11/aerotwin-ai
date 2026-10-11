@@ -14,7 +14,7 @@ type Item = {
   baseline?: { station: string; start: string; end: string } | null;
   exposure?: { hours_to_fix?: number | null; flights_before_fix?: number | null; slack_to_deadline_h?: number | null } | null;
   logistics?: { station: string; technician_assigned: string | null; technicians_covering: number; part?: { name: string; needed: number; on_hand: number; eta_hours: number; ship_from: string | null; ship_hours: number; ship_cost_usd: number } } | null;
-  cost?: { parts: number; labor: number; bay: number; shipping: number; delay: number; total: number; hours: number; crew: number } | null;
+  cost?: { parts: number; labor: number; bay: number; overhead?: number; shipping: number; delay: number; total: number; hours: number; crew: number } | null;
 };
 type Options = {
   editable: boolean; max_extension_h: number; duration_h: number | null; deadline: string | null; windows: { start: string; end: string; hours: number }[];
@@ -279,7 +279,7 @@ export default function MaintenanceRequest({ w: fresh, onDone, compact = false }
               <>
                 <p className="mreq-big">{fmtUsd(item.cost.total)}</p>
                 <small className="mreq-hint">
-                  Parts {fmtUsd(item.cost.parts)} · labor {fmtUsd(item.cost.labor)} ({item.cost.crew} technicians, {fmtH(item.cost.hours)}) · bay time {fmtUsd(item.cost.bay)}
+                  Parts {fmtUsd(item.cost.parts)} · labor {fmtUsd(item.cost.labor)} ({item.cost.crew} technicians, {fmtH(item.cost.hours)}) · bay time {fmtUsd(item.cost.bay)}{item.cost.overhead ? ` · overhead ${fmtUsd(item.cost.overhead)}` : ""}
                   {item.cost.shipping > 0 ? ` · shipping ${fmtUsd(item.cost.shipping)}` : ""}
                   {item.cost.delay > 0 ? ` · delay ${fmtUsd(item.cost.delay)}` : ""}. From a simulated price list.
                 </small>

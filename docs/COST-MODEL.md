@@ -8,6 +8,7 @@ so the optimized-versus-baseline comparison looked empty. The plan now also carr
 | Parts | price of the part a job consumes x quantity | HYD-PUMP $38,000, AVIONICS-LRU $27,000, BRAKE-ASSY $14,500, BORESCOPE-KIT $2,400 (tool-crib charge per use) |
 | Labor | job hours x 2 technicians x labor rate | $145 per technician hour |
 | Bay time | job hours x hangar bay rate | $650 per hour |
+| Job overhead | a fixed amount per job: consumables, tooling, paperwork, the quality inspection and the release sign-off | $3,500 per job |
 | Shipping | the existing `logistics_cost_usd` (a part shipped in from another station) | from the station data |
 | Delay | hours the job runs past its ground window x cost of an hour of delay | $5,000 per hour |
 | Not done in time | an allowance for every task the plan cannot do before its deadline (late or unscheduled): the expected cost of the unplanned event that follows | $30,000 per task |

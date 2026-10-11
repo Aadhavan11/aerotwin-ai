@@ -4,6 +4,7 @@ A plan's estimated cost is what the work itself costs plus what getting it wrong
 
 * parts      price of the part a job consumes (``PART_PRICE_USD`` x quantity)
 * labor      job hours x crew size x labor rate
+* overhead   a fixed amount per job (consumables, tooling, paperwork, the quality inspection and release sign-off)
 * bay        job hours x hangar bay rate
 * shipping   ``logistics_cost_usd``: parts shipped in from another station (already in the plan metrics)
 * delay      hours a job runs past its ground window (``downtime_h``) x cost of an hour of delay
@@ -25,6 +26,7 @@ CREW_SIZE = 2
 BAY_RATE_USD_H = 650.0
 DELAY_COST_USD_H = 5_000.0
 DEFERRAL_ALLOWANCE_USD = 30_000.0
+JOB_OVERHEAD_USD = 3_500.0   # per job: consumables, tooling, paperwork, quality inspection and the release sign-off
 
 
 def job_hours(a: Assignment) -> float:
@@ -32,15 +34,15 @@ def job_hours(a: Assignment) -> float:
 
 
 def job_cost(task: Optional[Task], a: Assignment, shipping_usd: float = 0.0) -> dict:
-    """Cost of one scheduled job, broken down. ``total`` is parts + labor + bay + shipping + delay."""
+    """Cost of one scheduled job, broken down. ``total`` is parts + labor + bay + overhead + shipping + delay."""
     h = job_hours(a)
     parts = PART_PRICE_USD.get(task.required_part, 0.0) * task.part_qty if task and task.required_part else 0.0
     labor = h * CREW_SIZE * LABOR_RATE_USD_H
     bay = h * BAY_RATE_USD_H
     delay = a.extension_h * DELAY_COST_USD_H
-    return {"parts": round(parts, 2), "labor": round(labor, 2), "bay": round(bay, 2), "shipping": round(shipping_usd, 2),
-            "delay": round(delay, 2), "total": round(parts + labor + bay + shipping_usd + delay, 2)}
+    return {"parts": round(parts, 2), "labor": round(labor, 2), "bay": round(bay, 2), "overhead": JOB_OVERHEAD_USD, "shipping": round(shipping_usd, 2),
+            "delay": round(delay, 2), "total": round(parts + labor + bay + JOB_OVERHEAD_USD + shipping_usd + delay, 2)}
 
 
-def total_cost(parts: float, labor: float, bay: float, shipping: float, delay: float, exposure: float) -> float:
-    return round(parts + labor + bay + shipping + delay + exposure, 2)
+def total_cost(parts: float, labor: float, bay: float, shipping: float, delay: float, exposure: float, overhead: float = 0.0) -> float:
+    return round(parts + labor + bay + overhead + shipping + delay + exposure, 2)
