@@ -1,85 +1,60 @@
-# Glossary (so nobody has to be an aviation person)
+# Glossary (so nobody has to be an aviation or ML person)
 
-## Flying and routing
-
-| Term | Meaning |
-|---|---|
-| **Flight level (FL)** | Altitude in hundreds of feet at a standard pressure setting. FL350 = 35,000 ft. |
-| **RVSM** | Reduced Vertical Separation Minimum: 1,000 ft spacing between about FL290 and FL410. |
-| **Semicircular rule** | Direction of travel decides which levels are legal: eastbound odd (FL310, 330), westbound even (FL320, 340). Our router must obey it. |
-| **Great circle** | Shortest path on the globe; our baseline route. |
-| **Lateral / vertical profile** | Where the route goes sideways, and which levels it flies. We optimize both. |
-| **Pareto front** | The set of options where improving one thing (CO2e) costs another (fuel/time). We show it as a curve with a slider. |
-| **OFP** | Operational flight plan: what dispatch hands the crew. |
-| **OCC / dispatcher** | Airline operations control center; the person who plans and releases flights. |
-| **ETOPS** | Rules for twin-engine flights far from airports. Out of scope. |
-
-## Weather
+## Aircraft and operations
 
 | Term | Meaning |
 |---|---|
-| **METAR / SPECI** | Current airport weather observation (coded text; the API gives JSON). |
-| **TAF** | Airport forecast. |
-| **SIGMET** | Warning of hazardous weather for aircraft (convective, turbulence, ice, ash). |
-| **G-AIRMET** | Graphical advisories (turbulence, icing, mountain obscuration, low visibility) for the lower 48. |
-| **PIREP** | Pilot report. |
-| **NWP / GFS / HRRR** | Numerical weather prediction. GFS is global; HRRR is high-resolution for the continental US. |
-| **GRIB2** | The file format of weather model grids. |
-
-## Climate
-
-| Term | Meaning |
-|---|---|
-| **CO2e** | CO2-equivalent: other warming effects converted to the CO2 that would warm the same amount. |
-| **GWP100 / ATR20** | Two ways to convert (100-year global warming potential; 20-year average temperature response). The answer depends on the choice, so always state it. |
-| **Contrail** | Condensation trail behind a jet. Persistent contrails form cirrus clouds that warm the planet. |
-| **ISSR** | Ice-supersaturated region: air humid enough for contrails to persist. |
-| **Schmidt-Appleman criterion (SAC)** | The temperature/humidity condition for a contrail to form at all. |
-| **CoCiP** | Contrail Cirrus Prediction model (in `pycontrails`). |
-| **NOx / nvPM** | Nitrogen oxides / non-volatile particulate matter from engines. NOx has altitude-dependent warming and cooling effects. |
-| **LTO cycle** | Landing and take-off cycle (below about 3,000 ft). The ICAO emissions databank covers only this. |
-| **EI** | Emission index: grams of a pollutant per kilogram of fuel. |
-| **SAF** | Sustainable aviation fuel. |
-
-## Aircraft data
-
-| Term | Meaning |
-|---|---|
-| **ADS-B** | Aircraft broadcast of position/velocity about once a second. Public receivers feed OpenSky. **No fuel or engine data.** |
-| **ICAO24** | The aircraft's 24-bit hex address in ADS-B (maps to a registration/tail number via a database). |
-| **ACARS** | Datalink for short messages between aircraft and ground. |
-| **OOOI** | Out, Off, On, In: the four gate/runway events of a flight. |
-| **QAR / FDR / FDM** | Quick Access Recorder / Flight Data Recorder / Flight Data Monitoring. Hundreds to thousands of parameters, **offloaded at the gate**, so batch, hours later. |
-| **AHM** | Aircraft health monitoring (fault messages and trends). |
-| **Tail number** | The registration of one specific aircraft (N-number in the US). We use fictional `SIM-xxx` ones. |
-| **BADA / OpenAP** | Aircraft performance models. BADA is licensed (avoid); OpenAP is open (use). |
+| **Tail number** | The registration of one specific aircraft. We use fictional `SIM-001`..`SIM-024`. |
+| **Cycle** | One flight (takeoff to landing). Engines and landing gear wear per cycle, so RUL is counted in cycles. |
+| **Rotation** | The chain of flights one aircraft flies over a few days. |
+| **Ground window** | The time an aircraft sits at an airport between an arrival and its next departure. Maintenance fits into these. |
+| **Station / hub** | An airport where maintenance can happen (has a hangar, technicians and parts). |
+| **Hangar slot** | How many aircraft a station can work on at once. 0 = closed. |
+| **AOG** | Aircraft on ground: grounded and costing money. |
+| **OCC / MCC** | Airline operations control center / maintenance control center: where these decisions are made. |
+| **Delay vs extension** | If maintenance runs past the ground window, the next flight is delayed. We call the extra hours the *extension*. |
 
 ## Maintenance
 
 | Term | Meaning |
 |---|---|
-| **ATA chapter** | Standard numbering of aircraft systems (21 air conditioning, 32 landing gear, 36 pneumatics, 72 engine). |
-| **AMM / MPD / IPC / SRM** | Maintenance manual, planning document, parts catalog, structural repair manual. Licensed and customer-specific: **do not ingest**. |
-| **MEL / MMEL** | (Master) Minimum Equipment List: which broken items an aircraft may fly with, and for how long. Repair categories typically A (as stated), B (3 days), C (10), D (120). Verify per type. |
-| **AD / SB** | Airworthiness Directive (mandatory) / Service Bulletin (manufacturer advice). |
-| **A-check / C-check** | Scheduled inspections of increasing depth. Intervals are airline- and type-specific. |
-| **CAMP / CASS** | Continuous airworthiness maintenance program / continuing analysis and surveillance. Airline-run, FAA-approved. |
-| **Reliability program** | The airline's way of adjusting maintenance intervals from data (FAA AC 120-17B). |
-| **Part 121 / Part 145** | US rules for scheduled airlines / for repair stations. |
-| **AOG** | Aircraft on ground: grounded and costing money. |
-| **MCC** | Maintenance control center: decides what gets fixed where and when. |
-| **RUL** | Remaining useful life. We output P10 / P50 / P90. |
-| **EGT margin** | How far an engine's exhaust gas temperature is from its limit; it shrinks as the engine wears. |
-| **C-MAPSS / N-CMAPSS** | NASA's simulated engine run-to-failure datasets. |
-| **Digital twin** | A software model of one specific aircraft whose state follows how it is flown and what its sensors say. |
+| **Component** | A maintainable part group: engine, brakes, landing gear, hydraulics, avionics. |
+| **Task / work order** | A piece of maintenance work (what, how long, which skill, which part, deadline). A work order is a task proposed for human approval. |
+| **Deadline** | The latest time a task may be done. Ours is derived from the conservative RUL estimate and is a **hard** constraint. |
+| **Technician skills** | `engine`, `gear`, `hydraulics`, `avionics`. A task needs a technician with the matching skill on shift. |
+| **Spare part** | A stocked item (e.g. `BORESCOPE-KIT`). It may be on hand, delayed, or shippable from another station at a cost. |
+| **Borescope inspection** | Looking inside an engine with a camera probe. Our golden task. |
+| **ATA chapter** | Standard numbering of aircraft systems (e.g. 32 landing gear, 72 engine). Used loosely in the synthetic knowledge base. |
+| **MEL** | Minimum Equipment List: which broken items an aircraft may fly with, and for how long. Out of scope, mentioned only for context. |
+| **Digital twin** | A software model of one specific aircraft whose state follows its flights, sensors and maintenance. |
+| **Advisory only** | The system recommends; an authorized person approves. It does not replace approved procedures or airworthiness assessments. |
 
-## Optimization and engineering
+## Machine learning
 
 | Term | Meaning |
 |---|---|
-| **DP (dynamic programming)** | How the router finds the best path through a grid of positions and levels. |
-| **CP-SAT** | Google OR-Tools constraint solver; the planner uses it. |
-| **Monotone safety rule** | The system may only recommend maintenance **earlier** than an approved interval, never later. |
-| **Adapter** | The code that turns a real or simulated feed into our standard message. "Swap the adapter, keep the platform." |
-| **Envelope** | Our standard wrapper around every message (id, type, tail, timestamps, `synthetic` flag, payload). |
-| **IC-1...IC-5** | Integration checkpoints in the schedule. |
+| **NASA C-MAPSS** | Public simulated turbofan-engine run-to-failure datasets (sensors per cycle until failure). Our training and replay data. |
+| **RUL** | Remaining useful life: cycles left before a component needs attention. We report **p10 / p50 / p90** (pessimistic / middle / optimistic). |
+| **p10 (conservative)** | The pessimistic RUL (only 10% chance it is lower). Deadlines use this. |
+| **Anomaly detection** | Flagging behavior that looks unlike normal. We use an **Isolation Forest**. |
+| **Random Forest / XGBoost** | Tree-based models for predicting RUL from sensor features. |
+| **Health score** | 0 to 1 summary of a component (1 = new, 0 = at the failure threshold). |
+| **Data quality check** | Flags for flat sensors, out-of-range values, missing data or too little history. |
+| **MAE / RMSE** | Average error / error that punishes big misses, in cycles. Precision / recall / false-positive rate describe the anomaly flags. |
+
+## Optimization, simulation and agents
+
+| Term | Meaning |
+|---|---|
+| **OR-Tools CP-SAT** | Google's constraint solver. It picks the station, time and technician for each task while respecting every constraint. |
+| **Hard vs soft constraint** | Hard (deadlines, skills, parts, capacity) can never be broken. Soft ones (downtime, cost) are traded off in the objective. |
+| **Baseline** | The comparison policy: do each task at the home base in the last window before its deadline (a fixed schedule). |
+| **Discrete-event simulation** | Simulating a system as a sequence of events (flights, jobs) to measure downtime and delays. |
+| **What-if / replan** | Change something (delay a part, close a hangar), recompute the plan, and show the difference. |
+| **Agent** | An AI role with a goal and a set of tools. Ours: Health, Scheduling, Logistics, Operations, Coordinator. |
+| **Tool calling** | The LLM asks our code to run a function and reads the result. Numbers come from the function, not from the LLM. |
+| **Scripted mode** | The same tools run in a fixed order without an LLM. The demo must work this way. |
+| **Evidence** | Links from a recommendation to the data that produced it (tool calls, plans, knowledge-base items). |
+| **Level 1 / 2 / 3** | Stub with the right shape / real implementation / polish (`INTEGRATION.md` section 3). |
+| **C0..C3** | Checkpoints in the schedule (`TASK-BOARD.md`). |
+| **Golden scenario** | The one scripted story we test and demo: SIM-017 engine anomaly, plan, delayed part, replan. |

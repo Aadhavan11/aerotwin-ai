@@ -1,8 +1,8 @@
 # AeroTwin AI: The Self-Optimizing Aircraft Fleet (teammate's concept doc)
 
-> **Source:** written by one of Shamit's teammates (author: *add name*); pasted into the project on 2026-10-10 ~8:20 PM ET.
+> **Source:** written by **Aadhavan**; pasted into the project by Shamit on 2026-10-10 ~8:20 PM ET. **This document defines the project scope.**
 > Reformatted for readability (a few bullet lists run inline; HTML entities, the equation rendering and the stack table fixed). Content unchanged.
-> The wording is the author's. How this fits with the Meridian plan: see [`../MERGE-PLAN.md`](../MERGE-PLAN.md).
+> The wording is the author's. How we turn it into a build plan: see [`../SCOPE.md`](../SCOPE.md).
 
 **Tagline:** Predict the failure. Simulate the future. Prevent the disruption.
 

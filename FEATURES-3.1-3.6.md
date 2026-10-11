@@ -1,6 +1,6 @@
 # The six core features (AeroTwin doc sections 3.1 to 3.6): what we build, concretely
 
-These come **first**. The climate route module and the other extras start only after all six reach Level 2 (`INTEGRATION.md` section 3).
+These come **first**. The doc's stretch goals (technician skill matching, spare-part repositioning, multiple simultaneous faults) start only after all six reach Level 2 (`INTEGRATION.md` section 3).
 Each feature below says: what the doc asks for, exactly what we build in ~10 hours, who owns it, what it needs from others, what it gives
 to others, the acceptance test, and the moment in the demo.
 

@@ -1,6 +1,7 @@
 # HACKATLANTA: Project Meridian
 
-> **UPDATE Sat 2026-10-10, 8:30 PM ET: read [`MERGE-PLAN.md`](MERGE-PLAN.md) first.** It merges this plan with a teammate's AeroTwin AI doc, sets roles, and replaces the schedule below (section 11) with one for the ~10.5 hours left.
+> **PARKED (Sat night): this is Shamit's climate-aware routing project ("Meridian"). It is NOT part of the current build.**
+> The team is building AeroTwin AI only (see `../SCOPE.md`). Everything below is kept for later; its schedule and roles no longer apply.
 
 > **Working name:** Meridian (rename in one minute, nothing depends on it).
 > **One line:** one decision loop for an airline's two biggest controllable costs, what a flight

@@ -70,11 +70,11 @@ npm install -D openapi-typescript
 
 ## The story (start at 1:30 AM in parallel; this is your second job)
 
-- `docs/DEMO-SCRIPT.md`: the 3-minute flow from `MERGE-PLAN.md` section 9, with exact clicks and timings: fleet -> inject anomaly -> twin shows RUL -> run agents -> plan with the reason -> delay the
+- `docs/DEMO-SCRIPT.md`: the 3-minute flow from `SCOPE.md` section 9, with exact clicks and timings: fleet -> inject anomaly -> twin shows RUL -> run agents -> plan with the reason -> delay the
   part -> replan and diff -> baseline vs optimized. Rehearse 3 times with a timer.
 - **Numbers on screen and in the video come from the real run** (`make demo-check` output). Write them into the slide from that output; never pre-write results.
 - Record a **backup screen video** (OBS or the OS recorder) of a clean run by 5:00 AM.
-- `docs/DEVPOST.md`: problem, what it does, how it works (the six features), what is simulated vs real (C-MAPSS, synthetic fleet), honest limits, what is next. Use `MERGE-PLAN.md` section 10 for the limits.
+- `docs/DEVPOST.md`: problem, what it does, how it works (the six features), what is simulated vs real (C-MAPSS, synthetic fleet), honest limits, what is next. Use `SCOPE.md` section 10 for the limits.
 - README top section: how to run (`INTEGRATION.md` section 10), the architecture picture, the team (first names), and an AI-assistance disclosure if the event requires it.
 
 ## What you need from others

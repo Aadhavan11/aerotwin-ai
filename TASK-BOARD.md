@@ -17,7 +17,7 @@ Tick boxes by editing this file in a small commit (`[docs] tick ...`), so everyo
 | **3.6** Copilot: backend, KB, work orders, audit | **Shamit** | Pardhu authors the KB task cards |
 | **3.6** Copilot + agent-activity + planning + lab UI | **Aadhavan** | Shamit supplies fixtures and endpoints |
 | Demo story, video, Devpost | **Aadhavan** (lead), everyone reviews | |
-| Phase 2 (after all six features reach L2): climate route module | **Pardhu** | Aashirth |
+| Stretch goals from the doc (after all six reach L2): technician skill matching depth, spare-part repositioning, multiple simultaneous faults | **Pardhu** | Aashirth |
 
 Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least one person from each pair is awake until 3:15 AM.
 
@@ -51,7 +51,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 ### Block 4: 1:30 to 3:15 AM, finish the six features, then freeze
 - [ ] **Shamit:** LLM mode for agents (tool loop + number check + cache); copilot chat; work orders + audit; Operations agent using `simulate`.
 - [ ] **Aashirth:** tests + `HEALTH.md`; help Shamit with `search_kb` and the numeric-claims check; polish predicted curves.
-- [ ] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning; then Phase 2 route module if all six are green.
+- [ ] **Pardhu:** SimPy `simulate` (L2 stretch); scenario comparison; solve-time tuning; then the doc's stretch goals if all six are green.
 - [ ] **Aadhavan:** Simulation Lab screen; Copilot drawer + Agent Activity + work-order approval; error/loading states.
 - [ ] **3:15 AM: FEATURE FREEZE (C2).** Sleep shift 1: Aashirth + Pardhu (3:15 to 5:00). Shamit + Aadhavan continue.
 
@@ -82,7 +82,7 @@ Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu**. At least o
 ## 4. If you finish early (pick up in this order, tell the group first)
 
 - **Aashirth:** `docs/EVAL.md` with the honest ML results; help Pardhu test the solver; then the shared `search_kb` + numeric-claims checker.
-- **Pardhu:** the climate route module (`app/route/route_cost`; see `HACKATLANTA-PLAN.md` section 6.1) and the "reposition leg cost" in the plan.
+- **Pardhu:** the doc's stretch goals: technician skill matching depth, spare-part repositioning (ship a part to a station ahead of time), multiple simultaneous faults and fleet-wide optimization.
 - **Aadhavan:** 3D aircraft (react-three-fiber) only if the 2D version is done and everything else is green; otherwise the video and write-up.
 - **Shamit:** performance, caching, the Raspberry-free offline run, and the Q&A prep sheet for judges.
 

@@ -1,74 +1,50 @@
-# Project Meridian / AeroTwin AI: team brief (read this first)
+# AeroTwin AI: team brief (read this first)
 
-> **UPDATE Sat 2026-10-10, 8:30 PM ET: read [`MERGE-PLAN.md`](MERGE-PLAN.md) first.** It merges this plan with a teammate's AeroTwin AI doc, sets roles, and replaces the schedule below (section 11) with one for the ~10.5 hours left.
-
-**In one breath:** an AI decision platform for airlines that treats two big costs as one loop. (1) A **route
-optimizer that prices climate impact** (CO2, contrails, NOx), not only fuel and time. (2) A **digital twin of each
-aircraft** that simulates wear from how it is actually flown and uses the real flight plan and stops to pick the
-**best place and time to do maintenance** with the least wasted ground time. Both sit in one **ops platform**
-(flight paths, weather, aircraft condition, what-if). Shamit Basu is leading it.
-
-**What is new and what is not (say this honestly in the pitch):** contrail-aware routing and predictive
-maintenance each have serious incumbents. Our claim is the **coupling**: maintenance needs change the route, the
-route changes component wear, and one platform scores both. Do not claim to "replace the airline industry's tech";
-claim "a decision layer that interoperates first."
+**In one breath:** machine-learning models estimate how long each aircraft component has left; a digital twin tracks every aircraft; an optimizer plans **where and when** to fix
+things around real flight schedules, technicians and spare parts; a team of tool-using AI agents does the investigating and explaining; and when something changes (a delayed
+part, a closed facility) the plan is **recomputed automatically**. A human approves every action. The concept was written by **Aadhavan** (`docs/AEROTWIN-CONCEPT.md`).
 
 ## Where we are
 
-- A full plan exists: `HACKATLANTA-PLAN.md` (architecture, how data is simulated vs. how it really arrives, a 36-hour
-  schedule, 52-item "things to avoid" list, risks, demo script).
-- **No code from the plan exists yet.** It was held back deliberately until the event rules are known.
-- The event we assume is **Hacklanta '26** (Georgia State University, Oct 9 to 11, 2026, 36 hours, teams of up to 4,
-  kickoff Fri 7 PM ET). That came from a third-party listing and is **unverified**. The listing also says you must
-  complete the **hacklanta.dev** application *and* Devpost, or you cannot submit or win.
-- The event may already be running. The schedule in the plan counts hours from Fri 7 PM; compress it to the time left
-  (keep the order: contracts, thin end-to-end slice, then polish; feature freeze about 8 hours before the end).
+- The scope is decided: **AeroTwin AI only**, features 3.1 to 3.6 of the concept doc. Shamit's separate climate-routing idea is parked in `parked-meridian/`.
+- Docs are written; **no application code yet.** Time left: about 10 hours if the event ends Sun ~7 AM (**unverified**: check the real deadline).
+- The event is probably Hacklanta '26 (Georgia State, Oct 9 to 11, teams of up to 4), from an unverified listing. It may require the **hacklanta.dev** application as well as Devpost.
 
-## What we need from you
+## What to do right now
 
-1. Read this file, then skim `HACKATLANTA-PLAN.md` sections 0, 1, 6, 9 and 11.
-2. Take a role (plan section 11.3): **A** Atmosphere and Route (router, weather, contrails), **B** Twin and Planner
-   (wear models, maintenance solver), **C** Data fabric and Platform (simulator, bus, API, infra), **D** Front end
-   and Story (UI, demo, video, pitch).
-3. Use the prompt in `CLAUDE-PROMPT.md` with your Claude so it starts from the same facts and rules.
-4. Before writing code: confirm with Shamit that the event rules allow it, and agree the shared contracts (plan 7.1).
+1. Read [`SCOPE.md`](SCOPE.md) (10 minutes), then **your work package** in [`work/`](work/): `01` Shamit, `02` Aashirth, `03` Pardhu, `04` Aadhavan.
+2. Use [`CLAUDE-PROMPT.md`](CLAUDE-PROMPT.md) with your Claude so it starts from the same facts and rules.
+3. Check the event rules (pre-written code, AI policy, deadline) and tell the group.
+4. Set up the dev environment (`INTEGRATION.md` section 10) and wait for **C0** (Shamit's skeleton + mock API, target 9:15 PM). Meanwhile do the first task in your package.
 
-## What is in this pack
+## Pack contents
 
 | File | What it is |
 |---|---|
-| `TASK-BOARD.md`, `FEATURES-3.1-3.6.md`, `CONTRACTS.md`, `INTEGRATION.md`, `work/0*.md` | **Build docs:** who does what and when, the six features, exact interfaces, how it connects, one package per person |
-| `MERGE-PLAN.md` | **Read first:** merges AeroTwin AI and Meridian; scope, roles, contracts, schedule for the time left |
-| `docs/AEROTWIN-CONCEPT.md` | The teammate's AeroTwin AI concept doc |
-| `START-HERE.md` | This brief |
-| `HACKATLANTA-PLAN.md` | The master plan (about 1,000 lines). Sections: 0 read-first, 1 pitch, 4 architecture, 5 data, 6 modules, 7 integration, 9 things to avoid, 11 schedule, 15 open questions |
-| `DATA-CHEATSHEET.md` | Live endpoints we tested (with results), working code snippets, library licences, datasets, links |
-| `GLOSSARY.md` | Aviation, weather and climate terms in plain English |
-| `CLAUDE-PROMPT.md` | The prompt to paste into your Claude, plus a short version |
+| `SCOPE.md` | What we build, roles, schedule, demo, limits |
+| `docs/AEROTWIN-CONCEPT.md` | The concept doc (defines the project) |
+| `FEATURES-3.1-3.6.md` | Each of the six features: what we build, acceptance tests, golden scenario |
+| `TASK-BOARD.md` | Timeline per person, dependencies, checkpoints |
+| `CONTRACTS.md` | Models, DB tables, endpoints with examples, function signatures, agent tools |
+| `INTEGRATION.md` | Architecture, flows, LLM rules, git, testing |
+| `work/01..04` | One package per person |
+| `CLAUDE-PROMPT.md`, `GLOSSARY.md` | Prompt and plain-English terms |
 
-## Ground rules (the short list; the full one is plan section 9)
+## Ground rules (short list)
 
-- **Advisory only.** We recommend; humans decide. Never claim certification or "FAA approved".
-- **Never recommend maintenance later than an approved interval** (earlier is fine). Extensions are a question for a human.
-- **LLMs read and explain; code decides.** An LLM never produces a limit, interval or torque value.
-- **Everything simulated is labeled SIMULATED**, in the UI, the API and the video. Use fictional `SIM-xxx` tails, never real tail numbers with fake faults.
-- **Open tools only:** OpenAP (not BADA), NOAA, AWC, OpenSky. No scraping flight-tracking sites. No Boeing/Airbus/airline manuals.
-- **Units:** SI inside, convert at the edge. UTC everywhere. Test the wind sign convention and the flight-level rule.
-- **Do not state a "% reduction" without the metric** (GWP100 vs ATR20) and do not optimize contrails while ignoring NOx.
-- **Keys never go in chat, issues, commits or screenshots.**
-- **Follow the event's AI policy** and disclose AI assistance in the README and Devpost if required.
-- **One thin end-to-end slice beats ten half-built features.**
+- **Advisory only.** A human approves every action. Never claim certification or "FAA approved".
+- **Never recommend maintenance later than an approved deadline** (earlier is fine). Deadlines come from the **conservative** RUL estimate (p10) and are hard constraints.
+- **Numbers come from tools, not from the LLM.** The LLM chooses tools and writes explanations.
+- **Everything simulated is labeled SIMULATED**; fictional `SIM-xxx` tail numbers; no real manuals, real telemetry or real airline names attached to faults.
+- **Report results honestly:** the baseline, the dataset and the assumptions. Simulated improvements are not verified airline savings.
+- **Keys never go in chat, issues, commits or screenshots.** `.env` stays out of git.
+- Follow the event's AI policy and disclose AI assistance in the README and Devpost if required.
+- **One working end-to-end loop beats ten half-built features.**
 
-## Open decisions (plan section 15)
+## How much to trust these docs
 
-Confirm the event and registration; the rules on pre-written code and AI; which track or sponsor challenge; who is A/B/C/D;
-who provides the LLM key; GitHub repo (name, owner, visibility); primary and backup demo machine; whether anything gets a public URL.
+- **Tested:** the data models in `CONTRACTS.md` load, and the JSON examples validate (pydantic 2.14, 2026-10-10).
+- **Assumptions, to verify:** whether the NASA C-MAPSS files can be downloaded (there is a synthetic fallback), the exact OR-Tools method names for your installed version, the event's end time and rules.
+- Any number on a slide must come from our own run (`make demo-check`, `eval.json`), with its method.
 
-## How much to trust the plan
-
-- **Tested:** the weather, OpenSky, NOAA and package facts in `DATA-CHEATSHEET.md` section 1 and 3 were run on 2026-10-09.
-- **From search results, not independently confirmed:** the event details, OpenSky limits, the contrail trial numbers, the NOx finding.
-- **From general knowledge, to verify before showing on a slide:** MEL categories, the flight-level rule details, the 3.16 CO2 factor, OpenAP's supported aircraft types.
-- Any number on a slide must come from our own evaluation run (plan section 10), with its method.
-
-If something in the plan is wrong, vague, or conflicts with the event rules, say so and fix the file: it is a working document.
+If something in these docs is wrong or conflicts with the event rules, say so and fix the file. It is a working document.

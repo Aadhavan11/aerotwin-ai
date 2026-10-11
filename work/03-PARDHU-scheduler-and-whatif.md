@@ -82,9 +82,9 @@ Always keep `greedy` as the fallback if CP-SAT returns nothing.
   hangar and technician, durations jittered ±15%, `runs=20`, report mean and p90 downtime. Seed it.
 - Routers: `POST /plan/replan`, `POST /whatif/compare`; the plan block of `GET /metrics` (`baseline` vs `optimized` metrics and `replan_seconds`).
 
-### 4. Then Phase 2 (only when all six features are at L2 and Shamit says go): the climate route module
-`app/route/route_cost(from, to, depart)` -> `{fuel_kg, minutes, co2e_kg}` (see `HACKATLANTA-PLAN.md` section 6.1 for the method; start with great circle + a wind/contrail proxy,
-precompute 3 city pairs). The scheduler adds this to a repositioning candidate's cost. Keep it small and clearly labeled "prototype estimate, GWP100".
+### 4. Then the doc's stretch goals (only when all six features are at L2 and Shamit says go)
+Pick in this order: **technician skill matching depth** (levels/certifications, not just a skill tag), **spare-part repositioning** (ship a part to a station ahead of time when the plan predicts a shortage; costs
+and lead times already exist in `PartStock`), **multiple simultaneous faults and fleet-wide optimization** (several aircraft competing for one technician or hangar slot; this exercises the `NoOverlap`/`Cumulative` constraints).
 
 ## What you give to others
 

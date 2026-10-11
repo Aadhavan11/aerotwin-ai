@@ -252,7 +252,7 @@ make demo-check                      # golden path end to end
 
 Ports: API `8000`, web `5173`. CORS allows `http://localhost:5173`.
 
-## 11. Checkpoints (clock times from `MERGE-PLAN.md`)
+## 11. Checkpoints (clock times from `SCOPE.md`)
 
 | When | Checkpoint | Verify with |
 |---|---|---|
