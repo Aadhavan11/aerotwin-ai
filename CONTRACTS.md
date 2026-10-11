@@ -385,7 +385,7 @@ TypeScript types with `npx openapi-typescript http://localhost:8000/openapi.json
 | `GET /plan` | | `{current: Plan, baseline: Plan, compare: Comparison}` | Pardhu |
 | `POST /plan/solve` | `{mode: SolveMode, weights?: ObjectiveWeights}` | `Plan` | Pardhu |
 | `POST /plan/replan` | `{event: ScenarioEvent}` | `ReplanResult` | Pardhu |
-| `POST /whatif/compare` | `{scenarios: Scenario[]}` | `Comparison` | Pardhu |
+| `POST /whatif/compare` | `{scenarios: Scenario[]}` (empty list = the five default what-ifs; `constraints`: `force_station`, `earliest`, optional `tail` to limit them to one aircraft) | `Comparison` | Pardhu |
 | `POST /scenario/inject` | `ScenarioEvent` | `{event_id, effects: [...], twin_changes: [...]}` | Shamit |
 | `POST /scenario/reset` | `{name: "golden"}` | `{ok}` | Shamit |
 | `POST /sim/step` | `{hours}` | `{sim_now, ingested}` | Shamit |
@@ -466,14 +466,15 @@ def get_twin(tail: str) -> TwinView
 def snapshot() -> FleetState                                       # includes legs/stations from db
 
 # app/solver/*.py                                [Pardhu]    3.3
-def ground_windows(legs: list[Leg], now: datetime) -> list[GroundWindow]
-def derive_tasks(state: FleetState) -> list[Task]                  # from RUL p10 + scheduled items
-def solve(state: FleetState, tasks: list[Task], weights: ObjectiveWeights, mode: SolveMode, time_limit_s: float = 5.0, previous: Optional[Plan] = None) -> Plan
+def ground_windows(legs: list[Leg], now: datetime, aircraft: Optional[list[Aircraft]] = None) -> list[GroundWindow]   # aircraft: also adds the window an aircraft has right now
+def derive_tasks(state: FleetState) -> list[Task]                  # from RUL p10 + scheduled items; derive_tasks_ex(state) also returns notes
+def solve(state: FleetState, tasks: list[Task], weights: ObjectiveWeights, mode: SolveMode, time_limit_s: float = 5.0, previous: Optional[Plan] = None,
+          force_station: Optional[str] = None, force_tails: Optional[set[str]] = None) -> Plan    # last two optional: what-if "service at another airport"
 
 # app/whatif/*.py                                [Pardhu]    3.5
 def apply_event_to_state(state: FleetState, event: ScenarioEvent) -> FleetState    # pure, returns a modified copy
-def simulate(plan: Plan, state: FleetState, runs: int = 1, seed: int = 0) -> PlanMetrics
-def replan(state: FleetState, prior: Plan, event: ScenarioEvent) -> ReplanResult
+def simulate(plan: Plan, state: FleetState, runs: int = 1, seed: int = 0) -> PlanMetrics   # runs=1 analytic; runs>=2 SimPy (means); simulate_detailed(...) adds p90
+def replan(state: FleetState, prior: Plan, event: ScenarioEvent) -> ReplanResult           # optional: weights, time_limit_s, already_applied=False, mode
 def compare(state: FleetState, plans: dict[str, Plan]) -> Comparison
 
 # app/agents/*.py                                [Shamit]    3.4

@@ -122,8 +122,12 @@ apply_event_to_state, replan with a diff, and compare. Deterministic (fixed seed
 
 ## Definition of done
 
-- [ ] `task_cards.yaml` pushed by 9:15 PM
-- [ ] `greedy` and `static_baseline` plans on the golden state; metrics computed
-- [ ] CP-SAT plan feasible on golden, all deadlines met, no overlaps; infeasible case reports reasons
-- [ ] `replan` after a 12 h DFW kit delay returns a non-empty diff and a feasible (or explained-infeasible) plan in under 5 s
-- [ ] `compare` returns >= 4 scenario rows; baseline-vs-optimized table printed from the run
+- [x] `task_cards.yaml` pushed (branch `claude/great-albattani-bv8i0b`)
+- [x] `greedy` and `static_baseline` plans on the golden state; metrics computed (stand-in golden state)
+- [x] CP-SAT plan feasible on golden, all deadlines met, no overlaps; infeasible case reports reasons (`tests/test_solver.py`)
+- [x] `replan` after a 12 h DFW kit delay returns a non-empty diff and a feasible (or explained-infeasible) plan in under 5 s (0.09 s on the stand-in golden state)
+- [x] `compare` returns >= 4 scenario rows; baseline-vs-optimized table printed from the run (`python scripts/plan_demo.py`)
+- [ ] Re-verify all of the above on Shamit's real fleet and Aashirth's `twin.snapshot()` at C1 (everything above was done on the stand-in golden state in `app/solver/golden.py`)
+- [ ] Doc's stretch goals (skill levels, spare-part repositioning, fleet-wide multi-fault): not started
+
+Status and hand-off: see [`03-PARDHU-STATUS.md`](03-PARDHU-STATUS.md).
