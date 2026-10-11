@@ -1,13 +1,43 @@
-# AeroTwin AI: team build docs
+# AeroTwin AI
 
 **Predict the failure. Simulate the future. Prevent the disruption.**
 
-An AI-powered aircraft digital twin that predicts component degradation, simulates future aircraft health, and keeps re-planning maintenance across an airline fleet
-as conditions change (a delayed part, a closed facility, a new fault). Concept by Aadhavan; built for a 36-hour hackathon.
+An AI-powered aircraft digital twin for a simulated airline fleet. It estimates how much life each component has left (with uncertainty), simulates what happens when
+something changes (a fault, a delayed part, a closed hangar), and re-plans maintenance around flights, parts, technicians and hangar space. A person approves every work
+order. Built in 36 hours at Hacklanta 2026 by Shamit, Aashirth, Pardhu and Aadhavan (AI/ML track). Concept by Aadhavan.
 
-**Status (Sat 2026-10-10 night, `main`): full stack integrated.** All six backend groups run the real modules (twin and ML, scheduler, what-if, simulator, agents, copilot) and the web app (fleet, 3D aircraft twin, planning, lab, agent workspace) runs against them. 306 tests pass and `make demo-check` passes 16/16 with the NASA C-MAPSS files downloaded locally (`make data`). Everything about aircraft health is simulated and labeled so. Hackathon rules, judging format and the submission checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md).
+**Everything about aircraft health is simulated and labeled SIMULATED. The system is advisory only; it certifies nothing.**
+Devpost text: [`docs/DEVPOST.md`](docs/DEVPOST.md). Event rules and checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md). Demo script: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md).
 
-Run instructions: [`docs/SIMULATOR-INTEGRATION.md`](docs/SIMULATOR-INTEGRATION.md).
+## Run it (about 5 minutes, no keys, no internet at demo time)
+
+You need **Python 3.13** (the version we tested; slightly older 3.x should work but is untested) and **Node 20+**. Internet is needed once, to download the NASA data. We tested on Linux (Raspberry Pi); Windows and macOS are untested.
+Without `make` (Windows), run the command shown after each step instead.
+
+```bash
+make setup        # python -m pip install -r requirements.txt   and   cd web && npm install
+make data         # python -m app.ml.cmapss --download     (NASA C-MAPSS FD001 into data/, not committed)
+make reset        # python -m scripts.reset_db --scenario golden   (rebuilds the demo database, under 10 s)
+make api          # python -m uvicorn app.main:app --port 8000     (leave running)
+make web          # cd web && npm run dev                          (second terminal) then open http://localhost:5173
+```
+
+Check that it works: `GET http://localhost:8000/health` should list all six module groups as `real`, and `make demo-check` (third terminal) walks the whole story and should print `16/16 passed`.
+`make test` runs the automated tests (about 3 minutes). Without `make data` the app still starts but falls back to synthetic engine data and the numbers differ.
+
+**Optional LLM mode:** copy `.env.example` to `.env` and put your own `ANTHROPIC_API_KEY` in it (never commit `.env`). The demo and all numbers use the scripted path and need no key.
+
+## What you will see
+Fleet map and health of 24 aircraft; a 3D aircraft twin with component health and remaining-life bands; a planning timeline with the optimized plan against a static baseline and the
+risk of waiting; a scenario lab (fault, part delay, hangar closed, technician out) with explained re-plans; agent and copilot workspace; human approval and an audit log.
+
+## AI assistance
+This project was built with the help of Claude (Anthropic), used as a coding and writing assistant by team members. Claude helped draft code, tests and documentation; the team reviewed and ran the
+results. The prototype itself does not rely on a language model for any number or safety decision: the maintenance schedule comes from a constraint solver (OR-Tools CP-SAT), and the agents call
+deterministic tools. All aircraft, fleet, task-card and degradation data are simulated (NASA C-MAPSS for engine degradation, otherwise synthetic). Results are simulated relative to a stated
+baseline; they are not verified airline savings. Per-module notes and what existed before the event: [`docs/AI-DISCLOSURE-DRAFT.md`](docs/AI-DISCLOSURE-DRAFT.md).
+
+## Team docs
 
 | Read in this order | |
 |---|---|
