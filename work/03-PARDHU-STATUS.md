@@ -3,6 +3,12 @@
 Branch: `claude/great-albattani-bv8i0b` (not merged to `main`, no pull request opened). Written 2026-10-11.
 Scope of this branch: **only my package** (3.3 scheduler, 3.5 what-if, task cards, their tests). Nothing of Shamit's, Aashirth's or Aadhavan's was built.
 
+## 0000. Decisions confirmed by Pardhu (2026-10-11)
+
+* YES: a part delay holds the kits until the event time plus the delay (units are not deleted).
+* YES: keep the 0.05 per hour "fix sooner" preference (tie-breaker only; deadlines stay hard).
+* Event rules: Pardhu shared the Hacklanta 2026 Hacker Guide (Notion link in `docs/AI-DISCLOSURE-DRAFT.md`); I could not open it from the sandbox, so the AI-disclosure wording is still a draft until its AI-policy section is pasted.
+
 ## 000. Update 4: baseline contrast (reply to Shamit's review)
 
 * Shamit's integration branch is `integration/full`; it already contains my branch and the stretch goals. **Merge that one, not mine.**

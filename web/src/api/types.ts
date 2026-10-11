@@ -24,7 +24,23 @@ export type Station = S["Station"];
 export type MetricsBundle = S["MetricsBundle"];
 
 // Responses the backend returns as plain dicts
-export type PlanBundle = { current: Plan; baseline: Plan; compare: Comparison };
+/** Risk view of one condition-driven task in a plan (GET /plan `exposure`; see CONTRACTS.md). Unscheduled tasks only carry `scheduled: false`. */
+export type Exposure = {
+  task_id: string;
+  tail: string;
+  component_id: string;
+  scheduled: boolean;
+  station?: string | null;
+  hours_to_fix?: number | null;
+  flights_before_fix?: number | null;
+  slack_to_deadline_h?: number | null;
+};
+export type PlanBundle = {
+  current: Plan;
+  baseline: Plan;
+  compare: Comparison;
+  exposure?: { baseline: Exposure[]; optimized: Exposure[] };
+};
 export type InjectResult = { event_id: string; effects: string[]; twin_changes: string[] };
 export type HealthInfo = {
   ok: boolean; mock: boolean; version: string; sim_now: string; data_source: string;
