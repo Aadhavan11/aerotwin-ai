@@ -20,9 +20,10 @@ impact (CO2, contrails, NOx), not only fuel; (2) a digital twin of each aircraft
 plans maintenance around the real flight plan and stops; (3) an ops platform that shows flight paths,
 weather and aircraft condition. Everything is simulated except the open weather and flight data.
 
-FILES YOU HAVE: MERGE-PLAN.md (READ FIRST: current scope, roles, contracts, schedule), START-HERE.md, HACKATLANTA-PLAN.md (the
+FILES YOU HAVE: MERGE-PLAN.md (READ FIRST), TASK-BOARD.md, FEATURES-3.1-3.6.md, CONTRACTS.md (the single interface spec), INTEGRATION.md,
+and YOUR work package in work/ (01 Shamit, 02 Aashirth, 03 Pardhu, 04 Aadhavan), plus START-HERE.md, HACKATLANTA-PLAN.md (the
 older master plan), docs/AEROTWIN-CONCEPT.md (a teammate's concept doc), DATA-CHEATSHEET.md, GLOSSARY.md.
-Read ALL of them completely before you answer. Where MERGE-PLAN.md and the older plan disagree, MERGE-PLAN.md wins. The plan is a working document written by another Claude
+Read ALL of them completely before you answer. Where documents disagree: CONTRACTS.md wins for interfaces, TASK-BOARD.md for roles and order, MERGE-PLAN.md over the older plan. The plan is a working document written by another Claude
 from web research and a few live API checks. It can be wrong. Where it conflicts with the event rules or
 with what I tell you, say so and propose a fix instead of silently following it.
 

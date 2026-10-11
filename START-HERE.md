@@ -37,6 +37,7 @@ claim "a decision layer that interoperates first."
 
 | File | What it is |
 |---|---|
+| `TASK-BOARD.md`, `FEATURES-3.1-3.6.md`, `CONTRACTS.md`, `INTEGRATION.md`, `work/0*.md` | **Build docs:** who does what and when, the six features, exact interfaces, how it connects, one package per person |
 | `MERGE-PLAN.md` | **Read first:** merges AeroTwin AI and Meridian; scope, roles, contracts, schedule for the time left |
 | `docs/AEROTWIN-CONCEPT.md` | The teammate's AeroTwin AI concept doc |
 | `START-HERE.md` | This brief |

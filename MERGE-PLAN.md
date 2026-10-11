@@ -4,6 +4,10 @@
 and the roles (plan 11.3).** Times assume a 36-hour event that started Fri 7 PM ET and ends Sun 7 AM ET, which is
 **about 10.5 hours from now**. That is unverified: check the real submission deadline (it may be earlier).
 
+> **Update (Sat night): features 3.1 to 3.6 of the AeroTwin doc are built FIRST.** The detailed spec is `FEATURES-3.1-3.6.md`, the exact interfaces are `CONTRACTS.md`, how it all connects is
+> `INTEGRATION.md`, the per-person timeline is `TASK-BOARD.md`, and each person's package is in `work/`. Where this file disagrees on roles or order, `TASK-BOARD.md` wins.
+> The climate route module is Phase 2 (after all six features reach L2).
+
 ## 0. Do these first (30 minutes, before anyone builds)
 
 1. **Inventory what already exists.** This plan assumes little or no code. If anyone has code, data or a UI from the
@@ -59,10 +63,10 @@ fits, a clear interface (section 7) and a fallback.
 
 | Person | Owns | Deliverable by 1:00 AM | Fallback if stuck |
 |---|---|---|---|
-| **Shamit** | **Platform + integration + agents:** synthetic fleet/sim, API, scenario injection and replanning trigger, agent orchestration (tool calling), contracts, repo, final demo build | Fleet in DB, API serving it, one agent calling one tool | Hard-code the fleet; agents become a scripted pipeline with the same tool interface |
-| **Aashirth** | **ML + scheduler:** anomaly model + RUL on C-MAPSS (MAE/RMSE), component state, OR-Tools scheduler, baseline vs optimized metrics | Model trained and scoring one engine; scheduler solving a toy case | Score with a rule on EGT-style thresholds; schedule with a greedy heuristic |
-| **Pardhu** | **Climate route module:** weather + wind/humidity fields, contrail-risk proxy, fuel-vs-CO2e route options for 2-3 city pairs, called by the scheduler for repositioning cost | One city pair with 3 route options and numbers | Precompute results offline and serve JSON |
-| **Aadhavan** | **Front end + story:** fleet map, aircraft twin (2D, clickable components), maintenance timeline, what-if panel, approval step; then demo script, video, Devpost | UI running against the **mock API** with fake data | Static screens fed by JSON files |
+| **Shamit** | **Platform + integration + agents + copilot backend:** contracts, fleet/telemetry simulator, API, scenario injection, agent runner (scripted then LLM), copilot, work orders, final demo build | C0 (skeleton, models, fixtures, mock API) by 9:15 PM | Hard-code the fleet; agents become a scripted pipeline with the same tool interface |
+| **Aashirth** | **ML + twin state (3.1, 3.2 backend):** anomaly model + RUL on C-MAPSS (MAE/RMSE), health scoring, data quality, component state engine | Sensor mapping pushed; model trained and scoring one engine; twin serving `GET /aircraft/{tail}` | Score with a rule on sensor z-scores; keep state in memory |
+| **Pardhu** | **Scheduler + what-if (3.3, 3.5):** task cards, ground windows, tasks from RUL, greedy/static baseline/CP-SAT, replan, compare. *Climate route module comes after all six features reach L2* | Greedy + baseline plan on the golden state; CP-SAT by 12:15 AM | Ship greedy as "optimized" and say so |
+| **Aadhavan** | **Front end + story:** fleet map, aircraft twin (2D, clickable), planning Gantt, simulation lab, copilot drawer + agent activity + approvals; then demo script, video, Devpost | UI running against fixtures / the **mock API** | Static screens fed by JSON files |
 
 Pairs for sleep shifts (so a stronger and a newer builder are always awake together): **Shamit + Aadhavan**, **Aashirth + Pardhu**.
 Everyone works with their own Claude using `CLAUDE-PROMPT.md`. Names are first names only in this public repo.
