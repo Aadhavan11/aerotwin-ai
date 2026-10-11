@@ -6,7 +6,7 @@ part, a closed facility) the plan is **recomputed automatically**. A human appro
 
 ## Where we are
 
-- The scope is decided: **AeroTwin AI only**, features 3.1 to 3.6 of the concept doc. Shamit's separate climate-routing idea is parked in `parked-meridian/`.
+- The scope is decided: **AeroTwin AI only**, features 3.1 to 3.6 of the concept doc. (Shamit's separate climate-routing idea was removed from the repo; it stays in git history.)
 - The full stack is built and integrated on `main`. Hacking ends **Sun Oct 11, 9:00 AM ET, no exceptions**. Read [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md) first: it has the judging format, the submission checklist and what we must disclose.
 - The event is Hacklanta '26 (Georgia State, Oct 9 to 11, teams of up to 4), confirmed from the organizers' own guide. Join the event Discord and make sure you are registered.
 

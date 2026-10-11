@@ -542,3 +542,18 @@ def test_a_plan_that_moves_an_approved_task_is_flagged_for_review_not_silently_f
     assert [r.ref for r in reviews] == [wo.id]
     workorders.draft_from_plan(moved)                                   # asking again does not spam the log
     assert len([a for a in audit.list_entries() if a.action == "work_order_review_needed"]) == 1
+
+
+def test_copilot_status_never_exposes_the_key_and_reports_the_mode(monkeypatch):
+    import json
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from app.copilot import router as copilot_router
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-test-not-real")
+    app = FastAPI()
+    app.include_router(copilot_router.router)
+    body = TestClient(app).get("/copilot/status").json()
+    assert set(body) == {"llm_key_present", "llm_available", "model", "last_mode", "last_note"}
+    assert "sk-test" not in json.dumps(body)
+    assert body["llm_key_present"] is True and body["last_mode"] in ("llm", "scripted")

@@ -25,10 +25,10 @@ make web          # cd web && npm run dev                          (second termi
 Check that it works: `GET http://localhost:8000/health` should list all six module groups as `real`, and `make demo-check` (third terminal) walks the whole story and should print `16/16 passed`.
 `make test` runs the automated tests (about 3 minutes). Without `make data` the app still starts but falls back to synthetic engine data and the numbers differ.
 
-**Optional LLM mode:** copy `.env.example` to `.env` and put your own `ANTHROPIC_API_KEY` in it (never commit `.env`). The demo and all numbers use the scripted path and need no key.
+**Optional LLM mode:** copy `.env.example` to `.env` and put your own `ANTHROPIC_API_KEY` in it (never commit `.env`, never paste it in chat), restart the API, then `make check-llm` asks one copilot question and runs the agents once in LLM mode and says whether each used the model or fell back to scripted (and why). The Copilot drawer shows which mode is active. The demo and all numbers use the scripted path and need no key.
 
 ## What you will see
-Role views for operations control, maintenance planners, pilots, crew and dispatch, and administrators ([`docs/ROLE-VIEWS.md`](docs/ROLE-VIEWS.md)); fleet map and health of 24 aircraft; a 3D aircraft twin with component health and remaining-life bands; a planning timeline with the optimized plan against a static baseline and the
+Role views for operations control, maintenance planners, pilots, crew and dispatch, and administrators ([`docs/ROLE-VIEWS.md`](docs/ROLE-VIEWS.md)); fleet map and health of 24 aircraft with stations, technician shifts and parts stock; a 3D aircraft twin (737-800 and A320 geometry) with component and part health and remaining-life bands; a Maintenance section per aircraft (next planned job, where and when, parts and technicians, suggestions, work-order approval, history); a planning timeline with the optimized plan against a static baseline and the
 risk of waiting; a scenario lab (fault, part delay, hangar closed, technician out) with explained re-plans; agent and copilot workspace; human approval and an audit log.
 
 ## Team docs
@@ -45,7 +45,6 @@ risk of waiting; a scenario lab (fault, part delay, hangar closed, technician ou
 | [`work/`](work/) | One work package per person: Shamit, Aashirth, Pardhu, Aadhavan |
 | [`CLAUDE-PROMPT.md`](CLAUDE-PROMPT.md) | Prompt to paste into your Claude so it starts from the same facts and rules |
 | [`GLOSSARY.md`](GLOSSARY.md) | Plain-English terms |
-| [`parked-meridian/`](parked-meridian/) | Parked: a separate climate-routing idea. **Not part of this build** |
 
 ## Run it (works today on mock data)
 

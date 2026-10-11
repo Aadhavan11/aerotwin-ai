@@ -255,6 +255,10 @@ def _to_evidence(raw: list[dict], calls: list[tuple[str, dict]]) -> list[Evidenc
     return out
 
 
+# What the last answer was produced by and why (never contains credentials). Read by GET /copilot/status.
+LAST_MODE: dict = {"mode": "scripted", "note": "no answer yet"}
+
+
 def chat(req: ChatRequest, *, toolbox: Optional[Toolbox] = None, client=None, mode: Optional[str] = None) -> ChatResponse:
     """``mode`` None picks llm when credentials exist, else scripted."""
     resp = _answer(req, toolbox, client, mode)
@@ -271,11 +275,14 @@ def _answer(req: ChatRequest, toolbox: Optional[Toolbox], client, mode: Optional
         if resp is not None:
             hist.append({"role": "user", "content": req.message})
             hist.append({"role": "assistant", "content": resp.answer})
+            LAST_MODE.update(mode="llm", note="answered by the LLM; every number matched a tool result")
             return resp
         box.missing.clear()
         box.proposed = []
         box._ctx = None  # fresh world for the scripted pass
     answer, ev, calls = scripted(req.message, box)
+    if not use_llm:
+        LAST_MODE.update(mode="scripted", note="scripted answers (no API key set, or COPILOT_MODE=scripted)")
     resp = ChatResponse(answer=answer, evidence=_to_evidence(ev, calls), missing_info=list(box.missing),
                         proposed_work_orders=list(box.proposed))
     hist.append({"role": "user", "content": req.message})
@@ -288,17 +295,20 @@ def _chat_llm(req: ChatRequest, box: Toolbox, hist: deque, client) -> Optional[C
         client = client or llm.make_client()
     except Exception as exc:
         log.warning("LLM client unavailable: %s", exc)
+        LAST_MODE.update(mode="scripted", note=f"LLM client unavailable ({type(exc).__name__}); used scripted answers")
         return None
     system = llm.SAFETY.format(role="maintenance copilot") + " " + llm.COPILOT_PROMPT
     messages = [*list(hist), {"role": "user", "content": req.message}]
     res = llm.run_tool_loop(client, system=system, messages=messages, tools=box.tools())
     if res.error or not res.text:
         log.warning("copilot LLM failed (%s); using scripted mode", res.error or "empty answer")
+        LAST_MODE.update(mode="scripted", note=f"LLM call failed ({str(res.error or 'empty answer')[:120]}); used scripted answers")
         return None
     history_text = [m["content"] for m in messages if isinstance(m.get("content"), str)]
     bad = llm.unsupported_numbers(res.text, res.sources(history_text))
     if bad:
         log.warning("copilot answer contains numbers no tool returned %s; using scripted mode", bad)
+        LAST_MODE.update(mode="scripted", note="the LLM answer contained a number no tool returned; used scripted answers")
         return None
     raw: list[dict] = []
     for c in res.calls:

@@ -1,7 +1,7 @@
 # AeroTwin AI. Usage: make setup | reset | api | api-mock | web | test | demo-check | fixtures
 PY ?= python
 
-.PHONY: setup reset api api-mock web test demo-check fixtures data build-web
+.PHONY: setup reset api api-mock web test demo-check check-llm fixtures data build-web
 
 setup:            ## install Python + web dependencies
 	$(PY) -m pip install -r requirements.txt
@@ -24,6 +24,9 @@ build-web:
 
 test:
 	$(PY) -m pytest -q
+
+check-llm:        ## one copilot question + one LLM agent run against a running API; needs ANTHROPIC_API_KEY in .env
+	$(PY) -m scripts.check_llm
 
 demo-check:       ## golden path end to end against a running API (make api in another terminal)
 	$(PY) -m scripts.golden

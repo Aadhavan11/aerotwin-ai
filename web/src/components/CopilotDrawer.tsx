@@ -105,6 +105,7 @@ export default function CopilotDrawer({ open, onClose }: { open: boolean; onClos
   }, [run?.id, run?.status]);
 
   const wo = usePoll<WorkOrder[]>(open && (tab === "wo" || tab === "agents") ? "/workorders" : null, 2500);
+  const llm = usePoll<{ llm_available: boolean; model: string; last_mode: string; last_note: string }>(open ? "/copilot/status" : null, 5000).data;
   const audit = usePoll<AuditEntry[]>(open && tab === "audit" ? "/audit" : null, 3000);
 
   const tabs: [Tab, string][] = [["agents", "Agents"], ["chat", "Copilot"], ["wo", "Work orders"], ["audit", "Audit"]];
@@ -127,6 +128,13 @@ export default function CopilotDrawer({ open, onClose }: { open: boolean; onClos
         <span>recorded in the audit log</span>
       </div>
 
+      {llm && (
+        <div className="drawer-mode">
+          {llm.llm_available
+            ? `LLM mode ready (${llm.model}). Last answer: ${llm.last_mode}.`
+            : "Scripted mode: answers come from the tools with no model call. Add ANTHROPIC_API_KEY to .env and restart the API to enable LLM mode."}
+        </div>
+      )}
       <div className="drawer-body">
         {tab === "agents" && (
           <div className="space-y-3">

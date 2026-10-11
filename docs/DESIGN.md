@@ -1,11 +1,12 @@
 # Design notes: how the console should look
 
-The look follows Shamit's own sites (portfolio, SB Venture): restrained, near-black, plain-spoken. It is a motif, not a copy. Keep to these rules when you change the UI.
+Black and white, lit glass. Keep to these rules when you change the UI.
 
-- **Canvas:** near-black `#09090f`, one very faint static glow at the top. **No background animation, no particles, nothing that follows the mouse, no dot or grid pattern.**
-- **Type:** Geist (UI and headlines, tight tracking, weight 600-650) and Geist Mono (small labels, times, numbers). Both are bundled by Vite from `@fontsource-variable/*` (OFL), so nothing loads from the network. Smallest text is 11px; no 7-9px micro-type.
-- **Shape:** pills for controls (nav capsule, role selector, tabs, buttons, chips); 20px cards with a 1px hairline border; no gradients, glows or corner brackets.
-- **Color:** monochrome plus one blue accent (`#4c8dff`). Color means status only (green ok, amber watch, red alert, blue in maintenance, violet AOG).
-- **Copy:** plain, specific, content-led. Headlines state the situation ("24 aircraft, 1 needs attention"), not a slogan. No stat-counter strips for decoration: the facts row under a heading holds only numbers that matter on that page. American English.
-- **Honesty on screen:** a "Simulated" pill is always in the top bar, and the footer says the system is advisory.
-- **Where:** tokens and all shared styles are in `web/src/index.css`; shell and navigation in `web/src/App.tsx`; roles in `web/src/lib/role.tsx`; shared components in `web/src/components/ui.tsx`.
+- **Palette:** graphite text on frosted white glass panels over a pale grey ground, with piano-black surfaces for the top bar, card title bands, the key-figures strip, primary buttons and selected states. **No blue accent.** Amber and red appear only on things that need attention; a healthy value is neutral.
+- **Surfaces:** panels are translucent glass (backdrop blur) lit from the top left: a bright top edge, a soft inner shade and a long low shadow; info tiles are slightly raised. Black surfaces use a faint top lift falling to near-black with a hairline highlight, so they read as lit rather than flat.
+- **Shape:** one corner radius family (18px panels, 14px tiles, pills for controls); one status marker (a small dot); no decorative icons or colour chips.
+- **Type:** the system UI font stack (SF on Apple devices) and a monospace for numbers, times and identifiers. Nothing loads from the network, so the demo runs offline.
+- **Motion:** none for decoration. The only animation is the engine fan in the 3D model; `prefers-reduced-motion` and `prefers-reduced-transparency` are respected.
+- **Copy:** plain, specific, content-led. Headings state the situation. American English.
+- **Honesty on screen:** a "Simulated" tag is always in the top bar; part-level percentages are labelled as estimates derived from the component's sensors.
+- **Where:** tokens and shared styles are in `web/src/index.css` (the last blocks win); shell, navigation and the role switcher in `web/src/App.tsx`; roles in `web/src/lib/role.tsx`; shared components in `web/src/components/ui.tsx`; the 3D geometry in `web/src/components/aircraftModels.ts`.

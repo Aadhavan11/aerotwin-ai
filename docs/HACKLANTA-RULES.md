@@ -53,10 +53,9 @@ The guide has **no AI-disclosure rule**: AI tools are allowed. **House rule (Sha
 
 ### What existed before hacking started (to disclose on Devpost)
 
-- The **AeroTwin AI concept document** (Aadhavan) and a separate planning document for a different idea (the parked `parked-meridian/` folder): planning text only, no code.
+- The **AeroTwin AI concept document** (Aadhavan). A separate planning document for a different idea (`parked-meridian/`) was removed from the repo; it stays in git history: planning text only, no code.
 - Public data and open-source libraries: NASA C-MAPSS (FD001), scikit-learn, OR-Tools, FastAPI, React, three.js and the rest of `requirements.txt` / `web/package.json`.
 - No application code existed before the event: this repository was created on Sat Oct 10 at 7:22 PM, after hacking opened.
-- Suggestion: remove `parked-meridian/` from the final repo (history keeps it) so judges do not wonder what it is, or mention it in the disclosure.
 
 ## Likely judge questions (answers must match what the code does)
 
@@ -68,10 +67,10 @@ The guide has **no AI-disclosure rule**: AI tools are allowed. **House rule (Sha
 ## Checklist (owners are proposals; tick in a small commit)
 
 - [ ] Everyone: confirm you are registered at hacklanta.dev and in the Discord (the guide marks the Discord "REQUIRED").
-- [ ] Demo run once on a laptop with the NASA files (`make data`), then `make demo-check` passes.
+- [x] Demo run on a laptop with the NASA files (`make data`); `make demo-check` passes 16/16 (re-run after every merge).
 - [ ] **Backup video recorded** and uploaded as PUBLIC (Aadhavan, by 7:30 AM).
 - [ ] **Devpost text** written from this file's list (Aadhavan; draft help available).
-- [ ] README top section: what it is and how to run it (done).
-- [ ] Decide `parked-meridian/` (remove or disclose).
+- [x] README top section: what it is and how to run it.
+- [x] `parked-meridian/` removed from the repo (disclosed in the Devpost text; history keeps it).
 - [ ] **Google Form** submitted once (one member), after the Devpost link exists.
 - [ ] Submitted by 8:15 AM Sunday; links tested from a logged-out browser.

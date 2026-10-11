@@ -28,6 +28,16 @@ def post_chat(req: ChatRequest):
     return chat_mod.chat(req)
 
 
+@router.get("/copilot/status")
+def get_copilot_status():
+    """Is LLM mode available, and what produced the last answer. Only booleans and the model name; never the key."""
+    from app import settings
+    from app.copilot import llm
+
+    return {"llm_key_present": settings.HAS_LLM_KEY or llm.llm_available(), "llm_available": llm.llm_available(),
+            "model": settings.LLM_MODEL, "last_mode": chat_mod.LAST_MODE["mode"], "last_note": chat_mod.LAST_MODE["note"]}
+
+
 @router.get("/copilot/quick-prompts")
 def get_quick_prompts():
     return {"prompts": chat_mod.QUICK_PROMPTS}

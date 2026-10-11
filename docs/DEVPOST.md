@@ -66,7 +66,7 @@ Python, FastAPI, pydantic, scikit-learn (random forest, isolation forest), OR-To
 NASA C-MAPSS turbofan degradation data (FD001; A. Saxena and K. Goebel, "Turbofan Engine Degradation Simulation Data Set", NASA Ames Prognostics Data Repository, 2008). It is public; we download a public mirror of the files at setup time and do not commit them. Everything else (fleet, flights, stations, parts, technicians, task cards) is simulated or written by us during the event.
 
 ## Disclosure: what existed before Hacklanta
-- The AeroTwin AI concept document (Aadhavan) and a separate planning document for a different idea (the parked `parked-meridian/` folder): planning text only.
+- The AeroTwin AI concept document (Aadhavan). A separate planning document for a different idea was removed from the repo before submission (it stays in git history): planning text only.
 - Public data and open-source libraries listed above.
 - No application code existed before the event; the repository was created after hacking opened.
 
