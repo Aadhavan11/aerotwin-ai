@@ -4,6 +4,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { TwinComponent } from "../api/types";
 import { buildAircraft, profileFor, type Part } from "./aircraftModels";
+import type { SensorCatalog } from "./EngineSection";
+import { partHealth } from "../lib/partHealth";
 
 type Props = {
   aircraftType: string;
@@ -11,6 +13,7 @@ type Props = {
   selected: string;
   onSelect: (id: string) => void;
   fallback: ReactNode;
+  catalog?: SensorCatalog;
 };
 
 const GROUPS = ["Engines", "Landing gear", "Systems", "Flight controls", "Airframe"] as const;
@@ -30,16 +33,22 @@ const CLOSE: Record<string, { part: string; dir: [number, number, number]; dist:
 
 const tint = { alert: new THREE.Color(0xc0392b), watch: new THREE.Color(0xc27c0e), select: new THREE.Color(0x2f5d8a) };
 
-export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback }: Props) {
+export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback, catalog }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ components, selected, part: "" });
+  const latest = useRef({ components, selected, part: "", health: {} as Record<string, string> });
   const [failed, setFailed] = useState(false);
   const [cutaway, setCutaway] = useState(false);
   const [view, setView] = useState("three");
   const [partId, setPartId] = useState("");
   const [parts, setParts] = useState<Part[]>([]);
   const [group, setGroup] = useState<(typeof GROUPS)[number]>("Engines");
-  latest.current = { components, selected, part: partId };
+  const healthOf = (p: Part) => partHealth(p.id, p.component ? components.find((c) => c.component_id.endsWith("/" + p.component)) : undefined, catalog);
+  latest.current = {
+    components,
+    selected,
+    part: partId,
+    health: Object.fromEntries(parts.map((p) => [p.id, healthOf(p)?.status ?? "ok"])),
+  };
   const controller = useRef<{ view: (v: string) => void; cutaway: (v: boolean) => void; focus: (p: Part) => void } | null>(null);
   const profile = useMemo(() => profileFor(aircraftType), [aircraftType]);
 
@@ -220,13 +229,13 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
       if (t - last < 32) return;
       last = t;
       if (!reduced) for (const fan of model.fans) fan.rotation.x = -t * 0.0011;
-      const { selected: sel, part: activeId, components: comps } = latest.current;
+      const { selected: sel, part: activeId, health } = latest.current;
       const active = partById.get(activeId);
       const exact = active && (!active.component || sel.endsWith("/" + active.component));
       for (const o of model.meshes) {
         const p = partById.get(o.userData.part);
         const isSel = exact ? p?.id === active?.id : !!p?.component && sel.endsWith("/" + p.component);
-        const status = p?.component ? comps.find((c) => c.component_id.endsWith("/" + p.component))?.status : undefined;
+        const status = p ? (health[p.id] as "ok" | "watch" | "alert" | undefined) : undefined;
         const m = o.material as THREE.MeshStandardMaterial;
         if (isSel) {
           m.emissive.copy(tint.select);
@@ -330,7 +339,8 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
         <ul className="parts-list">
           {visibleParts.map((p) => {
             const c = linked(p);
-            const st = statusOf(p.component);
+            const ph = c ? healthOf(p) : undefined;
+            const st = ph?.status ?? statusOf(p.component);
             return (
               <li key={p.id}>
                 <button
@@ -342,7 +352,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
                 >
                   <span className="parts-name">{p.label}</span>
                   {c ? (
-                    <span className={`parts-health s-${st}`}>{Math.round(c.health * 100)}%</span>
+                    <span className={`parts-health s-${st}`}>{Math.round((ph?.value ?? c.health) * 100)}%</span>
                   ) : (
                     <span className="parts-health muted">{p.internal ? "cutaway" : "structure"}</span>
                   )}
@@ -358,7 +368,9 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
               <p>{chosen.description}</p>
               <p className="muted">
                 {chosen.component
-                  ? `Health comes from the twin's ${chosen.component.replaceAll("_", " ")} component; individual sub-parts are not measured separately.`
+                  ? `Estimated from the ${chosen.component.replaceAll("_", " ")} component: ${
+                      healthOf(chosen)?.driver ? `${healthOf(chosen)!.driver}, so this part is scored lower. ` : "no abnormal reading is tied to this part. "
+                    }The twin scores the component as a whole; sub-parts are not measured separately.`
                   : "Structure only; no telemetry is assigned to this part."}
               </p>
             </>

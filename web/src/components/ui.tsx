@@ -80,9 +80,9 @@ export function Btn({
 }) {
   // Pills, as on Apple surfaces: one filled blue action at most; everything else is a quiet grey pill.
   const tones = {
-    default: "bg-[#e8e8ed] text-[#1d1d1f] hover:bg-[#dcdce1]",
-    primary: "bg-[#0066cc] text-white hover:bg-[#0058b0]",
-    danger: "bg-[#fbe9ea] text-[#d70015] hover:bg-[#f7d7da]",
+    default: "btn-face bg-gradient-to-b from-white to-[#ebebf0] text-[#1d1d1f] hover:to-[#e2e2e8]",
+    primary: "btn-face-primary bg-gradient-to-b from-[#2b8cf5] to-[#0066cc] text-white hover:from-[#1f84f0] hover:to-[#0058b0]",
+    danger: "btn-face bg-gradient-to-b from-white to-[#fbe9ea] text-[#d70015] hover:to-[#f7d7da]",
     ghost: "text-[#0066cc] hover:bg-[#f0f0f2]",
   };
   return (

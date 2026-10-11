@@ -6,6 +6,7 @@ import { ErrorBox, Loading, StatusPill } from "../components/ui";
 import USMap from "../components/USMap";
 import { profileFor } from "../components/aircraftModels";
 import { fmtZ, STATUS_ORDER } from "../lib/format";
+import { Airplane, CheckCircle, Hammer, Warning, Wrench } from "@phosphor-icons/react";
 
 const COMPONENT: Record<string, string> = {
   engine_1: "Engine 1",
@@ -51,26 +52,26 @@ export default function Fleet() {
       <ErrorBox error={fleet.error} />
       <dl className="figures">
         <div>
-          <dt>Aircraft</dt>
+          <dt><i className="fig-icon"><Airplane size={16} weight="duotone" /></i>Aircraft</dt>
           <dd>{k.aircraft}</dd>
         </div>
         <div>
-          <dt>Need attention</dt>
+          <dt><i className="fig-icon warn"><Warning size={16} weight="duotone" /></i>Need attention</dt>
           <dd className={k.needing_attention ? "tone-watch" : ""}>
             {k.needing_attention}
             <small>watch or alert</small>
           </dd>
         </div>
         <div>
-          <dt>Maintenance due within 72 h</dt>
+          <dt><i className="fig-icon"><Wrench size={16} weight="duotone" /></i>Maintenance due within 72 h</dt>
           <dd>{k.predicted_maintenance_72h}</dd>
         </div>
         <div>
-          <dt>In maintenance</dt>
+          <dt><i className="fig-icon"><Hammer size={16} weight="duotone" /></i>In maintenance</dt>
           <dd>{k.in_maintenance}</dd>
         </div>
         <div>
-          <dt>Available</dt>
+          <dt><i className="fig-icon ok"><CheckCircle size={16} weight="duotone" /></i>Available</dt>
           <dd>
             {k.readiness_pct}
             <small>%</small>

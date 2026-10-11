@@ -4,6 +4,7 @@ import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
 import { fmtZ } from "./lib/format";
 import CopilotDrawer from "./components/CopilotDrawer";
+import { Airplane, CalendarBlank, Flask, Gauge, Wrench } from "@phosphor-icons/react";
 import Fleet from "./pages/Fleet";
 const Aircraft = lazy(() => import("./pages/Aircraft"));
 const Maintenance = lazy(() => import("./pages/Maintenance"));
@@ -11,11 +12,11 @@ const Planning = lazy(() => import("./pages/Planning"));
 const Lab = lazy(() => import("./pages/Lab"));
 
 const nav = [
-  { to: "/", label: "Fleet" },
-  { to: "/aircraft/SIM-017", label: "Aircraft", match: "/aircraft" },
-  { to: "/maintenance", label: "Maintenance", match: "/maintenance" },
-  { to: "/planning", label: "Planning" },
-  { to: "/lab", label: "Scenarios" },
+  { to: "/", label: "Fleet", icon: Gauge },
+  { to: "/aircraft/SIM-017", label: "Aircraft", match: "/aircraft", icon: Airplane },
+  { to: "/maintenance", label: "Maintenance", match: "/maintenance", icon: Wrench },
+  { to: "/planning", label: "Planning", icon: CalendarBlank },
+  { to: "/lab", label: "Scenarios", icon: Flask },
 ];
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
               end={n.to === "/"}
               className={({ isActive }) => (isActive || (n.match && location.pathname.startsWith(n.match)) ? "active" : "")}
             >
+              <n.icon size={15} weight="duotone" />
               {n.label}
             </NavLink>
           ))}

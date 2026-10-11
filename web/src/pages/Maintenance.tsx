@@ -5,6 +5,7 @@ import type { FleetOverview, Leg, MaintItem, MaintSuggestion, MaintView, QueueRo
 import { Btn, Card, ErrorBox, Loading, StatusPill } from "../components/ui";
 import { profileFor } from "../components/aircraftModels";
 import { fmtUsd, fmtZ, STATUS_ORDER } from "../lib/format";
+import { Airplane, ClipboardText, ListChecks, Timer, Wrench } from "@phosphor-icons/react";
 
 const HOUR = 3_600_000;
 const SKILL: Record<string, string> = { engine: "engine", gear: "landing gear and brakes", hydraulics: "hydraulics", avionics: "avionics" };
@@ -116,14 +117,19 @@ function NextUp({ item, now, user, setUser, onChanged, first }: { item: MaintIte
   const slack = item.exposure?.slack_to_deadline_h;
   const urgent = item.source === "rul";
   return (
-    <Card>
+    <Card className="hero">
       <div className="comp-head">
-        <div>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+          <i className="hero-icon">
+            <Wrench size={22} weight="duotone" />
+          </i>
+          <div>
           <div className="eyebrow-line">{first ? "Next planned maintenance" : "Selected task"}</div>
           <h2 style={{ margin: "2px 0 0", fontSize: 22, letterSpacing: "-0.02em" }}>{item.title}</h2>
           <div className="muted" style={{ marginTop: 3 }}>
             {item.component} · {urgent ? "raised by the health model" : "routine check"}
             {item.card?.ata ? ` · ${item.card.ata}` : ""}
+          </div>
           </div>
         </div>
         {a ? <span className="when-chip">{rel(a.start, now)}</span> : <span className="when-chip warn">not scheduled</span>}
@@ -585,27 +591,27 @@ export default function Maintenance() {
 
       <dl className="figures">
         <div>
-          <dt>Aircraft</dt>
+          <dt><i className="fig-icon"><Airplane size={16} weight="duotone" /></i>Aircraft</dt>
           <dd style={{ fontSize: 20, paddingTop: 4 }}>{tail}</dd>
           <small className="muted">
             {profile?.label ?? summary?.type ?? ""} {summary ? <StatusPill status={summary.status} /> : null}
           </small>
         </div>
         <div>
-          <dt>Open tasks</dt>
+          <dt><i className="fig-icon"><ListChecks size={16} weight="duotone" /></i>Open tasks</dt>
           <dd>{items.length}</dd>
         </div>
         <div>
-          <dt>Next slot</dt>
+          <dt><i className="fig-icon"><Timer size={16} weight="duotone" /></i>Next slot</dt>
           <dd style={{ fontSize: 20, paddingTop: 4 }}>{next?.assignment ? rel(next.assignment.start, now) : "none"}</dd>
           <small className="muted">{next?.assignment ? `${next.assignment.station}, ${fmtZ(next.assignment.start)}` : "nothing scheduled"}</small>
         </div>
         <div>
-          <dt>Least margin</dt>
+          <dt><i className="fig-icon warn"><Timer size={16} weight="duotone" /></i>Least margin</dt>
           <dd>{margin.length ? Math.round(Math.min(...margin)) : "-"}{margin.length ? <small>h</small> : null}</dd>
         </div>
         <div>
-          <dt>Work orders</dt>
+          <dt><i className="fig-icon ok"><ClipboardText size={16} weight="duotone" /></i>Work orders</dt>
           <dd style={{ fontSize: 20, paddingTop: 4 }}>
             {approved} approved
           </dd>

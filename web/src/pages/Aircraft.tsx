@@ -7,6 +7,7 @@ import { Card, ErrorBox, Loading, StatusPill } from "../components/ui";
 import EngineSection, { deviation, deviationClass, unitLabel, type GenericSpec, type SensorCatalog } from "../components/EngineSection";
 import { profileFor, type Profile } from "../components/aircraftModels";
 import { fmtZ } from "../lib/format";
+import Ring from "../components/Ring";
 
 const AircraftScene = lazy(() => import("../components/AircraftScene"));
 
@@ -124,7 +125,12 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
     <div className="space-y-4">
       <Card>
         <div className="comp-head">
-          <h2>{nameOf(component)}</h2>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
+            <Ring value={component.health} status={st} size={52} stroke={6}>
+              <span className="mono" style={{ fontSize: 13, fontWeight: 600 }}>{pct(component.health)}</span>
+            </Ring>
+            <h2>{nameOf(component)}</h2>
+          </span>
           <StatusPill status={st} />
         </div>
         <dl className="figures" style={{ marginTop: 12 }}>
@@ -324,13 +330,13 @@ function SystemsTable({ components, selected, onSelect }: { components: TwinComp
                 <td>
                   <StatusPill status={c.status} />
                 </td>
-                <td style={{ minWidth: 110 }}>
-                  <div className="mono" style={{ fontSize: 12 }}>
-                    {pct(c.health)}%
-                  </div>
-                  <div className={`bar s-${c.status}`} style={{ marginTop: 3 }}>
-                    <span style={{ width: `${c.health * 100}%` }} />
-                  </div>
+                <td style={{ minWidth: 84 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <Ring value={c.health} status={c.status} size={30} stroke={4} />
+                    <span className="mono" style={{ fontSize: 12 }}>
+                      {pct(c.health)}%
+                    </span>
+                  </span>
                 </td>
                 <td className="mono">{c.anomaly_score.toFixed(2)}</td>
                 <td className="mono" style={{ textAlign: "right", whiteSpace: "nowrap" }}>
@@ -534,6 +540,7 @@ export default function Aircraft() {
           <Suspense fallback={<div className="study" style={{ height: 500 }} />}>
             <AircraftScene
               aircraftType={a.type}
+              catalog={catalog}
               components={data.components}
               selected={component?.component_id ?? ""}
               onSelect={setSelected}
