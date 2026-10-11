@@ -94,7 +94,8 @@ class Simulator:
 
     def _ingest(self, row):
         result = self.ingest(row) if self.ingest else None
-        self.connection.execute('INSERT OR REPLACE INTO telemetry VALUES (?,?,?,?,?,?)',(f'{row.component_id}:{row.cycle}',row.tail,row.component_id,row.cycle,row.ts.isoformat(),json.dumps(row.values)))
+        self.connection.execute('DELETE FROM telemetry WHERE tail=? AND component_id=? AND cycle=?',(row.tail,row.component_id,row.cycle))
+        self.connection.execute('INSERT INTO telemetry(tail,component_id,cycle,ts,values_json) VALUES (?,?,?,?,?)',(row.tail,row.component_id,row.cycle,row.ts.isoformat(),json.dumps(row.values)))
         for index, component in enumerate(self.state.components):
             if component.component_id==row.component_id:
                 if result is not None:
@@ -174,6 +175,6 @@ class Simulator:
             for change in changes:
                 change.ref=event.id
             self.connection.execute('INSERT INTO events VALUES (?,?,?,?)',(event.id,event.type,event.at.isoformat(),event.model_dump_json()))
-            self.connection.execute('INSERT INTO audit VALUES (?,?,?,?,?,?)',(f'A-{event.id}',event.at.isoformat(),'simulator','scenario.inject',event.id,event.model_dump_json()))
+            self.connection.execute('INSERT INTO audit(ts,actor,action,ref,detail) VALUES (?,?,?,?,?)',(event.at.isoformat(),'simulator','scenario.inject',event.id,event.model_dump_json()))
             self._save()
             return {'event_id':event.id,'effects':[f'SIMULATED {event.type} applied'],'twin_changes':[c.model_dump(mode='json') for c in changes],'twin_connected':self.ingest is not None}

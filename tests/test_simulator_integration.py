@@ -8,6 +8,8 @@ from app.agents.runs import RUNS
 
 @pytest.fixture(autouse=True)
 def clean_twin(monkeypatch):
+    monkeypatch.delenv("MOCK", raising=False)
+    monkeypatch.delenv("MOCK_SOLVER", raising=False)
     twin.reset()
     STORE.reset()
     RUNS.reset()
@@ -92,3 +94,17 @@ import pytest
 def _live_world(monkeypatch):
     """tests/conftest.py sets MOCK=1 for the API-mock suite; the simulator integration needs the real modules."""
     monkeypatch.delenv("MOCK", raising=False)
+
+
+def test_platform_sqlite_schema(monkeypatch,tmp_path):
+    from app import db,settings
+    path=tmp_path/'platform.db'
+    monkeypatch.setattr(settings,'DB_PATH',path)
+    db.init_db()
+    sim=IntegratedSimulator(str(path),trajectories=replay())
+    sim.step(2)
+    sim.inject(ScenarioEvent(type='anomaly',at=sim.state.now,tail='SIM-017',component_id='SIM-017/engine_2'))
+    with db.conn() as conn:
+        assert conn.execute('SELECT COUNT(*) FROM telemetry').fetchone()[0]==152
+        assert isinstance(conn.execute('SELECT id FROM audit').fetchone()[0],int)
+        assert conn.execute('SELECT COUNT(*) FROM aircraft').fetchone()[0]==24

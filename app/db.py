@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import json
 import sqlite3
-import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Iterator, Optional, Type, TypeVar
@@ -20,7 +19,7 @@ M = TypeVar("M", bound=BaseModel)
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS aircraft(tail TEXT PRIMARY KEY, type TEXT, home TEXT, location TEXT, status TEXT, cycles INTEGER, hours REAL, json TEXT);
 CREATE TABLE IF NOT EXISTS components(tail TEXT, component_id TEXT, kind TEXT, state_json TEXT, PRIMARY KEY(tail, component_id));
-CREATE TABLE IF NOT EXISTS telemetry(id TEXT PRIMARY KEY, tail TEXT, component_id TEXT, cycle INTEGER, ts TEXT, values_json TEXT);
+CREATE TABLE IF NOT EXISTS telemetry(id INTEGER PRIMARY KEY AUTOINCREMENT, tail TEXT, component_id TEXT, cycle INTEGER, ts TEXT, values_json TEXT);
 CREATE INDEX IF NOT EXISTS ix_telemetry ON telemetry(tail, component_id, cycle);
 CREATE TABLE IF NOT EXISTS health_history(tail TEXT, component_id TEXT, cycle INTEGER, ts TEXT, health REAL, anomaly REAL, rul_p50 REAL);
 CREATE TABLE IF NOT EXISTS legs(id TEXT PRIMARY KEY, tail TEXT, dep TEXT, arr TEXT, sched_dep TEXT, sched_arr TEXT);
@@ -31,7 +30,7 @@ CREATE TABLE IF NOT EXISTS plans(id TEXT PRIMARY KEY, mode TEXT, feasible INTEGE
 CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, type TEXT, at TEXT, json TEXT);
 CREATE TABLE IF NOT EXISTS agent_runs(id TEXT PRIMARY KEY, status TEXT, json TEXT);
 CREATE TABLE IF NOT EXISTS work_orders(id TEXT PRIMARY KEY, status TEXT, json TEXT);
-CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY, ts TEXT, actor TEXT, action TEXT, ref TEXT, detail TEXT);
+CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, actor TEXT, action TEXT, ref TEXT, detail TEXT);
 CREATE TABLE IF NOT EXISTS kv(key TEXT PRIMARY KEY, value TEXT);
 """
 TABLES = ["aircraft", "components", "telemetry", "health_history", "legs", "stations", "tasks", "plans", "events", "agent_runs", "work_orders", "audit", "kv"]
@@ -110,5 +109,5 @@ def set_sim_now(t: datetime) -> None:
 # ---- audit -------------------------------------------------------------------------
 def audit(actor: str, action: str, ref: str, detail: str = "") -> None:
     with conn() as c:
-        c.execute("INSERT INTO audit(id,ts,actor,action,ref,detail) VALUES(?,?,?,?,?,?)",
-                  (f"A-{uuid.uuid4().hex[:10]}", sim_now().isoformat().replace("+00:00", "Z"), actor, action, ref, detail))
+        c.execute("INSERT INTO audit(ts,actor,action,ref,detail) VALUES(?,?,?,?,?)",
+                  (sim_now().isoformat().replace("+00:00", "Z"), actor, action, ref, detail))
