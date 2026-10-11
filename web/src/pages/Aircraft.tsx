@@ -15,6 +15,7 @@ import {
 import { usePoll } from "../api/client";
 import type { TwinComponent, TwinView } from "../api/types";
 import { Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
+import FaultFocus from "../components/FaultFocus";
 import { fmtZ, STATUS_ORDER, STATUS_STYLE } from "../lib/format";
 
 const AircraftScene = lazy(() => import("../components/AircraftScene"));
@@ -494,6 +495,7 @@ export default function Aircraft() {
         (STATUS_ORDER[x.status] ?? 9) - (STATUS_ORDER[y.status] ?? 9) ||
         (x.rul_cycles?.p10 ?? Infinity) - (y.rul_cycles?.p10 ?? Infinity),
     )[0];
+  const isEngine = !!component && component.kind === "engine";
   return (
     <div className="space-y-4">
       <div className="eyebrow twin-eyebrow">Aircraft twin</div>
@@ -514,6 +516,8 @@ export default function Aircraft() {
         {a.cycles.toLocaleString()} flights · {number(a.hours)} flight hours
       </p>
       <ErrorBox error={error} />
+      {/* A system with an open item leads the page: where it is, and every sensor against its healthy baseline. */}
+      {isEngine && component.status !== "ok" && <FaultFocus key={component.component_id} tail={a.tail} component={component} aircraftType={a.type} />}
       <div className="grid items-start gap-4 xl:grid-cols-[1.15fr_1fr]">
         <div className="space-y-4">
           <Card title="Aircraft" right={<Chip>3D MODEL</Chip>}>
@@ -596,6 +600,7 @@ export default function Aircraft() {
           </Card>
         )}
       </div>
+      {isEngine && component.status === "ok" && <FaultFocus key={component.component_id} tail={a.tail} component={component} aircraftType={a.type} />}
     </div>
   );
 }

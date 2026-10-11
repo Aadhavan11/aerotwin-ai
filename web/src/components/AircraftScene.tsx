@@ -12,15 +12,21 @@ import { profileFor } from "../lib/aircraft";
 const MODEL_URL = `${import.meta.env.BASE_URL}models/b737-800/scene.gltf`;
 const CREDIT_URL = "https://sketchfab.com/3d-models/b737-800-model-6cbe380405794ea69d6b0a3d144dd1af";
 
+/** Close-up of one system (an engine): the camera goes to it, its skin turns see-through and a marker sits at `fraction` (0 front, 1 back) along its axis. */
+export type Focus = { component: string; fraction: number; title: string; note: string; marker: boolean };
+
 type Props = {
   aircraftType: string;
   components: TwinComponent[];
   selected: string;
   onSelect: (id: string) => void;
   fallback: ReactNode;
+  focus?: Focus | null;
 };
 
-export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback }: Props) {
+export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback, focus }: Props) {
+  const focusRef = useRef(focus);
+  focusRef.current = focus;
   const host = useRef<HTMLDivElement>(null);
   const latest = useRef({ components, selected, onSelect });
   latest.current = { components, selected, onSelect };
@@ -85,6 +91,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
     const groups: Record<string, THREE.Mesh[]> = { engine_1: [], engine_2: [], landing_gear: [] };
     const meshes: THREE.Mesh[] = [];
     let disposed = false;
+    let pulse: THREE.Mesh | null = null;
     new GLTFLoader().load(
       MODEL_URL,
       (gltf) => {
@@ -121,6 +128,51 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
         holder.rotation.y = Math.PI; // the model's nose is +z, the scene's nose is -z
         holder.position.y = -1.24; // tyre bottoms
         scene.add(holder);
+        const f = focusRef.current;
+        if (f) {
+          holder.updateMatrixWorld(true);
+          const group = groups[f.component] ?? [];
+          if (group.length) {
+            const box = new THREE.Box3();
+            for (const m of group) box.expandByObject(m);
+            const center = box.getCenter(new THREE.Vector3());
+            const extent = box.getSize(new THREE.Vector3());
+            const size3 = (m: THREE.Mesh) => new THREE.Box3().setFromObject(m).getSize(new THREE.Vector3());
+            const nacelle = [...group].sort((a, b) => size3(b).x * size3(b).y * size3(b).z - size3(a).x * size3(a).y * size3(a).z)[0];
+            const ns = size3(nacelle);
+            const mat = nacelle.material as THREE.MeshStandardMaterial;
+            mat.transparent = true; // see into the engine so the marker shows
+            mat.opacity = 0.32;
+            mat.depthWrite = false;
+            // fade the rest of the aircraft so the engine stands alone
+            const inGroup = new Set<THREE.Object3D>(group);
+            for (const m of meshes) {
+              if (inGroup.has(m)) continue;
+              const other = m.material as THREE.MeshStandardMaterial;
+              other.transparent = true;
+              other.opacity = 0.08;
+              other.depthWrite = false;
+            }
+            const at = new THREE.Vector3(center.x, center.y, box.min.z + f.fraction * extent.z);
+            if (f.marker) {
+              const red = (opacity: number) => new THREE.MeshBasicMaterial({ color: 0xff3b3b, transparent: true, opacity, depthTest: false });
+              const dot = new THREE.Mesh(new THREE.SphereGeometry(0.075, 24, 16), red(0.95));
+              dot.position.copy(at);
+              dot.renderOrder = 10;
+              const ring = new THREE.Mesh(new THREE.TorusGeometry((Math.max(ns.x, ns.y) / 2) * 1.02, 0.012, 12, 72), red(0.85));
+              ring.position.copy(at);
+              ring.renderOrder = 9;
+              scene.add(dot, ring);
+              pulse = dot;
+            }
+            const side = Math.sign(center.x) || 1;
+            camera.position.set(center.x + side * 3.0, center.y + 1.1, center.z - 3.0);
+            controls.target.copy(center);
+            controls.minDistance = 1.2;
+            controls.maxDistance = 9;
+            controls.update();
+          }
+        }
         setLoaded(true);
       },
       undefined,
@@ -190,6 +242,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
           if (tint !== 0xffffff) mat.color.lerp(tintOf.set(tint), 0.6);
         }
       }
+      if (pulse) pulse.scale.setScalar(1 + 0.3 * Math.sin(t * 0.005));
       controls.update();
       renderer.render(scene, camera);
     }
@@ -215,7 +268,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
       element.replaceChildren();
       controller.current = null;
     };
-  }, [aircraftType, profile]);
+  }, [aircraftType, profile, focus?.component, focus?.fraction, focus?.marker]);
 
   return (
     <div className="aircraft-study">
@@ -225,13 +278,13 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
           <p>The 3D model could not be loaded on this device. The system diagram is shown instead.</p>
         </div>
       ) : (
-        <div className="aircraft-scene aircraft-studio">
+        <div className={`aircraft-scene aircraft-studio ${focus ? "focus" : ""}`}>
           <div ref={host} className="scene-canvas" />
           {!loaded && <div className="scene-loading-overlay">Loading the 3D model…</div>}
           <div className="study-caption">
-            <span className="study-kicker">Aircraft</span>
-            <strong>{profile?.label ?? "Narrow-body aircraft"}</strong>
-            <span>{profile ? `${profile.length} m length · ${profile.span.toFixed(2)} m span` : "Type not recognized"}</span>
+            <span className="study-kicker">{focus ? "Close-up" : "Aircraft"}</span>
+            <strong>{focus ? focus.title : (profile?.label ?? "Narrow-body aircraft")}</strong>
+            <span>{focus ? focus.note : profile ? `${profile.length} m length · ${profile.span.toFixed(2)} m span` : "Type not recognized"}</span>
           </div>
           <div className="study-variant">
             {drawnAs737 ? "Drawn with a Boeing 737-800 model" : "Third-party 3D model"}
@@ -242,7 +295,7 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
             3D model “B737-800 Model” by hikami3150 · CC BY 4.0
           </a>
           <div className="scene-tools">
-            {["perspective", "top", "side"].map((mode) => (
+            {(focus ? [] : ["perspective", "top", "side"]).map((mode) => (
               <button
                 key={mode}
                 aria-pressed={view === mode}

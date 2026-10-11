@@ -1015,3 +1015,17 @@ aside.fixed {
   font: 400 13px var(--mono);
   color: var(--muted);
 }
+
+.aircraft-scene.focus {
+  height: 400px;
+}
+.aircraft-scene.focus .study-variant {
+  display: none;
+}
+.aircraft-scene.focus .scene-credit {
+  top: 20px;
+  right: 20px;
+}
+.aircraft-scene.focus .study-caption {
+  max-width: 55%;
+}
