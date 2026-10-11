@@ -1,6 +1,6 @@
 # AeroTwin demo: three minutes
 
-Rehearse on the `aadhavan/aircraft-twin` branch with `MOCK=0`, the NASA FD001 files downloaded and the shared API/web app running. Keep the SIMULATED badge visible. Do not present the copilot's mock approvals as live decisions.
+This is the team's single pitch: the Judging Expo gives the whole team **3 minutes plus 2 minutes of Q&A** at a table with 2 judges (see [`HACKLANTA-RULES.md`](HACKLANTA-RULES.md)). Rehearse on `main` with `MOCK=0`, the NASA FD001 files downloaded and the shared API/web app running. Keep the SIMULATED badge visible. Do not present the copilot's mock approvals as live decisions.
 
 | Time | Click / action | Say |
 |---|---|---|

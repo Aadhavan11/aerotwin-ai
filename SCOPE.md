@@ -4,7 +4,7 @@
 Shamit's separate climate-routing project ("Meridian") is **parked**, not part of this build; its files are in [`parked-meridian/`](parked-meridian/).
 We build the six core features of the doc (sections 3.1 to 3.6), the closed "self-adjusting plan" loop (section 4) and the demo (section 11).
 
-Time: about **10 hours** remain if the event ends Sun ~7 AM (**unverified: confirm the real submission deadline**). Clock times below are ET.
+Time: hacking ends **Sun Oct 11, 9:00 AM ET** (official guide, checked 2026-10-10; see [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md)). The schedule below was planned for a 7 AM finish, so 2 hours are spare buffer. Clock times below are ET.
 
 ## 0. Do these first (30 minutes, before anyone builds)
 
@@ -42,7 +42,7 @@ The doc's own must-have list (section 12) is already a complete demo.
 | 1 | Product name | **AeroTwin AI** (the repo is `Flash0529/aerotwin-ai`, renamed from `meridian-brie`; the old link redirects) |
 | 2 | Who wrote the concept doc | **Aadhavan**. He is the **concept owner**: when a question starts with "what did the doc intend?", he decides |
 | 3 | What code exists already | Open: inventory in section 0 |
-| 4 | Event rules and deadline | Open: check Devpost / hacklanta.dev now |
+| 4 | Event rules and deadline | **Done 2026-10-10:** [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md). Deadline 9:00 AM Sun; table judging, 3 min pitch + 2 min Q&A for the whole team; Devpost + public repo + public video + Google Form |
 | 5 | Where code lives | In this repo: `app/` (Python) and `web/` (React). Public repo: **no keys, ever** |
 
 ## 4. Roles
