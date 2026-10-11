@@ -128,6 +128,7 @@ class Toolbox:
         self._ctx: Optional[Context] = None
         self.missing: list[str] = []
         self.proposed: list = []
+        self.actions: list = []                 # proposed changes to maintenance requests (never applied here)
 
     # one consistent world per question
     def ctx(self) -> Context:
@@ -370,6 +371,28 @@ class Toolbox:
                 "evidence": [_ev("plan", plan.id, "drafted from this plan")]
                 + [_ev("event", w.id, "work order draft") for w in orders[:3]]}
 
+    # ---- proposals: the copilot prepares a change, the person allows it ------------------------
+    def propose_request_edit(self, work_order_id: str, title: Optional[str] = None, work: Optional[str] = None, part: Optional[str] = None,
+                             part_qty: Optional[int] = None, order_part: Optional[bool] = None, start: Optional[str] = None, end: Optional[str] = None) -> dict:
+        from app.copilot import actions
+
+        prop = actions.propose_edit(work_order_id, title=title, work=work, part=part, part_qty=part_qty, order_part=order_part, start=start, end=end)
+        if prop.get("kind"):
+            self.actions.append(prop)
+        return {"proposed": bool(prop.get("kind")), "valid": prop["ok"], "problems": prop["problems"], "changes": prop.get("changes", []),
+                "note": "Nothing was changed. The person sees this proposal and must allow it.", "evidence": []}
+
+    def propose_new_request(self, tail: str, station: str, start: str, end: str, title: str, work: str = "", why: str = "", part: Optional[str] = None,
+                            part_qty: int = 0, order_part: bool = False) -> dict:
+        from app.copilot import actions
+        from datetime import datetime as _dt
+
+        prop = actions.propose_new(tail=tail, station=station, start=_dt.fromisoformat(start.replace("Z", "+00:00")), end=_dt.fromisoformat(end.replace("Z", "+00:00")),
+                                   title=title, work=work, why=why, part=part, part_qty=part_qty, order_part=order_part)
+        self.actions.append(prop)
+        return {"proposed": True, "valid": prop["ok"], "problems": prop["problems"], "changes": prop["changes"],
+                "note": "Nothing was created. The person sees this proposal and must allow it.", "evidence": []}
+
     def search_kb(self, query: str) -> dict:
         hits = kb.search_kb(query)
         if not hits:
@@ -414,6 +437,15 @@ class Toolbox:
                  s({}), self.compare_plans, "operations"),
             Tool("draft_work_orders", "Draft work orders (always pending human approval) from the current plan, optionally for some aircraft.",
                  s({"tails": {"type": "array", "items": {"type": "string"}}}), self.draft_work_orders, "coordinator"),
+            Tool("propose_request_edit", "Propose a change to a maintenance request that is waiting for a decision (name, work, part, quantity, whether the part must be ordered, "
+                 "start and end as ISO UTC times). This does NOT change anything: the person is shown the proposal and must allow it. Use the work order id, for example WO-1.",
+                 s({"work_order_id": {"type": "string"}, "title": {"type": "string"}, "work": {"type": "string"}, "part": {"type": "string"}, "part_qty": {"type": "integer"},
+                    "order_part": {"type": "boolean"}, "start": {"type": "string"}, "end": {"type": "string"}}, ["work_order_id"]), self.propose_request_edit, "coordinator"),
+            Tool("propose_new_request", "Propose a NEW maintenance request for an aircraft (station, start and end as ISO UTC times when the aircraft is on the ground there, name, work, reason, part). "
+                 "This does NOT create anything: the person is shown the proposal and must allow it. Use find_windows first if you need a time when the aircraft is on the ground.",
+                 s({"tail": {"type": "string"}, "station": {"type": "string"}, "start": {"type": "string"}, "end": {"type": "string"}, "title": {"type": "string"}, "work": {"type": "string"},
+                    "why": {"type": "string"}, "part": {"type": "string"}, "part_qty": {"type": "integer"}, "order_part": {"type": "boolean"}},
+                   ["tail", "station", "start", "end", "title"]), self.propose_new_request, "coordinator"),
             Tool("search_kb", "Search the synthetic maintenance task cards by keyword.",
                  s({"query": {"type": "string"}}, ["query"]), self.search_kb, "coordinator"),
             Tool("report_missing_info", "Call this when the data cannot answer something instead of guessing.",

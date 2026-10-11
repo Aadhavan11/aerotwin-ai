@@ -338,6 +338,7 @@ class ChatResponse(Stamped):
     evidence: list[EvidenceRef]
     missing_info: list[str] = []
     proposed_work_orders: list[WorkOrder] = []
+    proposed_actions: list[dict] = []           # changes to maintenance requests the copilot proposes; applied only when the person allows them
     run_id: Optional[str] = None
 
 class AuditEntry(BaseModel):

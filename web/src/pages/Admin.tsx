@@ -4,6 +4,7 @@ import type { AuditEntry, HealthInfo, MetricsBundle } from "../api/types";
 import { Btn, Card, Chip, ErrorBox, Kpi, Loading } from "../components/ui";
 import { downloadCsv } from "../lib/derive";
 import { fmtZ } from "../lib/format";
+import { Compose, SentList } from "./Messages";
 
 const ML_LABELS: Record<string, string> = {
   model_version: "Model version",
@@ -81,6 +82,16 @@ export default function Admin() {
         <Kpi label="Audit entries" value={entries.length} hint="Every decision is recorded" />
         <Kpi label="Simulation clock" value={fmtZ(h.sim_now)} hint={`API ${h.version}`} />
       </div>
+
+      <Card title="Send a message" right={<span className="text-xs text-slate-500">arrives unread in the recipient's inbox</span>}>
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <Compose />
+          <div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Recently sent</div>
+            <SentList />
+          </div>
+        </div>
+      </Card>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card title="Services">

@@ -914,8 +914,7 @@ aside.fixed {
     gap: 14px;
   }
   .brand-name,
-  .clock,
-  .sim-pill {
+  .clock {
     display: none;
   }
   .page {
@@ -2450,4 +2449,399 @@ aside.fixed {
 }
 .cal-hint {
   margin-left: auto;
+}
+
+/* ---------- messages and the notification bell ---------- */
+.bell {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  color: var(--muted);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.bell:hover,
+.bell.has {
+  color: var(--text);
+}
+.bell i {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font: 700 10.5px/18px var(--mono);
+  font-style: normal;
+  text-align: center;
+}
+.msgs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .msgs {
+    grid-template-columns: 1fr;
+  }
+}
+.inbox {
+  list-style: none;
+  margin: 0 -8px;
+  padding: 0;
+}
+.inbox-row {
+  min-height: 56px;
+}
+.inbox-row.unread-row b {
+  color: var(--text);
+}
+.inbox-row:not(.unread-row) b {
+  font-weight: 500;
+  color: var(--muted);
+}
+.compose {
+  display: grid;
+  gap: 4px;
+  max-width: 640px;
+}
+.compose-done {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 12px;
+  background: rgba(74, 222, 128, 0.07);
+  font-size: 13.5px;
+  color: #86efac;
+}
+.sent-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.sent-list li {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+}
+.sent-list span {
+  font: 400 12px var(--mono);
+  color: var(--faint);
+}
+.page .compose input,
+.page .compose select,
+.page .compose textarea {
+  width: 100%;
+}
+
+/* ---------- suggested actions ---------- */
+.suggest {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.suggest li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.suggest li:first-child {
+  border-top: 0;
+}
+.suggest-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+.suggest-kind {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font: 600 10.5px var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(251, 191, 36, 0.14);
+  color: #fcd34d;
+}
+.suggest-kind.same {
+  background: rgba(167, 139, 250, 0.16);
+  color: #c4b5fd;
+}
+.suggest-kind.routine {
+  background: rgba(76, 141, 255, 0.16);
+  color: #bcd3ff;
+}
+.suggest p {
+  margin: 6px 0 4px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.suggest small {
+  font: 400 12px var(--mono);
+  color: var(--faint);
+}
+.suggest-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+@media (max-width: 760px) {
+  .suggest li {
+    flex-direction: column;
+  }
+}
+
+/* ---------- the copilot's proposals ---------- */
+.proposal {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px dashed rgba(76, 141, 255, 0.6);
+  border-radius: 14px;
+  background: rgba(76, 141, 255, 0.06);
+}
+.proposal.applied {
+  border-style: solid;
+  border-color: rgba(74, 222, 128, 0.5);
+  background: rgba(74, 222, 128, 0.06);
+}
+.proposal.denied {
+  opacity: 0.6;
+}
+.proposal-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--accent);
+}
+.proposal-head b {
+  color: var(--text);
+  font-size: 14px;
+}
+.proposal-head span {
+  margin-left: auto;
+  font: 400 11px var(--mono);
+  color: var(--faint);
+}
+.proposal ul {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 13.5px;
+}
+.proposal li span {
+  display: inline-block;
+  min-width: 130px;
+  font: 500 11px var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.proposal s {
+  color: var(--faint);
+}
+.proposal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.proposal-actions small,
+.proposal-done {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.proposal-done {
+  margin: 10px 0 0;
+}
+
+
+/* ---------- tablets (iPad portrait and landscape) and touch ---------- */
+@media (max-width: 1100px) {
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 10px 20px;
+  }
+  .capsule {
+    order: 3;
+    flex-basis: 100%;
+    margin: 0;
+  }
+  .topbar-right {
+    margin-left: auto;
+  }
+  .page {
+    padding: 36px 20px 28px;
+  }
+  .page-heading h1 {
+    font-size: clamp(30px, 6vw, 44px);
+  }
+  .askbar-panel {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: 112px;
+    width: auto;
+  }
+  .account-menu {
+    right: -40px;
+  }
+  .cal-scroll {
+    max-height: 62vh;
+  }
+  .facts {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 900px) {
+  .mreq {
+    padding: 18px;
+  }
+  .mreq-times {
+    grid-template-columns: 1fr 1fr;
+  }
+  .mreq-actions .mreq-note {
+    flex-basis: 100%;
+  }
+  .metrics {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+  .cal-bar {
+    align-items: stretch;
+  }
+  .cal-days {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    max-width: 100%;
+    padding-bottom: 4px;
+  }
+  .cal-days button {
+    flex-shrink: 0;
+  }
+  .suggest-actions {
+    flex-wrap: wrap;
+  }
+  .chat-thread {
+    height: min(58vh, 560px);
+  }
+  .copilot-chat {
+    max-width: none;
+  }
+}
+@media (max-width: 560px) {
+  .mreq-times {
+    grid-template-columns: 1fr;
+  }
+}
+/* fingers: bigger targets, and 16px text in fields so iOS does not zoom the page when one is focused */
+@media (pointer: coarse) {
+  .capsule a,
+  .seg button,
+  .cal-days button,
+  .role-select,
+  .account-btn,
+  .askbar-trigger,
+  .mreq-toggle,
+  .demo-list button,
+  .ask-suggest button,
+  .chat-starters button,
+  .inbox-row,
+  .account-menu > button,
+  .askbar-list button {
+    min-height: 44px;
+  }
+  .page button,
+  .btn-white {
+    min-height: 40px;
+  }
+  .page input:not([type="checkbox"]),
+  .page select,
+  .page textarea,
+  .login input,
+  .askbar-input input,
+  .chat-composer input {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .mreq-check input,
+  .page input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+  .cal-job {
+    min-height: 34px;
+  }
+  .bell {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* removing an aircraft column from the calendar */
+.cal-colhead {
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cal-colhead > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.cal-remove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--faint);
+  font-size: 12px;
+  cursor: pointer;
+}
+.cal-remove:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+.cal-reset {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cal-empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--faint);
+}
+@media (pointer: coarse) {
+  .cal-remove {
+    width: 40px;
+    height: 40px;
+  }
 }

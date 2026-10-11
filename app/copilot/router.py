@@ -131,6 +131,14 @@ def get_aircraft_maintenance(tail: str):
     return out
 
 
+@router.get("/maintenance/suggestions")
+def get_maintenance_suggestions(limit: int = 8):
+    """Work that is not pending or required now but is better planned ahead (advice, not tasks), each with a ground window that fits."""
+    from app.copilot import maintenance
+
+    return maintenance.fleet_suggestions(max(1, min(limit, 20)))
+
+
 @router.get("/maintenance/queue")
 def get_maintenance_queue():
     """Every open task in the fleet with its planned slot, deadline margin and work-order status (read only)."""

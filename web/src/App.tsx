@@ -7,6 +7,7 @@ import AccountMenu from "./components/AccountMenu";
 import AskBar from "./components/AskBar";
 import Icon from "./components/Icon";
 import { useAuth } from "./lib/auth";
+import { useUnread } from "./lib/messages";
 import { ROLES, useRole, type RoleId } from "./lib/role";
 import { setSimNow } from "./lib/screen";
 import Fleet from "./pages/Fleet";
@@ -19,6 +20,7 @@ const FlightBrief = lazy(() => import("./pages/FlightBrief"));
 const Dispatch = lazy(() => import("./pages/Dispatch"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Copilot = lazy(() => import("./pages/Copilot"));
+const Messages = lazy(() => import("./pages/Messages"));
 const Extra = {
   Trips: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Trips }))),
   Duty: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Duty }))),
@@ -26,7 +28,6 @@ const Extra = {
   Report: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Report }))),
   CrewRoster: lazy(() => import("./pages/Extra").then((m) => ({ default: m.CrewRoster }))),
   Release: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Release }))),
-  Messages: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Messages }))),
 };
 export default function App() {
   const health = usePoll<HealthInfo>("/health", 4000);
@@ -34,6 +35,7 @@ export default function App() {
   const navigate = useNavigate();
   const { role, setRole } = useRole();
   const auth = useAuth();
+  const unread = useUnread(auth.status === "user");
   const h = health.data;
   // Land on the role's own home the first time the console opens at "/".
   useEffect(() => {
@@ -99,6 +101,12 @@ export default function App() {
             <i className={`conn ${health.error ? "down" : ""}`} />
             {fmtZ(h?.sim_now)}
           </span>
+          {auth.status === "user" && (
+            <NavLink to="/messages" className={`bell ${unread > 0 ? "has" : ""}`} aria-label={unread > 0 ? `${unread} unread messages` : "Messages"} title={unread > 0 ? `${unread} unread` : "Messages"}>
+              <Icon name="bell" size={19} />
+              {unread > 0 && <i>{unread > 9 ? "9+" : unread}</i>}
+            </NavLink>
+          )}
           <AskBar />
         </div>
       </header>
@@ -137,7 +145,7 @@ export default function App() {
               <Route path="/report" element={<Extra.Report />} />
               <Route path="/crew" element={<Extra.CrewRoster />} />
               <Route path="/release" element={<Extra.Release />} />
-              <Route path="/messages" element={<Extra.Messages />} />
+              <Route path="/messages" element={<Messages />} />
             </Routes>
           </div>
         </Suspense>

@@ -571,6 +571,7 @@ export interface components {
              * @default []
              */
             proposed_work_orders: components["schemas"]["WorkOrder"][];
+            proposed_actions?: { id: string; ok: boolean; problems: string[]; kind: string; summary: string; changes: { field: string; from: string; to: string }[]; request: { method: "POST" | "PATCH"; path: string; body: Record<string, unknown> } }[];
             /** Run Id */
             run_id?: string | null;
         };

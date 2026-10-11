@@ -97,3 +97,37 @@ def test_google_flow(on, monkeypatch):
     monkeypatch.setattr(core, "verify_google", lambda cred: {"sub": "9", "email": "boss@example.com", "name": "The Boss", "picture": None})
     r = on.post("/auth/google", json={"credential": "x"})
     assert r.json()["user"]["master"] is True
+
+
+# ---- messages -------------------------------------------------------------------------------------------------
+def test_messages_reach_the_people_addressed_and_read_state_is_per_person(on):
+    admin_pw = "master-secret-9"
+    import os
+    from pathlib import Path
+    f = Path(os.environ.get("TMPDIR", "/tmp")) / "msg-master-pw"
+    f.write_text(admin_pw)
+    os.environ["AUTH_MASTER_PASSWORD_FILE"] = str(f)
+    core._master_mtime = 0.0
+    assert login(on, "admin", admin_pw).status_code == 200
+    r = on.post("/messages", json={"to_kind": "role", "to_value": "pilot", "subject": "Gate change", "body": "Your departure moved to gate B4."})
+    assert r.status_code == 200 and r.json()["recipients"] == 1 and r.json()["read_by"] == 0
+    msg_id = r.json()["id"]
+    assert on.post("/messages", json={"to_kind": "all", "subject": "Hello", "body": "Everyone"}).status_code == 200  # master may broadcast
+    on.post("/auth/logout")
+    login(on, "crew")  # the pilot account
+    assert on.get("/messages/unread").json()["count"] == 2
+    inbox = on.get("/messages").json()
+    assert {m["subject"] for m in inbox} >= {"Gate change", "Hello"} and not any(m["read"] for m in inbox if m["subject"] == "Gate change")
+    assert on.post(f"/messages/{msg_id}/read").status_code == 200
+    assert on.get("/messages/unread").json()["count"] == 1  # the blue badge goes down once it is opened
+    on.post("/auth/logout")
+    login(on, "dispatch")
+    assert on.get("/messages/unread").json()["count"] >= 1  # still unread for someone else
+    assert not any(m["subject"] == "Gate change" for m in on.get("/messages").json())  # not addressed to dispatch
+    assert on.post("/messages", json={"to_kind": "all", "subject": "x", "body": "y"}).status_code == 403
+    assert on.post(f"/messages/{msg_id}/read").status_code == 404
+
+
+def test_messages_need_a_session(on):
+    assert on.get("/messages").status_code == 401
+    assert on.post("/messages", json={"to_kind": "role", "to_value": "ops", "subject": "a", "body": "b"}).status_code == 401

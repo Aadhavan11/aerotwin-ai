@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { post } from "../api/client";
 import { Link } from "react-router-dom";
 import type { ChatResponse, EvidenceRef } from "../api/types";
 import { useAsk } from "../lib/ask";
+import { actorName } from "../lib/role";
 import Icon from "./Icon";
 import WorkOrderCard from "./WorkOrderCard";
+import { Btn } from "./ui";
 
 /** Where an evidence reference leads, if anywhere. */
 function evidenceLink(e: EvidenceRef): string | null {
@@ -20,6 +23,67 @@ const evidenceText = (e: EvidenceRef): string => {
   if (e.kind === "tool_call") return "planner data";
   return `${e.kind} ${e.ref}`;
 };
+
+
+type Proposal = NonNullable<ChatResponse["proposed_actions"]>[number];
+
+/** A change the copilot proposes to a maintenance request. Nothing happens until the person allows it; then it is sent as that person and audited. */
+function ProposalCard({ p }: { p: Proposal }) {
+  const [state, setState] = useState<"waiting" | "applied" | "denied">("waiting");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [made, setMade] = useState("");
+  const allow = async () => {
+    setBusy(true);
+    setErr("");
+    try {
+      const { data } = await post<{ id?: string }>(p.request.path, { ...p.request.body, user: actorName() }, p.request.method);
+      setMade(data?.id ?? "");
+      setState("applied");
+    } catch (e) {
+      setErr(String((e as Error).message).replace(/^\d+ [^:]*: /, "").replace(/^\{"error":"[a-z_]+","detail":"|"\}$/g, ""));
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className={`proposal ${state}`}>
+      <div className="proposal-head">
+        <Icon name="spark" size={14} />
+        <b>{p.summary}</b>
+        <span>{state === "waiting" ? "proposed by the copilot" : state === "applied" ? "allowed and applied" : "denied"}</span>
+      </div>
+      <ul>
+        {p.changes.map((c, i) => (
+          <li key={i}>
+            <span>{c.field}</span>
+            {c.from ? <><s>{c.from}</s> → </> : null}
+            <b>{c.to}</b>
+          </li>
+        ))}
+      </ul>
+      {p.problems.length > 0 && <p className="mreq-error">{p.problems.join(" ")}</p>}
+      {err && <p className="mreq-error">{err}</p>}
+      {state === "waiting" && p.ok && (
+        <div className="proposal-actions">
+          <Btn tone="primary" disabled={busy} onClick={allow}>
+            {busy ? "Applying…" : "Allow"}
+          </Btn>
+          <Btn disabled={busy} onClick={() => setState("denied")}>
+            Deny
+          </Btn>
+          <small>Nothing changes until you allow it. It is recorded as {actorName()}.</small>
+        </div>
+      )}
+      {state === "applied" && (
+        <p className="proposal-done">
+          {p.kind === "new_request" ? `Created ${made || "the request"}; it waits for approval on the ` : "Saved. See it on the "}
+          <Link to="/planning">Maintenance plan</Link>.
+        </p>
+      )}
+    </div>
+  );
+}
 
 /** An answer shown as plain text with what it is based on (links where there is somewhere to go). Not a chat bubble. */
 export function AnswerView({ resp }: { resp: ChatResponse }) {
@@ -47,6 +111,9 @@ export function AnswerView({ resp }: { resp: ChatResponse }) {
         </div>
       )}
       {resp.missing_info.length > 0 && <p className="ask-missing">Missing: {resp.missing_info.join("; ")}</p>}
+      {(resp.proposed_actions ?? []).map((p) => (
+        <ProposalCard key={p.id} p={p} />
+      ))}
       {resp.proposed_work_orders.length > 0 && (
         <div className="mt-3 space-y-2">
           {resp.proposed_work_orders.map((w) => (

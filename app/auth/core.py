@@ -329,7 +329,7 @@ class AuthGate:
             if scope["method"] == method and pattern.match(scope["path"]) and user["role"] not in roles:
                 label = ROLES.get(user["role"], (user["role"],))[0]
                 return await _json(send, 403, {"error": "forbidden", "detail": f"The {label} role cannot {what}."})
-        scope = {**scope, "state": {**scope.get("state", {}), "auth_name": user["name"], "auth_role": user["role"]}}
+        scope = {**scope, "state": {**scope.get("state", {}), "auth_name": user["name"], "auth_role": user["role"], "auth_username": user["username"]}}
         await self.inner(scope, receive, send)
 
 

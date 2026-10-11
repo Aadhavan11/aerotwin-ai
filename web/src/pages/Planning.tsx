@@ -5,6 +5,7 @@ import type { AircraftSummary, Exposure, HealthInfo, Leg, Plan, PlanBundle, Plan
 import AskPanel from "../components/AskPanel";
 import MaintenanceCalendar, { NewRequestForm, type CalItem, type Prefill } from "../components/MaintenanceCalendar";
 import MaintenanceRequest from "../components/MaintenanceRequest";
+import SuggestedActions from "../components/SuggestedActions";
 import { Btn, Card, ErrorBox, Loading } from "../components/ui";
 import { fmtH, fmtUsd, fmtZ } from "../lib/format";
 
@@ -113,22 +114,6 @@ export default function Planning() {
           <div className="mt-1 text-xs">Hard constraints (deadlines, skills, parts, capacity) are never relaxed automatically. A human decides what to give up.</div>
         </div>
       )}
-      <div className="facts">
-        {[
-          ["Downtime", fmtH(o.downtime_h), fmtH(b.downtime_h)],
-          ["Flights affected", String(o.flights_affected), String(b.flights_affected)],
-          ["Estimated cost", fmtUsd(o.total_cost_usd ?? 0), fmtUsd(b.total_cost_usd ?? 0)],
-          ["Jobs done in time", `${o.tasks_total - o.late_or_unscheduled}/${o.tasks_total}`, `${b.tasks_total - b.late_or_unscheduled}/${b.tasks_total}`],
-          ["Solve time", `${cur.solve_seconds.toFixed(2)} s`, `${base.solve_seconds.toFixed(2)} s`],
-        ].map(([label, a, c]) => (
-          <div key={label} className="fact">
-            <div className="fact-label">{label}</div>
-            <div className="fact-value text-emerald-700">{a}</div>
-            <div className="fact-hint">optimized · {c} baseline</div>
-          </div>
-        ))}
-      </div>
-
       <Card
         title="Maintenance calendar"
         right={
@@ -201,6 +186,14 @@ export default function Planning() {
           </Card>
         )
       )}
+
+      <SuggestedActions
+        onPlan={(p) => {
+          setSelKey(null);
+          setCreating(p);
+          setTimeout(() => document.querySelector(".newreq")?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+        }}
+      />
 
       <Card title="Optimized vs baseline">
         <div className="metrics">

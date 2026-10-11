@@ -24,7 +24,7 @@ export type CalItem = {
   taskId: string;
   wo?: WorkOrder;
 };
-export type Prefill = { tail: string; station: string; start: number; end: number };
+export type Prefill = { tail: string; station: string; start: number; end: number; title?: string; work?: string; why?: string; part?: string };
 
 /** The aircraft's station at a moment: where its last leg landed, or where its next leg leaves from. */
 function stationAt(legs: Leg[], tail: string, t: number, home: string): string {
@@ -72,14 +72,30 @@ export default function MaintenanceCalendar({
   const firstJob = items.filter((i) => i.kind !== "base").sort((a, b) => a.start - b.start)[0];
   const [day, setDay] = useState(dayOf(firstJob?.start ?? now));
   const [extra, setExtra] = useState<string[]>([]);
+  // Aircraft taken off the calendar (a view choice only: nothing is deleted from the fleet). Kept in this browser.
+  const [hidden, setHidden] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("aerotwin.calendar-hidden") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const saveHidden = (next: string[]) => {
+    setHidden(next);
+    try {
+      localStorage.setItem("aerotwin.calendar-hidden", JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  };
   const scroller = useRef<HTMLDivElement>(null);
 
   const tails = useMemo(() => {
     const t = new Set<string>(extra);
     for (const i of items) if (i.end > day && i.start < day + DAY_MS) t.add(i.tail);
-    if (t.size === 0) for (const i of items) t.add(i.tail);
-    return [...t].sort();
-  }, [items, day, extra]);
+    if (t.size === 0 && hidden.length === 0) for (const i of items) t.add(i.tail);
+    return [...t].filter((x) => !hidden.includes(x)).sort();
+  }, [items, day, extra, hidden]);
 
   useEffect(() => {
     const el = scroller.current;
@@ -98,6 +114,14 @@ export default function MaintenanceCalendar({
     onCreate({ tail, station: stationAt(legs, tail, start, homeOf(tail)), start, end: start + 2 * 3_600_000 });
   };
   const spare = aircraft.map((a) => a.tail).filter((t) => !tails.includes(t)).sort();
+  const addAircraft = (t: string) => {
+    saveHidden(hidden.filter((x) => x !== t));
+    setExtra((x) => (x.includes(t) ? x : [...x, t]));
+  };
+  const removeAircraft = (t: string) => {
+    saveHidden([...hidden, t]);
+    setExtra((x) => x.filter((y) => y !== t));
+  };
   const count = (d: number) => items.filter((i) => i.kind !== "base" && i.end > d && i.start < d + DAY_MS).length;
 
   return (
@@ -113,7 +137,7 @@ export default function MaintenanceCalendar({
         </div>
         <label className="cal-add">
           Add an aircraft
-          <select value="" onChange={(e) => e.target.value && setExtra((x) => [...x, e.target.value])} aria-label="Add an aircraft to the calendar">
+          <select value="" onChange={(e) => e.target.value && addAircraft(e.target.value)} aria-label="Add an aircraft to the calendar">
             <option value="">Choose…</option>
             {spare.map((t) => (
               <option key={t} value={t}>
@@ -122,15 +146,26 @@ export default function MaintenanceCalendar({
             ))}
           </select>
         </label>
+        {hidden.length > 0 && (
+          <button className="cal-reset" onClick={() => saveHidden([])}>
+            Show the {hidden.length} removed {hidden.length === 1 ? "aircraft" : "aircraft"} again
+          </button>
+        )}
       </div>
 
-      <div className="cal-scroll" ref={scroller}>
+      {tails.length === 0 && <p className="cal-empty">Every aircraft is removed from the calendar. Use “Add an aircraft” to bring one back.</p>}
+      <div className="cal-scroll" ref={scroller} style={tails.length === 0 ? { display: "none" } : undefined}>
         <div className="cal-grid" style={{ gridTemplateColumns: `54px repeat(${tails.length}, minmax(158px, 1fr))` }}>
           <div className="cal-corner">UTC</div>
           {tails.map((t) => (
             <div key={t} className="cal-colhead">
-              <b>{t}</b>
-              <span>{stationAt(legs, t, day + 12 * 3_600_000, homeOf(t))}</span>
+              <div>
+                <b>{t}</b>
+                <span>{stationAt(legs, t, day + 12 * 3_600_000, homeOf(t))}</span>
+              </div>
+              <button className="cal-remove" onClick={() => removeAircraft(t)} aria-label={`Remove ${t} from the calendar`} title={`Remove ${t} from the calendar (it stays in the fleet)`}>
+                ✕
+              </button>
             </div>
           ))}
           <div className="cal-hours" style={{ height: 24 * HOUR_H }}>
@@ -197,7 +232,7 @@ export function NewRequestForm({
 }) {
   const [f, setF] = useState({
     tail: prefill?.tail ?? aircraft[0]?.tail ?? "", station: prefill?.station ?? stations[0] ?? "", start: prefill ? inputOf(prefill.start) : "", end: prefill ? inputOf(prefill.end) : "",
-    title: "", work: "", why: "", part: "", part_qty: 1, order_part: false,
+    title: prefill?.title ?? "", work: prefill?.work ?? "", why: prefill?.why ?? "", part: prefill?.part ?? "", part_qty: 1, order_part: false,
   });
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);

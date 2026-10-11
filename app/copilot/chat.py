@@ -276,6 +276,19 @@ def _answer(req: ChatRequest, toolbox: Optional[Toolbox], client, mode: Optional
         hist.append({"role": "assistant", "content": text})
         LAST_MODE.update(mode="screen", note="answered from the screen context")
         return ChatResponse(answer=text, evidence=ev)
+    try:  # a plain request to edit or create a maintenance request: propose it (never apply it), with or without a language model
+        from app.copilot import actions
+
+        acted = actions.parse_scripted(req.message, getattr(req.screen, "text", "") if req.screen else "")
+    except Exception as exc:  # noqa: BLE001  fall through to the normal answer
+        log.warning("action parser failed: %s", exc)
+        acted = None
+    if acted is not None:
+        text, props = acted
+        hist.append({"role": "user", "content": req.message})
+        hist.append({"role": "assistant", "content": text})
+        LAST_MODE.update(mode="scripted", note="proposed a change to a maintenance request; it waits for the person to allow it")
+        return ChatResponse(answer=text, evidence=[EvidenceRef(kind="event", ref="request", note="proposal, not applied")] if props else [], proposed_actions=props)
     use_llm = mode == "llm" or (mode is None and llm.llm_available())
     if use_llm:
         resp = _chat_llm(req, box, hist, client)
@@ -326,4 +339,4 @@ def _chat_llm(req: ChatRequest, box: Toolbox, hist: deque, client) -> Optional[C
             raw.extend(c.output.get("evidence", []))
     evidence = _to_evidence(raw, [(c.tool, c.input) for c in res.calls])
     return ChatResponse(answer=res.text, evidence=evidence, missing_info=list(box.missing),
-                        proposed_work_orders=list(box.proposed))
+                        proposed_work_orders=list(box.proposed), proposed_actions=list(box.actions))
