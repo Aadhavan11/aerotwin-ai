@@ -1,4 +1,6 @@
-# Project Meridian: team brief (read this first)
+# Project Meridian / AeroTwin AI: team brief (read this first)
+
+> **UPDATE Sat 2026-10-10, 8:30 PM ET: read [`MERGE-PLAN.md`](MERGE-PLAN.md) first.** It merges this plan with a teammate's AeroTwin AI doc, sets roles, and replaces the schedule below (section 11) with one for the ~10.5 hours left.
 
 **In one breath:** an AI decision platform for airlines that treats two big costs as one loop. (1) A **route
 optimizer that prices climate impact** (CO2, contrails, NOx), not only fuel and time. (2) A **digital twin of each
@@ -35,6 +37,8 @@ claim "a decision layer that interoperates first."
 
 | File | What it is |
 |---|---|
+| `MERGE-PLAN.md` | **Read first:** merges AeroTwin AI and Meridian; scope, roles, contracts, schedule for the time left |
+| `docs/AEROTWIN-CONCEPT.md` | The teammate's AeroTwin AI concept doc |
 | `START-HERE.md` | This brief |
 | `HACKATLANTA-PLAN.md` | The master plan (about 1,000 lines). Sections: 0 read-first, 1 pitch, 4 architecture, 5 data, 6 modules, 7 integration, 9 things to avoid, 11 schedule, 15 open questions |
 | `DATA-CHEATSHEET.md` | Live endpoints we tested (with results), working code snippets, library licences, datasets, links |

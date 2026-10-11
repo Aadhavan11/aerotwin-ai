@@ -1,13 +1,15 @@
-# Meridian: team brief
+# AeroTwin AI x Meridian: team brief
 
 An AI decision platform for airlines: a **climate-aware route optimizer** (CO2, contrails, NOx, not only fuel),
 a **tail-level aircraft digital twin** that simulates wear and plans maintenance around the real flight plan and
 stops, and an **ops platform** that shows flight paths, weather and aircraft condition. Built for a 36-hour hackathon.
 
-**Status: documentation only. No code yet.** Everything about aircraft health is simulated and labeled so.
+**Status: documentation so far.** Code lands in per-owner folders once the event rules allow it (see MERGE-PLAN.md). Everything about aircraft health is simulated and labeled so.
 
 | Start here | |
 |---|---|
+| [`MERGE-PLAN.md`](MERGE-PLAN.md) | **Read first.** How AeroTwin AI and Meridian merge: scope, roles, contracts, schedule for the time left |
+| [`docs/AEROTWIN-CONCEPT.md`](docs/AEROTWIN-CONCEPT.md) | The teammate's AeroTwin AI concept doc (agents, digital twin, scheduler) |
 | [`START-HERE.md`](START-HERE.md) | Team briefing: what it is, status, roles, ground rules |
 | [`HACKATLANTA-PLAN.md`](HACKATLANTA-PLAN.md) | Master plan: architecture, data simulation vs. reality, schedule, things to avoid |
 | [`DATA-CHEATSHEET.md`](DATA-CHEATSHEET.md) | Tested endpoints, code snippets, library licenses, datasets |

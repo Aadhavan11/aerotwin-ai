@@ -20,8 +20,9 @@ impact (CO2, contrails, NOx), not only fuel; (2) a digital twin of each aircraft
 plans maintenance around the real flight plan and stops; (3) an ops platform that shows flight paths,
 weather and aircraft condition. Everything is simulated except the open weather and flight data.
 
-FILES YOU HAVE: START-HERE.md, HACKATLANTA-PLAN.md (the master plan), DATA-CHEATSHEET.md, GLOSSARY.md.
-Read ALL of them completely before you answer. The plan is a working document written by another Claude
+FILES YOU HAVE: MERGE-PLAN.md (READ FIRST: current scope, roles, contracts, schedule), START-HERE.md, HACKATLANTA-PLAN.md (the
+older master plan), docs/AEROTWIN-CONCEPT.md (a teammate's concept doc), DATA-CHEATSHEET.md, GLOSSARY.md.
+Read ALL of them completely before you answer. Where MERGE-PLAN.md and the older plan disagree, MERGE-PLAN.md wins. The plan is a working document written by another Claude
 from web research and a few live API checks. It can be wrong. Where it conflicts with the event rules or
 with what I tell you, say so and propose a fix instead of silently following it.
 
@@ -31,7 +32,8 @@ ABOUT ME
 - My skills and languages: [e.g. Python, React, optimization, ML]
 - My laptop and OS: [ ]
 - Time left in the event: [ ]  (the plan counts hours from Fri 7 PM ET kickoff; compress it)
-- Teammates and their roles: [Shamit Basu (lead), ...]
+- Teammates and roles (MERGE-PLAN.md section 4): Shamit = platform + integration + agents; Aashirth = ML + scheduler;
+  Pardhu = climate route module; Aadhavan = front end + story
 
 YOUR FIRST REPLY (no code yet)
 1. Summarize the project in 8 lines in your own words, including what is NOT novel (contrail routing and
@@ -74,8 +76,9 @@ HOW TO WORK WITH ME
 ## Short version (if the long one is too much)
 
 ```
-Read START-HERE.md, HACKATLANTA-PLAN.md, DATA-CHEATSHEET.md and GLOSSARY.md completely. We are on a team at a
-36-hour hackathon building "Meridian" (climate-aware airline routing + aircraft digital twin + maintenance planner).
+Read MERGE-PLAN.md first, then START-HERE.md, HACKATLANTA-PLAN.md, docs/AEROTWIN-CONCEPT.md, DATA-CHEATSHEET.md and
+GLOSSARY.md completely. We are on a team at a 36-hour hackathon building "AeroTwin AI / Meridian" (agentic aircraft
+digital twin + maintenance scheduler + climate-aware routing).
 I am [NAME], role [A/B/C/D], [HOURS] hours left. First reply, no code: summarize the project in 8 lines,
 list the 5 weakest assumptions in the plan (with section numbers), say what you'd build first for my role,
 and ask me up to 5 questions. Rules: never invent facts or numbers, mark anything unverified, run things and show
