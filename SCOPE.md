@@ -39,7 +39,7 @@ The doc's own must-have list (section 12) is already a complete demo.
 
 | # | Decision | Status |
 |---|---|---|
-| 1 | Product name | **AeroTwin AI** (the repo is still called `meridian-brie`; rename to `aerotwin-ai` once Shamit has approved the GitHub login) |
+| 1 | Product name | **AeroTwin AI** (the repo is `Flash0529/aerotwin-ai`, renamed from `meridian-brie`; the old link redirects) |
 | 2 | Who wrote the concept doc | **Aadhavan**. He is the **concept owner**: when a question starts with "what did the doc intend?", he decides |
 | 3 | What code exists already | Open: inventory in section 0 |
 | 4 | Event rules and deadline | Open: check Devpost / hacklanta.dev now |
