@@ -1,5 +1,7 @@
 # Work package 4: Aadhavan. The interface (3.2 UI, 3.5 lab, 3.6 copilot UI) and the story
 
+> **Owners changed after this file was written. This file is a SPEC; which sections are yours and which moved to someone else is in [`OWNERSHIP.md`](OWNERSHIP.md), which wins.** The spec text below is unchanged.
+
 You build **everything the judges see**. The backend is being built at the same time, so you start from fixtures and the mock API and swap to the
 real one without changing your code. Your demo is the product.
 

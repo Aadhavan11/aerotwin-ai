@@ -47,17 +47,16 @@ The doc's own must-have list (section 12) is already a complete demo.
 
 ## 4. Roles
 
-Chosen by task difficulty and how much each task depends on the others. Each person has a clear interface (`CONTRACTS.md`), a deadline and a fallback.
+**Who owns what is written in one place: [`work/OWNERSHIP.md`](work/OWNERSHIP.md). It wins over this summary.** Roles were chosen by task difficulty and how much each task depends on the others; each person has a clear interface (`CONTRACTS.md`), a deadline and a fallback.
 
-| Person | Owns | Deliverable by 1:00 AM | Fallback if stuck |
-|---|---|---|---|
-| **Shamit** | **Platform + integration + agents + copilot backend (3.4, 3.6 backend):** contracts, fleet/telemetry simulator, API, scenario injection, agent runner (scripted then LLM), work orders, final demo build | C0 (skeleton, models, fixtures, mock API) by 9:15 PM; scripted agents calling real tools | Hard-code the fleet; agents become a scripted pipeline with the same tool interface |
-| **Aashirth** | **ML + twin state (3.1, 3.2 backend):** anomaly model + RUL on C-MAPSS (MAE/RMSE), health scoring, data quality, component state engine | Sensor mapping pushed; model scoring one engine; twin serving `GET /aircraft/{tail}` | Score with a rule on sensor z-scores; keep state in memory |
-| **Pardhu** | **Scheduler + what-if (3.3, 3.5):** task cards, ground windows, tasks from RUL, greedy / static baseline / CP-SAT, replan, compare | Greedy + baseline plan on the golden state; CP-SAT by 12:15 AM | Ship greedy as "optimized" and say so |
-| **Aadhavan** | **Front end + story (3.2 UI, 3.5 lab, 3.6 UI) and concept owner:** fleet map, clickable twin, planning Gantt, simulation lab, copilot drawer + agent activity + approvals; then demo script, video, Devpost | UI running against fixtures / the **mock API** | Static screens fed by JSON files |
+| Person | Summary (see OWNERSHIP.md for the exact pieces) |
+|---|---|
+| **Shamit** | Contracts, database, API skeleton + mock API, and the front end (shell, Fleet Overview, Planning, Simulation Lab, Copilot + Agent Activity + approvals); integration lead and merger |
+| **Aadhavan** | The simulator (fleet generator, telemetry feed, scenario injection), the Aircraft Twin screen, and the story (demo script, video, Devpost); **concept owner** |
+| **Aashirth** | ML health models and the twin state engine (3.1, 3.2 backend); then LLM mode and the copilot backend if time allows |
+| **Pardhu** | Scheduler and what-if (3.3, 3.5) and the agent tool registry + scripted runner (3.4) |
 
-Pairs for sleep shifts (a stronger and a newer builder are always awake together): **Shamit + Aadhavan**, **Aashirth + Pardhu**.
-Everyone works with their own Claude using `CLAUDE-PROMPT.md`. Names are first names only in this public repo.
+Pairs for sleep shifts: **Shamit + Aadhavan**, **Aashirth + Pardhu** (at least one person from each pair is awake until the freeze). Everyone works with their own Claude using `CLAUDE-PROMPT.md`. Names are first names only in this public repo.
 
 ## 5. Schedule (clock times, ET)
 

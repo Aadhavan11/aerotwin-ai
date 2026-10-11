@@ -1,5 +1,7 @@
 # Work package 2: Aashirth. Health intelligence (3.1) and the digital twin state engine (3.2 backend)
 
+> **Owners changed after this file was written. This file is a SPEC; which sections are yours and which moved to someone else is in [`OWNERSHIP.md`](OWNERSHIP.md), which wins.** The spec text below is unchanged.
+
 You build the **brain of the twin**: the models that say how healthy each component is and how long it has left, and the state engine that
 keeps every aircraft's components up to date. Everyone downstream (scheduler, agents, UI) reads what you produce.
 

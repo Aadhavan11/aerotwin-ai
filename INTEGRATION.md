@@ -59,6 +59,9 @@ immutable snapshot passed into the pure functions (solver and what-if), so they 
 
 ## 2. Repository layout and ownership
 
+> **Owners changed Sat night (Shamit and Aadhavan swapped jobs). `work/OWNERSHIP.md` is the source of truth for who builds what; where this file names a different owner, follow OWNERSHIP.md. The specs themselves are unchanged.**
+
+
 ```
 app/
   main.py  settings.py  db.py                [Shamit]

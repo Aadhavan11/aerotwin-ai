@@ -1,5 +1,7 @@
 # Work package 1: Shamit. Platform, integration, agents (3.4) and copilot backend (3.6)
 
+> **Owners changed after this file was written. This file is a SPEC; which sections are yours and which moved to someone else is in [`OWNERSHIP.md`](OWNERSHIP.md), which wins.** The spec text below is unchanged.
+
 You are the **integrator**: you own the spine everyone plugs into, the agent workflow that calls everyone's code, and the final demo build.
 Your top rule: **the other three must never wait on you after 9:15 PM.** Publish stubs early; make real things later.
 

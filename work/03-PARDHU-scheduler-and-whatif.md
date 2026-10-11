@@ -1,5 +1,7 @@
 # Work package 3: Pardhu. Fleet-aware scheduler (3.3) and what-if simulation (3.5)
 
+> **Owners changed after this file was written. This file is a SPEC; which sections are yours and which moved to someone else is in [`OWNERSHIP.md`](OWNERSHIP.md), which wins.** The spec text below is unchanged.
+
 You build the **decision engine**: given the fleet state and the maintenance that is needed, find where and when to do it, and recompute when
 reality changes. This is the heart of the "self-adjusting plan" story.
 

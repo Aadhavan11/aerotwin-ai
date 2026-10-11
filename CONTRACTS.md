@@ -1,5 +1,7 @@
 # CONTRACTS: the one spec every module follows
 
+> **Owners changed Sat night (Shamit and Aadhavan swapped jobs). `work/OWNERSHIP.md` is the source of truth for who builds what; where this file names a different owner, follow OWNERSHIP.md. The specs themselves are unchanged.**
+
 If two modules disagree, **this file wins**. Shamit publishes it as code (`app/contracts/models.py`) in the first 45 minutes;
 everyone else imports from there and never redefines a model. Change a model only with a line in `CONTRACTS-CHANGELOG.md` and a
 message to the group chat.
