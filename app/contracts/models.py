@@ -212,6 +212,13 @@ class PlanMetrics(BaseModel):
     tasks_total: int
     tasks_scheduled: int
     late_or_unscheduled: int                    # must be 0 for a feasible plan
+    # Estimated cost from a simulated price list (app/solver/costs.py); additive, 0 when not computed
+    cost_parts_usd: float = 0.0
+    cost_labor_usd: float = 0.0
+    cost_bay_usd: float = 0.0
+    cost_delay_usd: float = 0.0                 # delay hours x cost per hour of delay
+    cost_exposure_usd: float = 0.0              # allowance for each task the plan cannot do before its deadline
+    total_cost_usd: float = 0.0                 # parts + labor + bay + shipping (logistics_cost_usd) + delay + exposure
 
 class ObjectiveWeights(BaseModel):
     downtime: float = 10.0                      # alpha
@@ -291,6 +298,14 @@ class WorkOrder(Stamped):
     decided_by: Optional[str] = None
     decided_at: Optional[datetime] = None
     note: str = ""
+    # The maintenance request as a person can edit it before deciding (additive; empty on orders drafted before 2026-10-11)
+    title: str = ""                             # short name of the job
+    work: str = ""                              # the work to be done, in plain words (empty: the task card text is shown)
+    part: Optional[str] = None                  # item being replaced or used
+    part_qty: int = 0
+    order_part: bool = False                    # the part has to be ordered / shipped in
+    edited_by: Optional[str] = None
+    edited_at: Optional[datetime] = None
 
 class AgentRun(Stamped):
     id: str

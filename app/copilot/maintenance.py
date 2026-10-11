@@ -77,6 +77,21 @@ def _logistics(task: Task, a: Optional[Assignment], stations: dict[str, Station]
     return out
 
 
+def _cost(task: Task, a: Optional[Assignment], stations: dict[str, Station]) -> Optional[dict]:
+    """Estimated cost of the planned job from the simulated price list (app/solver/costs.py)."""
+    if a is None:
+        return None
+    from app.solver import costs
+
+    ship = 0.0
+    st = stations.get(a.station)
+    if a.part_source and st is not None and task.required_part:
+        ship = next((float(p.ship_cost_usd) for p in st.parts if p.part == task.required_part), 0.0)
+    return {**costs.job_cost(task, a, ship), "hours": round(costs.job_hours(a), 2), "crew": costs.CREW_SIZE,
+            "labor_rate_usd_h": costs.LABOR_RATE_USD_H, "bay_rate_usd_h": costs.BAY_RATE_USD_H,
+            "part_unit_usd": costs.PART_PRICE_USD.get(task.required_part) if task.required_part else None}
+
+
 def _order_for(task_id: str, orders: list[WorkOrder]) -> Optional[WorkOrder]:
     mine = [w for w in orders if w.task_id == task_id]
     for status in ("approved", "pending_approval"):
@@ -131,6 +146,7 @@ def build(tail: str) -> Optional[dict]:
             "work_order": wo.model_dump(mode="json") if wo else None,
             "approved_slot_moved": moved,
             "logistics": _logistics(t, a, stations),
+            "cost": _cost(t, a, stations),
         })
 
     # Suggestions: components that have no open task yet but are worn or trending toward their limit.

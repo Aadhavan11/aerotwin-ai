@@ -72,6 +72,8 @@ def _plan_view(plan: Plan, limit: int = 12) -> dict:
         "metrics": {
             "downtime_h": m.downtime_h, "flights_affected": m.flights_affected,
             "logistics_cost_usd": m.logistics_cost_usd, "tech_utilization": m.tech_utilization,
+            "total_cost_usd": m.total_cost_usd, "cost_parts_usd": m.cost_parts_usd, "cost_labor_usd": m.cost_labor_usd,
+            "cost_bay_usd": m.cost_bay_usd, "cost_delay_usd": m.cost_delay_usd, "cost_exposure_usd": m.cost_exposure_usd,
             "hangar_utilization": m.hangar_utilization, "tasks_total": m.tasks_total,
             "tasks_scheduled": m.tasks_scheduled, "late_or_unscheduled": m.late_or_unscheduled,
         },

@@ -833,6 +833,12 @@ export interface components {
             tasks_scheduled: number;
             /** Late Or Unscheduled */
             late_or_unscheduled: number;
+            cost_parts_usd?: number;
+            cost_labor_usd?: number;
+            cost_bay_usd?: number;
+            cost_delay_usd?: number;
+            cost_exposure_usd?: number;
+            total_cost_usd?: number;
         };
         /** PredictedPoint */
         PredictedPoint: {
@@ -1161,6 +1167,13 @@ export interface components {
              * @default
              */
             note: string;
+            title?: string;
+            work?: string;
+            part?: string | null;
+            part_qty?: number;
+            order_part?: boolean;
+            edited_by?: string | null;
+            edited_at?: string | null;
         };
     };
     responses: never;

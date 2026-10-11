@@ -27,9 +27,9 @@ async function request<T>(
 }
 
 export const get = <T>(path: string) => request<T>(path);
-export const post = <T>(path: string, body?: unknown) =>
+export const post = <T>(path: string, body?: unknown, method: "POST" | "PATCH" = "POST") =>
   request<T>(path, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body ?? {}),
   });

@@ -1976,3 +1976,478 @@ aside.fixed {
     display: none;
   }
 }
+
+/* ---------- maintenance request summary ---------- */
+.mreq {
+  padding: 22px 24px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.mreq + .mreq {
+  margin-top: 12px;
+}
+.mreq-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.mreq-kicker {
+  font: 500 11px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.mreq h3 {
+  margin: 6px 0 4px;
+  font-size: 22px;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+.mreq-title-input {
+  margin: 6px 0 4px;
+  width: 100%;
+  font-size: 20px !important;
+  font-weight: 600;
+}
+.mreq-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.mreq-toggle {
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12.5px;
+  padding: 5px 13px;
+  cursor: pointer;
+}
+.mreq-line {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.mreq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 32px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 900px) {
+  .mreq-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.mreq-grid section h4 {
+  margin: 0 0 8px;
+  font: 500 11px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.mreq-grid p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.mreq-big {
+  font-size: 17px !important;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+.mreq-muted {
+  font-weight: 400;
+  color: var(--faint);
+}
+.mreq-field {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+.mreq-field > small,
+.mreq-hint {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+.mreq-field {
+  font-size: 11.5px;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.mreq-field > span,
+.mreq-field > :not(small):not(input):not(select):not(textarea):not(label) {
+  font: 400 14px var(--sans);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+.mreq-hint summary {
+  cursor: pointer;
+}
+.mreq-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.mreq-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 13.5px var(--sans);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+.mreq-times {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.mreq-facts {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.mreq-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+.mreq-error {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.08);
+  font-size: 13.5px;
+  color: #fca5a5;
+}
+.mreq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+}
+.mreq-note {
+  flex: 1;
+  min-width: 200px;
+}
+.page .mreq input:not([type="checkbox"]),
+.page .mreq select,
+.page .mreq textarea {
+  width: 100%;
+  max-width: 100%;
+}
+.page .mreq-inline input[list] {
+  flex: 1;
+  min-width: 160px;
+  width: auto;
+}
+.page .mreq-inline input[type="number"] {
+  width: 70px;
+}
+.mreq-actions .mreq-note {
+  width: auto;
+}
+
+/* ---------- optimized vs baseline metrics ---------- */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 12px;
+}
+.metric {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.metric-label {
+  font: 500 11px var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.metric-pair {
+  display: flex;
+  gap: 24px;
+  margin: 8px 0 6px;
+}
+.metric-pair b {
+  display: block;
+  font-size: 22px;
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+.metric-pair span {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+.metric-delta {
+  font: 500 12px var(--mono);
+  color: var(--faint);
+}
+.metric-delta.good {
+  color: var(--ok);
+}
+.metric-delta.bad {
+  color: var(--bad);
+}
+.metric small {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--faint);
+}
+
+/* ---------- the day calendar ---------- */
+.cal-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.cal-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.cal-days button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+.cal-days button.on {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.09);
+  border-color: var(--line-strong);
+}
+.cal-days i {
+  font: 600 10.5px var(--mono);
+  font-style: normal;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(76, 141, 255, 0.22);
+  color: #bcd3ff;
+}
+.cal-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.cal-scroll {
+  max-height: 560px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.012);
+}
+.cal-grid {
+  display: grid;
+  min-width: max-content;
+  width: 100%;
+}
+.cal-corner,
+.cal-colhead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 10px;
+  background: #0f0f17;
+  border-bottom: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line);
+  font-size: 12px;
+}
+.cal-corner {
+  left: 0;
+  z-index: 6;
+  border-left: 0;
+  font: 500 10.5px var(--mono);
+  color: var(--faint);
+}
+.cal-colhead b {
+  font-size: 13.5px;
+}
+.cal-colhead span {
+  font: 400 11px var(--mono);
+  color: var(--faint);
+}
+.cal-hours {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: #0f0f17;
+}
+.cal-hours div {
+  box-sizing: border-box;
+  padding: 2px 8px 0 0;
+  text-align: right;
+  font: 400 10.5px var(--mono);
+  color: var(--faint);
+  border-top: 1px solid var(--line);
+}
+.cal-col {
+  position: relative;
+  border-left: 1px solid var(--line);
+  background-image: linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 100% 42px;
+  cursor: crosshair;
+}
+.cal-leg {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  box-sizing: border-box;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(148, 148, 163, 0.14);
+  border: 1px solid rgba(148, 148, 163, 0.22);
+  font: 400 10.5px var(--mono);
+  color: var(--faint);
+  overflow: hidden;
+  pointer-events: none;
+}
+.cal-job {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 9px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  color: var(--text);
+}
+.cal-job b {
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-job span {
+  font: 400 10.5px var(--mono);
+  opacity: 0.8;
+}
+.cal-job.proposed {
+  background: rgba(76, 141, 255, 0.28);
+  border-color: rgba(76, 141, 255, 0.7);
+}
+.cal-job.pending_approval {
+  background: rgba(251, 191, 36, 0.24);
+  border-color: rgba(251, 191, 36, 0.7);
+}
+.cal-job.approved {
+  background: rgba(74, 222, 128, 0.22);
+  border-color: rgba(74, 222, 128, 0.7);
+}
+.cal-job.manual {
+  border-style: dashed;
+  border-color: #a78bfa;
+}
+.cal-job.base {
+  left: 45%;
+  right: 4px;
+  background: repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.18) 0 6px, transparent 6px 12px);
+  border: 1px dashed rgba(248, 113, 113, 0.6);
+  cursor: default;
+  z-index: 1;
+}
+.cal-job.sel {
+  outline: 2px solid #f4f4f8;
+  outline-offset: 1px;
+}
+.cal-now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 2px solid #f87171;
+  z-index: 3;
+  pointer-events: none;
+}
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--faint);
+}
+.cal-legend i {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+}
+.cal-legend i.proposed {
+  background: rgba(76, 141, 255, 0.4);
+  border-color: rgba(76, 141, 255, 0.8);
+}
+.cal-legend i.pending_approval {
+  background: rgba(251, 191, 36, 0.35);
+  border-color: rgba(251, 191, 36, 0.8);
+}
+.cal-legend i.approved {
+  background: rgba(74, 222, 128, 0.3);
+  border-color: rgba(74, 222, 128, 0.8);
+}
+.cal-legend i.manual {
+  border: 1px dashed #a78bfa;
+}
+.cal-legend i.baseline {
+  background: repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.5) 0 3px, transparent 3px 6px);
+  border: 1px dashed rgba(248, 113, 113, 0.7);
+}
+.cal-legend i.leg {
+  background: rgba(148, 148, 163, 0.3);
+}
+.cal-hint {
+  margin-left: auto;
+}

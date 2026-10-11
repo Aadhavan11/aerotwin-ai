@@ -51,6 +51,7 @@ MASTER_USERNAME = "admin"
 # method, path pattern, roles allowed, what it is (for the error message)
 GUARDS: list[tuple[str, re.Pattern[str], set[str], str]] = [
     ("POST", re.compile(r"^/workorders/[^/]+/decision$"), {"ops", "maintenance"}, "approve or reject work orders"),
+    ("PATCH", re.compile(r"^/workorders/[^/]+$"), {"ops", "maintenance"}, "edit work orders"),
     ("POST", re.compile(r"^/(sim/step|scenario/.+)$"), {"ops", "admin"}, "change the simulation"),
 ]
 PUBLIC_PREFIXES = ("/health", "/auth/", "/docs", "/openapi.json", "/redoc")
