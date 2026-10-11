@@ -98,7 +98,9 @@ def run_scripted(run_id: str, goal: str, scope: Optional[dict] = None, store: Ru
             r.tool(lg, "match_technicians", {"station": a.station, "skill": t["required_skill"], "start": a.start.isoformat(), "end": a.end.isoformat()},
                    f"Matching a {t['required_skill']} technician at {a.station}.", lambda d: f"{len(d)} technician(s) match")
     short = r.tool(lg, "shortage_report", {}, "Listing shortages and parts that must be shipped.", lambda d: f"{len(d)} shortage item(s)")
-    r.step(lg, "summary", f"{len(short['data'] or [])} shortage item(s).")
+    rep = r.tool(lg, "suggest_repositioning", {"horizon_cycles": 120}, "Checking whether stock sits where parts will be needed soon.",
+                 lambda d: f"{len(d)} repositioning suggestion(s)")
+    r.step(lg, "summary", f"{len(short['data'] or [])} shortage item(s), {len(rep['data'] or [])} repositioning suggestion(s).")
 
     # ---------------------------------------------------------------- Operations
     op = "operations"
@@ -118,7 +120,7 @@ def run_scripted(run_id: str, goal: str, scope: Optional[dict] = None, store: Ru
     first_rul = next((t for t in tasks if t["source"] == "rul"), tasks[0] if tasks else None)
     r.tool(co, "search_kb", {"query": first_rul["title"] if first_rul else "inspection"}, "Looking up the task card for the most urgent job.",
            lambda d: f"{len(d)} card(s): " + ", ".join(x["doc_id"] for x in d))
-    explanation = _explain(plan, tasks, at_risk, base["data"], short["data"] or [], orders, first_rul)
+    explanation = _explain(plan, tasks, at_risk, base["data"], short["data"] or [], orders, first_rul, rep["data"] or [])
     r.step(co, "summary", explanation)
 
     store.add_work_orders(run_id, orders)
@@ -132,7 +134,7 @@ def fmt_iso(iso: str) -> str:
 
 
 def _explain(plan: Plan, tasks: list[dict], at_risk: list[dict], base: dict, short: list[dict], orders: list[WorkOrder],
-             first_rul: Optional[dict]) -> str:
+             first_rul: Optional[dict], reposition: Optional[list] = None) -> str:
     """Template text. Every number below is copied from a tool result."""
     m = plan.metrics
     out = [f"Plan {plan.id} ({plan.mode}) is {'feasible' if plan.feasible else 'NOT feasible'}: {m.tasks_scheduled} of {m.tasks_total} tasks scheduled, "
@@ -167,5 +169,9 @@ def _explain(plan: Plan, tasks: list[dict], at_risk: list[dict], base: dict, sho
     flags = [x["detail"] for x in short if x.get("least_bad") is None and plan.feasible]
     if flags:
         out.append("Logistics flags: " + "; ".join(flags) + ".")
+    moves = [x for x in (reposition or []) if x["kind"] == "reposition"]
+    if moves:
+        out.append("Advisory, not applied: " + "; ".join(
+            f"move {x['qty']} {x['part']} from {x['from_station']} to {x['to_station']} ({x['ship_hours']:g} h, ${x['cost_usd']:,.0f})" for x in moves[:3]) + ".")
     out.append(f"{len(orders)} work order(s) drafted, all pending human approval. Advisory only; this does not replace approved procedures.")
     return " ".join(out)

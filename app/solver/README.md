@@ -7,7 +7,7 @@ Owner: Pardhu. Everything here is **SIMULATED** and uses synthetic task cards; i
 ```
 pip install ortools simpy pyyaml pydantic fastapi httpx pytest      # tested: Python 3.13, ortools 9.15, simpy 4.1, pydantic 2.13
 python -m pytest tests -q                                           # 135 tests, about 15 s
-python scripts/agent_demo.py [--export] [--replan]                   # runs the 5 scripted agents with the 16 tools; --export writes fixtures/agent_run_golden.json
+python scripts/agent_demo.py [--export] [--replan]                   # runs the 5 scripted agents with the 17 tools; --export writes fixtures/agent_run_golden.json
 python scripts/plan_demo.py                                          # prints the baseline-vs-optimized table, replan, compare, simulation
 python scripts/plan_demo.py --export                                 # also rewrites fixtures/plan_current.json, plan_baseline.json, replan_result.json
 python scripts/mutation_check.py                                     # breaks 27 rules one at a time in a scratch copy; every one must be CAUGHT (about 1 min)
@@ -36,7 +36,7 @@ Environment: `SOLVER_WORKERS` (CP-SAT threads, default **1** so results repeat e
 
 | File | What |
 |---|---|
-| `tools.py` | `TOOLS`: the 16 tools of CONTRACTS.md section 6 (`name, agent, description, JSON input_schema, fn`); each returns `{data, evidence, missing_info}`; `call_tool(name, args)` turns expected failures into `{"data": None, "error": ...}` |
+| `tools.py` | `TOOLS`: the 16 tools of CONTRACTS.md section 6 plus `suggest_repositioning` (`name, agent, description, JSON input_schema, fn`); each returns `{data, evidence, missing_info}`; `call_tool(name, args)` turns expected failures into `{"data": None, "error": ...}` |
 | `scripted.py` | Health -> Scheduling -> Logistics -> Operations -> Coordinator; a `thought`, `tool_call`, `tool_result` step per call plus a `summary` per agent; explanation is a template filled only with tool outputs |
 | `runner.py` | `run_workflow(goal, scope, mode, background=False)`; `mode="llm"` runs the scripted workflow and records `mode="scripted"` (LLM mode is piece 12) |
 | `runs.py` | in-memory run store (`RUNS`), `RUNS.add_listener(fn)` for the database/audit layer |
