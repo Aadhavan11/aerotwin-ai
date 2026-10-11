@@ -2,7 +2,7 @@
 import random
 from datetime import timedelta
 from pathlib import Path
-from app.contracts.models import Aircraft, ComponentState, DataQuality, FleetState, Leg, PartStock, RulEstimate, Station, Technician
+from app.contracts.models import Aircraft, ComponentState, DataQuality, FleetState, Leg, PartStock, Station, Technician
 from app.sim.clock import START
 
 STATIONS = {'ATL': (33.64, -84.43), 'DFW': (32.90, -97.04), 'JFK': (40.64, -73.78), 'ORD': (41.98, -87.90), 'LAX': (33.94, -118.41), 'SFO': (37.62, -122.38), 'DEN': (39.86, -104.67), 'MIA': (25.80, -80.29)}
@@ -24,7 +24,7 @@ def generate_fleet(seed=1234):
         hours = cycles * 2.0
         aircraft.append(Aircraft(tail=tail, type='A320-class' if index<=16 else 'B738-class', home=home, location=home, status='ok', cycles=cycles, hours=hours))
         for name, kind in KINDS.items():
-            components.append(ComponentState(tail=tail, component_id=f'{tail}/{name}', kind=kind, cycles=cycles, hours=hours, health=.95, anomaly_score=.02, rul_cycles=RulEstimate(p10=120,p50=150,p90=180), data_quality=DataQuality(status='degraded', reasons=['SIMULATED initial state; not an ML estimate']), status='ok', updated=START))
+            components.append(ComponentState(tail=tail, component_id=f'{tail}/{name}', kind=kind, cycles=cycles, hours=hours, health=.95, anomaly_score=.02, rul_cycles=None, data_quality=DataQuality(status='degraded', reasons=['SIMULATED initial state; not an ML estimate']), status='ok', updated=START))
         current = home
         for day in range(5):
             for flight in range(4):

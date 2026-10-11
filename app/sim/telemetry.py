@@ -51,7 +51,7 @@ class TelemetrySource:
                 units = sorted(self.trajectories)
                 unit = units[int.from_bytes(hashlib.sha256(component_id.encode()).digest()[:4],'big')%len(units)]
                 length = len(self.trajectories[unit])
-                self.faults[component_id] = max(0,length-25-(self.positions.get(component_id,0)-self.origins.get(component_id,0)))
+                self.faults[component_id] = max(0,length-30-(self.positions.get(component_id,0)-self.origins.get(component_id,0)))
             else:
                 self.faults[component_id] = 150*severity
         elif event_type=='accelerated_degradation':
