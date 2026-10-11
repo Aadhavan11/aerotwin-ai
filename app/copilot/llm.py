@@ -159,6 +159,7 @@ def run_tool_loop(
     client: Any, *, system: str, messages: list[dict], tools: dict, model: Optional[str] = None,
     max_steps: int = MAX_STEPS, max_tokens: int = 4096, effort: Optional[str] = None,
     on_call: Optional[Callable[[ToolCall], None]] = None,
+    on_thought: Optional[Callable[[str], None]] = None,
 ) -> LoopResult:
     """Manual tool loop: call, execute ``tool_use`` blocks, return ``tool_result`` blocks, repeat."""
     res = LoopResult()
@@ -188,7 +189,11 @@ def run_tool_loop(
         if not uses:
             res.text = "\n".join(t.strip() for t in texts if t.strip())
             return res
-        res.thoughts.extend(t.strip() for t in texts if t.strip())
+        for t in texts:
+            if t.strip():
+                res.thoughts.append(t.strip())
+                if on_thought:
+                    on_thought(t.strip())
         msgs.append({"role": "assistant", "content": blocks})
         results = []
         for u in uses:
@@ -255,9 +260,8 @@ def run_agent(
         add("tool_call", c.tool, c.input)
         add("tool_result", c.tool, None, c.output if isinstance(c.output, dict) else {"result": c.output})
 
-    loop = run_tool_loop(client, system=system, messages=[{"role": "user", "content": user}], tools=tools, on_call=on_call)
-    for th in loop.thoughts:
-        add("thought", text=th)
+    loop = run_tool_loop(client, system=system, messages=[{"role": "user", "content": user}], tools=tools,
+                         on_call=on_call, on_thought=lambda t: add("thought", text=t))
     if loop.error:
         return AgentResult(agent, steps, template or "", False, [], loop.error, loop.model_calls)
     bad = unsupported_numbers(loop.text, loop.sources([user]))
