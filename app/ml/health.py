@@ -42,6 +42,7 @@ log = logging.getLogger(__name__)
 
 SEED = 1234
 WINDOW = 30
+MIN_SLOPE_ROWS = 10      # a slope from fewer rows is noise; use 0 instead
 RUL_CAP = 125
 ARTIFACT_DIR = Path(__file__).resolve().parent / "artifacts"
 MODEL_VERSION = "rf-iforest-v1"
@@ -81,7 +82,7 @@ def window_features(values: np.ndarray, cycles: np.ndarray, win: int = WINDOW) -
     stx, stt = Stx[end] - Stx[start], Stt[end] - Stt[start]
     mean = sx / n[:, None] + v0
     denom = n * stt - st * st
-    ok = denom > 1e-9
+    ok = (denom > 1e-9) & (n >= MIN_SLOPE_ROWS)
     safe = np.where(ok, denom, 1.0)
     slope = np.where(ok[:, None], (n[:, None] * stx - st[:, None] * sx) / safe[:, None], 0.0)
     return np.concatenate([mean, slope, values, t[:, None]], axis=1)
