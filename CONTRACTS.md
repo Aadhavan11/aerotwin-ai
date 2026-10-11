@@ -372,6 +372,8 @@ Plain `sqlite3` + pydantic, no ORM. JSON columns hold the pydantic `.model_dump_
 
 ## 4. HTTP API (FastAPI, `http://localhost:8000`, OpenAPI at `/openapi.json`)
 
+> **Built:** the models are in `app/contracts/models.py`, the request bodies in `app/contracts/requests.py` (`SolveRequest`, `ReplanRequest`, `CompareRequest`, `StepRequest`, `ResetRequest`, `AgentRunRequest`, `DecisionRequest`), and every endpoint below is live in `app/main.py` (mock until a real module replaces it: see `INTEGRATION.md` section 13).
+
 All responses are JSON of the models above. Errors: `{"error": "...", "detail": ...}` with a 4xx/5xx status. The front end generates its
 TypeScript types with `npx openapi-typescript http://localhost:8000/openapi.json -o web/src/api/types.ts`.
 

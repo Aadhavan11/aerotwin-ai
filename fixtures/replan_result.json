@@ -1,221 +1,226 @@
 {
+ "synthetic": true,
+ "event": {
   "synthetic": true,
-  "event": {
-    "synthetic": true,
-    "id": "E-2",
-    "type": "part_delay",
-    "at": "2026-10-12T14:00:00Z",
-    "tail": null,
-    "component_id": null,
+  "id": "E-2",
+  "type": "part_delay",
+  "at": "2026-10-12T14:00:00Z",
+  "tail": null,
+  "component_id": null,
+  "station": "DFW",
+  "part": "BORESCOPE-KIT",
+  "delay_hours": 12.0,
+  "technician_id": null,
+  "severity": null,
+  "note": "Supplier delay"
+ },
+ "before": {
+  "synthetic": true,
+  "id": "P-2",
+  "created": "2026-10-12T12:05:00Z",
+  "mode": "cpsat",
+  "feasible": true,
+  "infeasible_reasons": [],
+  "assignments": [
+   {
+    "task_id": "T-SIM-017-engine_2-001",
+    "tail": "SIM-017",
     "station": "DFW",
-    "part": "BORESCOPE-KIT",
-    "delay_hours": 12.0,
-    "technician_id": null,
-    "severity": null,
-    "note": "golden disruption: DFW kit delayed"
+    "start": "2026-10-12T20:30:00Z",
+    "end": "2026-10-13T02:30:00Z",
+    "technician_id": "DFW-T2",
+    "part_source": null,
+    "window_hours": 11.12,
+    "extension_h": 0.0,
+    "reason": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT on hand (ready 8.0 h after now); 0 h of extension; finishes 93.5 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-004-brakes-001",
+    "tail": "SIM-004",
+    "station": "DEN",
+    "start": "2026-10-12T19:42:00Z",
+    "end": "2026-10-12T22:42:00Z",
+    "technician_id": "DEN-T1",
+    "part_source": null,
+    "window_hours": 10.8,
+    "extension_h": 0.0,
+    "reason": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on hand (in stock); 0 h of extension; finishes 61.3 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-011-hydraulics-001",
+    "tail": "SIM-011",
+    "station": "LAX",
+    "start": "2026-10-12T19:39:00Z",
+    "end": "2026-10-13T00:39:00Z",
+    "technician_id": "LAX-T2",
+    "part_source": null,
+    "window_hours": 10.85,
+    "extension_h": 0.0,
+    "reason": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP on hand (in stock); 0 h of extension; finishes 71.3 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-020-avionics-001",
+    "tail": "SIM-020",
+    "station": "SEA",
+    "start": "2026-10-12T19:50:00Z",
+    "end": "2026-10-12T21:50:00Z",
+    "technician_id": "SEA-T1",
+    "part_source": null,
+    "window_hours": 10.67,
+    "extension_h": 0.0,
+    "reason": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU on hand (in stock); 0 h of extension; finishes 38.2 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-008-landing_gear-001",
+    "tail": "SIM-008",
+    "station": "MIA",
+    "start": "2026-10-12T19:07:00Z",
+    "end": "2026-10-12T23:07:00Z",
+    "technician_id": "MIA-T1",
+    "part_source": null,
+    "window_hours": 11.38,
+    "extension_h": 0.0,
+    "reason": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; finishes 84.9 h before the deadline."
+   }
+  ],
+  "metrics": {
+   "downtime_h": 0.0,
+   "flights_affected": 0,
+   "logistics_cost_usd": 0.0,
+   "tech_utilization": 0.011,
+   "hangar_utilization": 0.012,
+   "schedule_changes": 0,
+   "tasks_total": 5,
+   "tasks_scheduled": 5,
+   "late_or_unscheduled": 0
   },
-  "before": {
-    "synthetic": true,
-    "id": "P-2",
-    "created": "2026-10-12T12:00:00Z",
-    "mode": "cpsat",
-    "feasible": true,
-    "infeasible_reasons": [],
-    "assignments": [
-      {
-        "task_id": "T-SIM-017-engine_2-001",
-        "tail": "SIM-017",
-        "station": "DFW",
-        "start": "2026-10-12T14:30:00Z",
-        "end": "2026-10-12T20:30:00Z",
-        "technician_id": "DFW-T1",
-        "part_source": null,
-        "window_hours": 14.5,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: DFW, Oct 12 14:30Z to Oct 12 20:30Z. BORESCOPE-KIT on hand at DFW; technician DFW-T1 (engine) on shift. Ground window 14.5 h for a 6 h job: 0 h extension. Finishes 104.2 h before the Oct 17 04:40Z deadline. 4 other feasible slot(s); best alternative: DFW Oct 13 14:40Z (BORESCOPE-KIT on hand at DFW; 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-008-brakes-002",
-        "tail": "SIM-008",
-        "station": "DFW",
-        "start": "2026-10-12T17:16:00Z",
-        "end": "2026-10-12T18:46:00Z",
-        "technician_id": "DFW-T3",
-        "part_source": null,
-        "window_hours": 1.8333,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: DFW, Oct 12 17:16Z to Oct 12 18:46Z. No part needed; technician DFW-T3 (gear) on shift. Ground window 1.8 h for a 1.5 h job: 0 h extension. Finishes 65.2 h before the Oct 15 12:00Z deadline. 11 other feasible slot(s); best alternative: ORD Oct 12 21:11Z (no part needed; 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-021-avionics-001",
-        "tail": "SIM-021",
-        "station": "ATL",
-        "start": "2026-10-12T22:52:00Z",
-        "end": "2026-10-13T00:52:00Z",
-        "technician_id": "ATL-T2",
-        "part_source": null,
-        "window_hours": 2.4167,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: ATL, Oct 12 22:52Z to Oct 13 00:52Z. AVIONICS-LRU on hand at ATL; technician ATL-T2 (avionics) on shift. Ground window 2.4 h for a 2 h job: 0 h extension. Finishes 307.9 h before the Oct 25 20:45Z deadline. 19 other feasible slot(s); best alternative: DEN Oct 13 07:12Z (AVIONICS-LRU on hand at DEN; 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-005-hydraulics-001",
-        "tail": "SIM-005",
-        "station": "LAX",
-        "start": "2026-10-13T10:15:00Z",
-        "end": "2026-10-13T15:15:00Z",
-        "technician_id": "LAX-T2",
-        "part_source": "ATL",
-        "window_hours": 8.6667,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: LAX, Oct 13 10:15Z to Oct 13 15:15Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 8.7 h for a 5 h job: 0 h extension. Finishes 202.0 h before the Oct 22 01:15Z deadline. 9 other feasible slot(s); best alternative: LAX Oct 14 10:30Z (HYD-PUMP shipped from ATL (+$600, ready in 12 h); 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-012-engine_1-001",
-        "tail": "SIM-012",
-        "station": "ORD",
-        "start": "2026-10-16T20:14:00Z",
-        "end": "2026-10-17T02:14:00Z",
-        "technician_id": "ORD-T1",
-        "part_source": null,
-        "window_hours": 8.1667,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: ORD, Oct 16 20:14Z to Oct 17 02:14Z. BORESCOPE-KIT on hand at ORD; technician ORD-T1 (engine) on shift. Ground window 8.2 h for a 6 h job: 0 h extension. Finishes 192.1 h before the Oct 25 02:19Z deadline. 3 other feasible slot(s); best alternative: JFK Oct 13 12:00Z (BORESCOPE-KIT shipped from DFW (+$800, ready in 24 h); 0.0 h extension)."
-      }
-    ],
-    "metrics": {
-      "downtime_h": 0.0,
-      "flights_affected": 0,
-      "logistics_cost_usd": 600.0,
-      "tech_utilization": 0.0108,
-      "hangar_utilization": 0.0142,
-      "schedule_changes": 0,
-      "tasks_total": 5,
-      "tasks_scheduled": 5,
-      "late_or_unscheduled": 0
+  "objective_value": 0.0,
+  "solve_seconds": 0.8,
+  "evidence": [
+   {
+    "kind": "health",
+    "ref": "SIM-017/engine_2",
+    "note": "RUL p10 18 cycles, anomaly 0.91"
+   },
+   {
+    "kind": "tool_call",
+    "ref": "TC-3",
+    "note": "solve_schedule(cpsat)"
+   }
+  ]
+ },
+ "after": {
+  "synthetic": true,
+  "id": "P-3",
+  "created": "2026-10-12T12:05:00Z",
+  "mode": "cpsat",
+  "feasible": true,
+  "infeasible_reasons": [],
+  "assignments": [
+   {
+    "task_id": "T-SIM-017-engine_2-001",
+    "tail": "SIM-017",
+    "station": "DFW",
+    "start": "2026-10-13T19:23:00Z",
+    "end": "2026-10-14T01:23:00Z",
+    "technician_id": "DFW-T2",
+    "part_source": null,
+    "window_hours": 11.12,
+    "extension_h": 0.0,
+    "reason": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT on hand (ready 20.0 h after now); 0 h of extension; finishes 70.6 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-004-brakes-001",
+    "tail": "SIM-004",
+    "station": "DEN",
+    "start": "2026-10-12T19:42:00Z",
+    "end": "2026-10-12T22:42:00Z",
+    "technician_id": "DEN-T1",
+    "part_source": null,
+    "window_hours": 10.8,
+    "extension_h": 0.0,
+    "reason": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on hand (in stock); 0 h of extension; finishes 61.3 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-011-hydraulics-001",
+    "tail": "SIM-011",
+    "station": "LAX",
+    "start": "2026-10-12T19:39:00Z",
+    "end": "2026-10-13T00:39:00Z",
+    "technician_id": "LAX-T2",
+    "part_source": null,
+    "window_hours": 10.85,
+    "extension_h": 0.0,
+    "reason": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP on hand (in stock); 0 h of extension; finishes 71.3 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-020-avionics-001",
+    "tail": "SIM-020",
+    "station": "SEA",
+    "start": "2026-10-12T19:50:00Z",
+    "end": "2026-10-12T21:50:00Z",
+    "technician_id": "SEA-T1",
+    "part_source": null,
+    "window_hours": 10.67,
+    "extension_h": 0.0,
+    "reason": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU on hand (in stock); 0 h of extension; finishes 38.2 h before the deadline."
+   },
+   {
+    "task_id": "T-SIM-008-landing_gear-001",
+    "tail": "SIM-008",
+    "station": "MIA",
+    "start": "2026-10-12T19:07:00Z",
+    "end": "2026-10-12T23:07:00Z",
+    "technician_id": "MIA-T1",
+    "part_source": null,
+    "window_hours": 11.38,
+    "extension_h": 0.0,
+    "reason": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; finishes 84.9 h before the deadline."
+   }
+  ],
+  "metrics": {
+   "downtime_h": 0.0,
+   "flights_affected": 0,
+   "logistics_cost_usd": 0.0,
+   "tech_utilization": 0.011,
+   "hangar_utilization": 0.012,
+   "schedule_changes": 1,
+   "tasks_total": 5,
+   "tasks_scheduled": 5,
+   "late_or_unscheduled": 0
+  },
+  "objective_value": 2.0,
+  "solve_seconds": 1.1,
+  "evidence": [
+   {
+    "kind": "health",
+    "ref": "SIM-017/engine_2",
+    "note": "RUL p10 18 cycles, anomaly 0.91"
+   },
+   {
+    "kind": "tool_call",
+    "ref": "TC-3",
+    "note": "solve_schedule(cpsat)"
+   }
+  ]
+ },
+ "diff": {
+  "moved": [
+   {
+    "task_id": "T-SIM-017-engine_2-001",
+    "from": {
+     "station": "DFW",
+     "start": "2026-10-12T20:30:00Z"
     },
-    "objective_value": 14.2808,
-    "solve_seconds": 0.3849,
-    "evidence": [
-      {
-        "kind": "plan",
-        "ref": "P-2",
-        "note": "CP-SAT: proven optimal"
-      }
-    ]
-  },
-  "after": {
-    "synthetic": true,
-    "id": "P-4",
-    "created": "2026-10-12T12:00:00Z",
-    "mode": "cpsat",
-    "feasible": true,
-    "infeasible_reasons": [],
-    "assignments": [
-      {
-        "task_id": "T-SIM-008-brakes-002",
-        "tail": "SIM-008",
-        "station": "DFW",
-        "start": "2026-10-12T17:16:00Z",
-        "end": "2026-10-12T18:46:00Z",
-        "technician_id": "DFW-T3",
-        "part_source": null,
-        "window_hours": 1.8333,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: DFW, Oct 12 17:16Z to Oct 12 18:46Z. No part needed; technician DFW-T3 (gear) on shift. Ground window 1.8 h for a 1.5 h job: 0 h extension. Finishes 65.2 h before the Oct 15 12:00Z deadline. 11 other feasible slot(s); best alternative: ORD Oct 12 21:11Z (no part needed; 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-021-avionics-001",
-        "tail": "SIM-021",
-        "station": "ATL",
-        "start": "2026-10-12T22:52:00Z",
-        "end": "2026-10-13T00:52:00Z",
-        "technician_id": "ATL-T2",
-        "part_source": null,
-        "window_hours": 2.4167,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: ATL, Oct 12 22:52Z to Oct 13 00:52Z. AVIONICS-LRU on hand at ATL; technician ATL-T2 (avionics) on shift. Ground window 2.4 h for a 2 h job: 0 h extension. Finishes 307.9 h before the Oct 25 20:45Z deadline. 19 other feasible slot(s); best alternative: DEN Oct 13 07:12Z (AVIONICS-LRU on hand at DEN; 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-005-hydraulics-001",
-        "tail": "SIM-005",
-        "station": "LAX",
-        "start": "2026-10-13T10:15:00Z",
-        "end": "2026-10-13T15:15:00Z",
-        "technician_id": "LAX-T2",
-        "part_source": "ATL",
-        "window_hours": 8.6667,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: LAX, Oct 13 10:15Z to Oct 13 15:15Z. HYD-PUMP shipped from ATL (+$600, ready in 12 h); technician LAX-T2 (hydraulics) on shift. Ground window 8.7 h for a 5 h job: 0 h extension. Finishes 202.0 h before the Oct 22 01:15Z deadline. 9 other feasible slot(s); best alternative: LAX Oct 14 10:30Z (HYD-PUMP shipped from ATL (+$600, ready in 12 h); 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-017-engine_2-001",
-        "tail": "SIM-017",
-        "station": "DFW",
-        "start": "2026-10-13T14:40:00Z",
-        "end": "2026-10-13T20:40:00Z",
-        "technician_id": "DFW-T1",
-        "part_source": null,
-        "window_hours": 8.1667,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: DFW, Oct 13 14:40Z to Oct 13 20:40Z. BORESCOPE-KIT at DFW available in 14 h; technician DFW-T1 (engine) on shift. Ground window 8.2 h for a 6 h job: 0 h extension. Finishes 80.0 h before the Oct 17 04:40Z deadline. 4 other feasible slot(s); best alternative: DFW Oct 15 11:20Z (BORESCOPE-KIT at DFW available in 14 h; 0.0 h extension)."
-      },
-      {
-        "task_id": "T-SIM-012-engine_1-001",
-        "tail": "SIM-012",
-        "station": "ORD",
-        "start": "2026-10-16T20:14:00Z",
-        "end": "2026-10-17T02:14:00Z",
-        "technician_id": "ORD-T1",
-        "part_source": null,
-        "window_hours": 8.1667,
-        "extension_h": 0.0,
-        "reason": "Lowest-cost feasible slot: ORD, Oct 16 20:14Z to Oct 17 02:14Z. BORESCOPE-KIT on hand at ORD; technician ORD-T1 (engine) on shift. Ground window 8.2 h for a 6 h job: 0 h extension. Finishes 192.1 h before the Oct 25 02:19Z deadline. 2 other feasible slot(s); best alternative: DEN Oct 14 17:09Z (BORESCOPE-KIT shipped from DFW (+$800, ready in 38 h); 0.0 h extension)."
-      }
-    ],
-    "metrics": {
-      "downtime_h": 0.0,
-      "flights_affected": 0,
-      "logistics_cost_usd": 600.0,
-      "tech_utilization": 0.0108,
-      "hangar_utilization": 0.0142,
-      "schedule_changes": 1,
-      "tasks_total": 5,
-      "tasks_scheduled": 5,
-      "late_or_unscheduled": 0
+    "to": {
+     "station": "DFW",
+     "start": "2026-10-13T19:23:00Z"
     },
-    "objective_value": 17.4892,
-    "solve_seconds": 0.0663,
-    "evidence": [
-      {
-        "kind": "plan",
-        "ref": "P-4",
-        "note": "CP-SAT: proven optimal"
-      },
-      {
-        "kind": "event",
-        "ref": "E-2",
-        "note": "DFW BORESCOPE-KIT: available in 14 h (was 0 h), 2 unit(s) held until then"
-      }
-    ]
-  },
-  "diff": {
-    "moved": [
-      {
-        "task_id": "T-SIM-017-engine_2-001",
-        "from": {
-          "station": "DFW",
-          "start": "2026-10-12T14:30:00+00:00"
-        },
-        "to": {
-          "station": "DFW",
-          "start": "2026-10-13T14:40:00+00:00"
-        },
-        "why": "BORESCOPE-KIT at DFW delayed 12 h. The previous slot (DFW Oct 12 14:30Z) is no longer feasible: T-SIM-017-engine_2-001: BORESCOPE-KIT arrives after the job starts. New slot: Lowest-cost feasible slot: DFW, Oct 13 14:40Z to Oct 13 20:40Z. BORESCOPE-KIT at DFW available in 14 h; technician DFW-T1 (engine) on shift. Ground window 8.2 h for a 6 h job: 0 h extension. Finishes 80.0 h before the Oct 17 04:40Z deadline. 4 other feasible slot(s); best alternative: DFW Oct 15 11:20Z (BORESCOPE-KIT at DFW available in 14 h; 0.0 h extension)."
-      }
-    ],
-    "added": [],
-    "dropped": []
-  },
-  "solve_seconds": 0.078
+    "why": "The DFW kit now arrives 20 h from now, after the first night window closes; next DFW night with the kit on hand, 0 h extension."
+   }
+  ],
+  "added": [],
+  "dropped": []
+ },
+ "solve_seconds": 1.1
 }

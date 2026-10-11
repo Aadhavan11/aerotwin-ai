@@ -1,1786 +1,493 @@
 [
-  {
-    "synthetic": true,
-    "iata": "ATL",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "ATL-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ATL-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+ {
+  "synthetic": true,
+  "iata": "ATL",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "ATL-T1",
+    "skills": [
+     "engine",
+     "gear"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 0,
-        "eta_hours": 18.0,
-        "ship_from": "DFW",
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": "DFW",
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": "DFW",
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": "DFW",
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "ATL-T2",
+    "skills": [
+     "hydraulics",
+     "avionics"
     ],
-    "lat": 33.64,
-    "lon": -84.43
-  },
-  {
-    "synthetic": true,
-    "iata": "DFW",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "DFW-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DFW-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 2,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 33.64,
+  "lon": -84.43
+ },
+ {
+  "synthetic": true,
+  "iata": "DFW",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "DFW-T1",
+    "skills": [
+     "gear",
+     "hydraulics"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "DFW-T2",
+    "skills": [
+     "engine",
+     "avionics"
     ],
-    "lat": 32.9,
-    "lon": -97.04
-  },
-  {
-    "synthetic": true,
-    "iata": "JFK",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "JFK-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "JFK-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "DFW-T3",
+    "skills": [
+     "engine"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 2,
+    "eta_hours": 8.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 32.9,
+  "lon": -97.04
+ },
+ {
+  "synthetic": true,
+  "iata": "ORD",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "ORD-T1",
+    "skills": [
+     "gear",
+     "engine"
     ],
-    "lat": 40.64,
-    "lon": -73.78
-  },
-  {
-    "synthetic": true,
-    "iata": "ORD",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "ORD-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "ORD-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "ORD-T2",
+    "skills": [
+     "hydraulics",
+     "avionics"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 2,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 41.98,
+  "lon": -87.9
+ },
+ {
+  "synthetic": true,
+  "iata": "DEN",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "DEN-T1",
+    "skills": [
+     "hydraulics",
+     "gear"
     ],
-    "lat": 41.98,
-    "lon": -87.9
-  },
-  {
-    "synthetic": true,
-    "iata": "LAX",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "LAX-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "LAX-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "DEN-T2",
+    "skills": [
+     "engine"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 39.86,
+  "lon": -104.67
+ },
+ {
+  "synthetic": true,
+  "iata": "LAX",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "LAX-T1",
+    "skills": [
+     "avionics",
+     "gear"
     ],
-    "lat": 33.94,
-    "lon": -118.41
-  },
-  {
-    "synthetic": true,
-    "iata": "SFO",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "SFO-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "SFO-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "LAX-T2",
+    "skills": [
+     "engine",
+     "hydraulics"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 2,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 33.94,
+  "lon": -118.41
+ },
+ {
+  "synthetic": true,
+  "iata": "JFK",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "JFK-T1",
+    "skills": [
+     "engine",
+     "gear"
     ],
-    "lat": 37.62,
-    "lon": -122.38
-  },
-  {
-    "synthetic": true,
-    "iata": "DEN",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "DEN-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "DEN-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 40.64,
+  "lon": -73.78
+ },
+ {
+  "synthetic": true,
+  "iata": "MIA",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "MIA-T1",
+    "skills": [
+     "gear",
+     "hydraulics"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 25.79,
+  "lon": -80.29
+ },
+ {
+  "synthetic": true,
+  "iata": "SEA",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "SEA-T1",
+    "skills": [
+     "avionics",
+     "gear"
     ],
-    "lat": 39.86,
-    "lon": -104.67
-  },
-  {
-    "synthetic": true,
-    "iata": "MIA",
-    "hangar_slots": 2,
-    "technicians": [
-      {
-        "id": "MIA-engine-0",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-gear-0",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-hydraulics-0",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-avionics-0",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-12T12:00:00Z",
-        "shift_end": "2026-10-13T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-engine-1",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-gear-1",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-hydraulics-1",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-avionics-1",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-13T12:00:00Z",
-        "shift_end": "2026-10-14T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-engine-2",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-gear-2",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-hydraulics-2",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-avionics-2",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-14T12:00:00Z",
-        "shift_end": "2026-10-15T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-engine-3",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-gear-3",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-hydraulics-3",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-avionics-3",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-15T12:00:00Z",
-        "shift_end": "2026-10-16T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-engine-4",
-        "skills": [
-          "engine"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-gear-4",
-        "skills": [
-          "gear"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-hydraulics-4",
-        "skills": [
-          "hydraulics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      },
-      {
-        "id": "MIA-avionics-4",
-        "skills": [
-          "avionics"
-        ],
-        "shift_start": "2026-10-16T12:00:00Z",
-        "shift_end": "2026-10-17T12:00:00Z",
-        "available": true
-      }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "SEA-T2",
+    "skills": [
+     "engine"
     ],
-    "parts": [
-      {
-        "part": "BORESCOPE-KIT",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "BRAKE-ASSY",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "HYD-PUMP",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      },
-      {
-        "part": "AVIONICS-LRU",
-        "qty": 2,
-        "eta_hours": 0.0,
-        "ship_from": null,
-        "ship_hours": 12.0,
-        "ship_cost_usd": 800.0
-      }
-    ],
-    "lat": 25.8,
-    "lon": -80.29
-  }
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 47.45,
+  "lon": -122.31
+ }
 ]

@@ -10,6 +10,15 @@ id_*
 .DS_Store
 __pycache__/
 node_modules/
-.venv/
+
+# build output and local data
 data/
+web/dist/
+*.db
+*.db-wal
+*.db-shm
+.venv/
 .pytest_cache/
+
+# keep the template, ignore real env files
+!.env.example

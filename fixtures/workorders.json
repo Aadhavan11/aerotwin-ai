@@ -1,0 +1,137 @@
+[
+ {
+  "synthetic": true,
+  "id": "WO-1",
+  "tail": "SIM-017",
+  "task_id": "T-SIM-017-engine_2-001",
+  "station": "DFW",
+  "start": "2026-10-12T20:30:00Z",
+  "end": "2026-10-13T02:30:00Z",
+  "description": "Engine 2 borescope inspection (SIM-017) at DFW",
+  "status": "pending_approval",
+  "plan_id": "P-2",
+  "evidence": [
+   {
+    "kind": "plan",
+    "ref": "P-2",
+    "note": "Earliest window at DFW that fits 6 h with a engine technician and BORESCOPE-KIT "
+   },
+   {
+    "kind": "kb",
+    "ref": "TC-ENG-001",
+    "note": "synthetic task card"
+   }
+  ],
+  "decided_by": null,
+  "decided_at": null,
+  "note": ""
+ },
+ {
+  "synthetic": true,
+  "id": "WO-2",
+  "tail": "SIM-004",
+  "task_id": "T-SIM-004-brakes-001",
+  "station": "DEN",
+  "start": "2026-10-12T19:42:00Z",
+  "end": "2026-10-12T22:42:00Z",
+  "description": "Brake assembly replacement (SIM-004) at DEN",
+  "status": "pending_approval",
+  "plan_id": "P-2",
+  "evidence": [
+   {
+    "kind": "plan",
+    "ref": "P-2",
+    "note": "Earliest window at DEN that fits 3 h with a gear technician and BRAKE-ASSY on ha"
+   },
+   {
+    "kind": "kb",
+    "ref": "TC-GEN-001",
+    "note": "synthetic task card"
+   }
+  ],
+  "decided_by": null,
+  "decided_at": null,
+  "note": ""
+ },
+ {
+  "synthetic": true,
+  "id": "WO-3",
+  "tail": "SIM-011",
+  "task_id": "T-SIM-011-hydraulics-001",
+  "station": "LAX",
+  "start": "2026-10-12T19:39:00Z",
+  "end": "2026-10-13T00:39:00Z",
+  "description": "Hydraulic pump replacement (SIM-011) at LAX",
+  "status": "pending_approval",
+  "plan_id": "P-2",
+  "evidence": [
+   {
+    "kind": "plan",
+    "ref": "P-2",
+    "note": "Earliest window at LAX that fits 5 h with a hydraulics technician and HYD-PUMP o"
+   },
+   {
+    "kind": "kb",
+    "ref": "TC-GEN-001",
+    "note": "synthetic task card"
+   }
+  ],
+  "decided_by": null,
+  "decided_at": null,
+  "note": ""
+ },
+ {
+  "synthetic": true,
+  "id": "WO-4",
+  "tail": "SIM-020",
+  "task_id": "T-SIM-020-avionics-001",
+  "station": "SEA",
+  "start": "2026-10-12T19:50:00Z",
+  "end": "2026-10-12T21:50:00Z",
+  "description": "Avionics LRU swap (SIM-020) at SEA",
+  "status": "pending_approval",
+  "plan_id": "P-2",
+  "evidence": [
+   {
+    "kind": "plan",
+    "ref": "P-2",
+    "note": "Earliest window at SEA that fits 2 h with a avionics technician and AVIONICS-LRU"
+   },
+   {
+    "kind": "kb",
+    "ref": "TC-GEN-001",
+    "note": "synthetic task card"
+   }
+  ],
+  "decided_by": null,
+  "decided_at": null,
+  "note": ""
+ },
+ {
+  "synthetic": true,
+  "id": "WO-5",
+  "tail": "SIM-008",
+  "task_id": "T-SIM-008-landing_gear-001",
+  "station": "MIA",
+  "start": "2026-10-12T19:07:00Z",
+  "end": "2026-10-12T23:07:00Z",
+  "description": "Landing gear actuator check (SIM-008) at MIA",
+  "status": "pending_approval",
+  "plan_id": "P-2",
+  "evidence": [
+   {
+    "kind": "plan",
+    "ref": "P-2",
+    "note": "Earliest window at MIA that fits 4 h with a gear technician; 0 h of extension; f"
+   },
+   {
+    "kind": "kb",
+    "ref": "TC-GEN-001",
+    "note": "synthetic task card"
+   }
+  ],
+  "decided_by": null,
+  "decided_at": null,
+  "note": ""
+ }
+]

@@ -276,3 +276,54 @@ Ports: API `8000`, web `5173`. CORS allows `http://localhost:5173`.
 - [ ] Every recommendation has non-empty `evidence`
 - [ ] Nothing says "approved" unless a human clicked Approve (audit log has the entry)
 - [ ] SIMULATED badge visible; no real tail numbers; no keys in the repo (`git log -p | grep -i key` is empty)
+
+## 13. Plugging your module into the running skeleton (it exists now, built 2026-10-10)
+
+`app/main.py` already serves **every endpoint in `CONTRACTS.md` section 4** from mock data (fixtures + a small in-memory state in `app/api/mockstate.py`), and the web app works against it.
+Your job is to replace the mock for your group with the real thing, without changing a single path or model.
+
+**How to switch a group from mock to real**
+1. Create `app/<group>/router.py` that defines `router = APIRouter()` with exactly the paths below, using `response_model=` from `app.contracts.models` and request bodies from `app.contracts.requests`.
+2. Restart the API and open `http://localhost:8000/health`: `modules.<group>` must say `"real"`. If your module fails to import it says `"mock (import error)"` and `errors.<group>` shows the exception, so a broken module is visible, not silently mocked.
+3. Run `make demo-check`. It prints which groups are still mock ("a pass proves the contract, not the module").
+
+| Group | File you create | Endpoints it must serve (all models/requests are already defined) |
+|---|---|---|
+| `twin` (Aashirth) | `app/twin/router.py` | `GET /aircraft/{tail}` -> `TwinView`; `GET /aircraft/{tail}/telemetry?component=&last=` -> `list[TelemetryRow]` |
+| `solver` (Pardhu) | `app/solver/router.py` | `GET /plan` -> `{current, baseline, compare}`; `POST /plan/solve` (`SolveRequest`) -> `Plan` |
+| `whatif` (Pardhu) | `app/whatif/router.py` | `POST /plan/replan` (`ReplanRequest`) -> `ReplanResult`; `POST /whatif/compare` (`CompareRequest`) -> `Comparison` |
+| `sim` (Aadhavan) | `app/sim/router.py` + `app/sim/fleet.py: generate_fleet(seed)` | `POST /sim/step` (`StepRequest`); `POST /scenario/inject` (`ScenarioEvent`); `POST /scenario/reset` (`ResetRequest`) |
+| `agents` (Pardhu) | `app/agents/router.py` | `POST /agents/run` (`AgentRunRequest`) -> `AgentRun` (returns immediately, `status: running`); `GET /agents/runs/{id}` -> `AgentRun` |
+| `copilot` (Aashirth) | `app/copilot/router.py` | `POST /copilot/chat` (`ChatRequest`) -> `ChatResponse`; `GET /workorders`; `POST /workorders/{id}/decision` (`DecisionRequest`); `GET /audit` |
+
+Minimal template (copy, rename, fill in):
+
+```python
+from fastapi import APIRouter, HTTPException
+from app import db                                   # db.put/get/all_, db.kv_get/kv_set, db.sim_now(), db.audit(...)
+from app.contracts.models import TwinView
+
+router = APIRouter(tags=["twin"])
+
+@router.get("/aircraft/{tail}", response_model=TwinView)
+def get_aircraft(tail: str):
+    twin = ...                                       # build a TwinView from the database
+    if twin is None:
+        raise HTTPException(404, f"unknown tail {tail}")
+    return twin
+```
+
+**What the skeleton already gives you**
+- `app/contracts/models.py` (all models) and `app/contracts/requests.py` (request bodies). Import them; never redefine.
+- `app/db.py`: tables from `CONTRACTS.md` section 3, JSON helpers, the key/value table, **`db.sim_now()` (the only clock; never `datetime.now()`)**, `db.audit(actor, action, ref, detail)`.
+- `scripts/reset_db.py`: rebuilds the database. If `app.sim.fleet.generate_fleet(seed)` exists it is used; otherwise the DB is seeded from `fixtures/`.
+- `fixtures/*.json` (regenerate with `make fixtures`): shape examples for every model, plus the golden scenario. **Numbers in fixtures are made up, not results.**
+- `MOCK=1` forces all groups to mock; `MOCK_TWIN=1`, `MOCK_SOLVER=1`, `MOCK_WHATIF=1`, `MOCK_SIM=1`, `MOCK_AGENTS=1`, `MOCK_COPILOT=1` force one group (use this to keep working while a neighbor's module is broken).
+
+**Things that will bite you (read once)**
+- **Mixed real/mock.** A mock group keeps its own in-memory state and does not read your database rows. Example: with a real `solver` but a mock `whatif`, `POST /plan/replan` changes the mock plan, not yours. Build `solver` and `whatif` together, or tell the group.
+- **`/fleet`, `/legs`, `/stations`, `/metrics`** read the database only when the **real simulator** (`sim`) is running and the DB is seeded; otherwise they follow the mock state, so injected events still show up on the Fleet screen. `/health.data_source` says which.
+- `GET /agents/runs/{id}` must return the steps appended **so far** while `status` is `running`; the UI polls it every second.
+- Use `response_model=`: the web app's TypeScript types are generated from the OpenAPI schema (`cd web && npm run types`, with the API running). A wrong or missing model breaks the UI types.
+- Never print or log `ANTHROPIC_API_KEY`. Stop test servers by PID or port, never with `pkill python`.
+
