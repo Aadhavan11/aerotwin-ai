@@ -1,6 +1,6 @@
 # Frontend plan: AeroTwin AI interface and demo-video mode
 
-Status: proposal, not built. Extends `work/04-AADHAVAN-frontend-and-story.md` on look and feel only; screens, endpoints and data shapes still come from `CONTRACTS.md`, and who builds what comes from `work/OWNERSHIP.md`.
+Status: **partly built** on branch `aashirth/frontend-rework`. Built: the visual system (section 3), the shell, Fleet, Aircraft twin (a type-specific 3D model, parts list and engine sensor section instead of the 2D schematic planned in section 4), Planning, Scenarios and the copilot drawer, against the live API. **Not built:** the recording modes in section 5 (`?stage`, `?director`, `?replay`) and the Impact frame. Where this file and the code disagree, the code is current. Extends `work/04-AADHAVAN-frontend-and-story.md` on look and feel only; screens, endpoints and data shapes still come from `CONTRACTS.md`, and who builds what comes from `work/OWNERSHIP.md`.
 
 **Who this is for.** It is a shared design system and recording-mode spec so the screens built by different people look like one product.
 
