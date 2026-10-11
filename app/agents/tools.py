@@ -110,17 +110,17 @@ def get_component_health(component_id: str) -> dict:
 def get_sensor_trend(component_id: str, last: int = 30) -> dict:
     """Recent telemetry from the twin. If the twin is not available the tool says so instead of inventing a trend."""
     try:
-        from app.twin.state import get_twin  # type: ignore[import-not-found]
+        from app.twin.state import get_telemetry  # type: ignore[import-not-found]
     except ImportError:
         return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="twin not available"),
                     [f"sensor trend for {component_id}: the digital twin is not available yet"])
     tail = component_id.split("/", 1)[0]
-    comp = next((c for c in get_twin(tail).components if c.component_id == component_id), None)
-    if comp is None:
-        raise ToolError(f"unknown component {component_id!r}")
-    rows = [h.model_dump(mode="json") for h in comp.history[-last:]]
-    return _out({"history": rows, "sensors_last": comp.sensors_last},
-                EvidenceRef(kind="health", ref=component_id, note=f"last {len(rows)} history points"))
+    rows = get_telemetry(tail, component_id, last)
+    if not rows:     # the twin exists but holds no telemetry for this component: say so, never invent a trend
+        return _out([], EvidenceRef(kind="tool_call", ref="get_sensor_trend", note="no telemetry"),
+                    [f"sensor trend for {component_id}: the digital twin holds no telemetry for it yet"])
+    data = [{"cycle": r.cycle, "ts": r.ts, "values": r.values} for r in rows]
+    return _out(data, EvidenceRef(kind="health", ref=component_id, note=f"last {len(data)} telemetry rows"))
 
 
 def get_maintenance_history(tail: str) -> dict:

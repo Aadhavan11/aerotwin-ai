@@ -30,7 +30,14 @@ def _snapshot() -> tuple[FleetState, str]:
     except ImportError:
         log.warning("app.twin.state.snapshot not available: using the golden stand-in state")
         return golden_state(), "golden stand-in (twin snapshot not available)"
-    return snapshot(), "twin.snapshot"
+    state = snapshot()
+    try:
+        from app.twin.state import list_aircraft  # type: ignore[import-not-found]
+        if not list_aircraft():    # the twin is empty: its snapshot() hands back OUR golden stand-in; label it as such
+            return state, "golden stand-in (twin is empty)"
+    except ImportError:
+        pass
+    return state, "twin.snapshot"
 
 
 def get_state() -> tuple[FleetState, str]:

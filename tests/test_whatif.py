@@ -17,7 +17,7 @@ from app.whatif.events import EventError, apply_event, apply_event_to_state
 from app.whatif.replan import replan
 from app.whatif.router import router as whatif_router
 from app.whatif.simulate import affected_legs, simulate, simulate_detailed
-from solver_helpers import T0, assert_no_fallback, engine_task, hard_violations, hrs, mini_state, simple_station
+from tests.solver_helpers import T0, assert_no_fallback, engine_task, hard_violations, hrs, mini_state, simple_station
 
 SIM17_TASK = "T-SIM-017-engine_2-001"
 

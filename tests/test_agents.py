@@ -100,7 +100,7 @@ def test_list_at_risk_is_sorted_by_conservative_rul_and_finds_the_golden_engine(
 
 def test_sensor_trend_says_so_when_there_is_no_twin_instead_of_inventing_one():
     res = call_tool("get_sensor_trend", {"component_id": "SIM-017/engine_2"})
-    assert res["data"] == [] and "twin is not available" in res["missing_info"][0]
+    assert res["data"] == [] and "twin" in res["missing_info"][0]
 
 
 def test_check_parts_and_shortage_report_match_the_golden_facts():
@@ -195,7 +195,7 @@ def test_llm_mode_falls_back_to_scripted_and_says_so():
 
 
 def test_missing_twin_is_reported_in_missing_info_not_guessed(golden_run):
-    assert any("twin is not available" in m for m in golden_run.missing_info)
+    assert any("twin" in m for m in golden_run.missing_info)
 
 
 def test_infeasible_world_is_explained_and_only_scheduled_jobs_get_work_orders(monkeypatch):
