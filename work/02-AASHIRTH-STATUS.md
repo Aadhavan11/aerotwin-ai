@@ -15,8 +15,8 @@ Details: `docs/HEALTH.md` (model, twin), `docs/COPILOT.md` (copilot, LLM mode, k
 
 ## Not verified
 
-- [ ] **The live Anthropic API.** Both LLM paths are tested against a fake client only. Set `ANTHROPIC_API_KEY`, ask one question and run one agent run with `mode=llm`; the log says why if it fell back.
-- [ ] Numbers on the real fleet (everything above used the scheduler's stand-in fleet or the simulator's test runs). Re-run `python scripts/plan_demo.py` and the demo on the integrated app before anything goes on a slide.
+- [ ] **The live Anthropic API.** Both LLM paths are tested against a fake client only. Put your own `ANTHROPIC_API_KEY` in `.env`, restart the API and run `make check-llm`: it asks one question and runs the agents once in LLM mode, and says whether each used the model or fell back (and why). `GET /copilot/status` and the Copilot drawer show the mode. Nobody can do this step for you: the key must not go in chat or a commit.
+- [x] Numbers on the real fleet: `make demo-check` passes 16/16 on the integrated app with the NASA data (re-run it after every merge, and read the numbers off the screen before they go on a slide).
 
 ## Waiting on others
 

@@ -68,6 +68,7 @@ The guide has **no AI-disclosure rule**: AI tools are allowed. **House rule (Sha
 
 - [ ] Everyone: confirm you are registered at hacklanta.dev and in the Discord (the guide marks the Discord "REQUIRED").
 - [x] Demo run on a laptop with the NASA files (`make data`); `make demo-check` passes 16/16 (re-run after every merge).
+- [ ] **LLM mode check** (optional, Shamit or Aashirth): own `ANTHROPIC_API_KEY` in `.env`, restart the API, `make check-llm`. Skip if you demo in scripted mode.
 - [ ] **Backup video recorded** and uploaded as PUBLIC (Aadhavan, by 7:30 AM).
 - [ ] **Devpost text** written from this file's list (Aadhavan; draft help available).
 - [x] README top section: what it is and how to run it.
