@@ -42,7 +42,7 @@ returns a valid `HealthScore` for a normal window, a late-life window (anomaly t
 **Doc asks for:** a virtual representation of each aircraft and its components; 3D visualization; clickable components; health indicators and
 trends; hours/cycles/history; predicted future condition; a timeline; updating as telemetry and events arrive.
 
-**We build** (backend owner: **Aashirth** `app/twin/`; UI owner: **Aadhavan** `web/`)
+**We build** (owners: see `work/OWNERSHIP.md` pieces 13 and 15; modules `app/twin/`, `web/`)
 - **State engine:** per component: cycles, hours, health, anomaly, RUL quantiles, data quality, last maintenance, status, history list,
   `predicted` curve (health falling to ~0 at RUL p50 with a band from p10 to p90), and a per-aircraft timeline of events
   (flights, anomalies, injected faults, maintenance, plan changes).
@@ -91,7 +91,7 @@ exceed hangar slots at once; part quantities are respected; an impossible case (
 **Doc asks for:** Health, Scheduling, Logistics, Operations and Coordinator agents using structured tools, producing one explained plan and
 proposed work orders for human approval.
 
-**We build** (owner: **Aadhavan**; module `app/agents/`)
+**We build** (owners: see `work/OWNERSHIP.md` pieces 11 and 12; module `app/agents/`)
 - A **tool registry** (`CONTRACTS.md` section 6) wrapping the real module functions, each returning data plus an evidence reference.
 - **Five agents** = (system prompt, allowed tools). The runner executes them in order Health -> Scheduling -> Logistics -> Operations ->
   Coordinator; each appends `AgentStep`s (thought, tool_call, tool_result, summary) to the database as it goes.
@@ -131,7 +131,7 @@ explains why not; a closed hangar is never used; `compare` returns >= 4 scenario
 **Doc asks for:** a conversational assistant answering the six example questions, explaining with structured data and approved documentation,
 identifying missing information, generating auditable maintenance proposals.
 
-**We build** (backend owner: **Aadhavan** `app/copilot/`; UI owner: **Shamit**)
+**We build** (owners: see `work/OWNERSHIP.md` pieces 7 and 12; module `app/copilot/`)
 - `POST /copilot/chat`: LLM with the tool registry (read tools + `solve_schedule` + `replan_with_event` + `draft_work_orders` + `search_kb`).
   Response = `answer`, `evidence[]`, `missing_info[]`, `proposed_work_orders[]`.
 - **Approved documentation** = a small **synthetic knowledge base** (`copilot/kb/*.yaml`, ~10 task cards: title, ATA-style chapter, duration, skill,

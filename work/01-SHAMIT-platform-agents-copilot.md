@@ -1,7 +1,6 @@
 # Work package 1: Shamit. Platform, integration, agents (3.4) and copilot backend (3.6)
 
-> **This file is the spec for the platform and simulator. Under the new split Shamit builds sections A (spine) and the screens in `work/04` (shell, Fleet Overview, Planning, Lab, Copilot/Agent Activity/approvals). Sections C, D, E (agents, LLM mode, copilot) are now Aadhavan's; section B is split: fleet generator B.1-B.3 -> Pardhu, telemetry/step/scenarios B.4-B.7 -> Aashirth.**
-> Details: [`OWNERSHIP.md`](OWNERSHIP.md).
+> **Owners changed after this file was written. This file is a SPEC; which sections are yours and which moved to someone else is in [`OWNERSHIP.md`](OWNERSHIP.md), which wins.** The spec text below is unchanged.
 
 You are the **integrator**: you own the spine everyone plugs into, the agent workflow that calls everyone's code, and the final demo build.
 Your top rule: **the other three must never wait on you after 9:15 PM.** Publish stubs early; make real things later.
