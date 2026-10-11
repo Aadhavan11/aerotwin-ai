@@ -74,10 +74,14 @@ export function usePoll<T>(path: string | null, ms: number) {
   useEffect(() => {
     active.current.alive = true;
     reload();
+    // Slow down (not stop) when the page reports itself hidden: embedded views and some screen
+    // recorders report hidden while visible, and a frozen dashboard is worse than a few extra polls.
+    let tick = 0;
     const id =
       ms > 0
         ? setInterval(() => {
-            if (!document.hidden) reload();
+            tick++;
+            if (!document.hidden || tick % 4 === 0) reload();
           }, ms)
         : undefined;
     return () => {

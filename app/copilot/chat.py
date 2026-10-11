@@ -147,7 +147,14 @@ def scripted(message: str, box: Toolbox) -> tuple[str, list[dict], list]:
         reason = sa["scheduled"]["reason"] if sa["scheduled"] and order == "a_first" else ""
         extra = f" Planner's reason for {a}: {reason}" if reason else ""
         wo = call("draft_work_orders", tails=[a]) if order == "a_first" else None
-        tail = f" Drafted {len(wo['work_orders'])} work order(s) for {a}, pending your approval." if wo and wo["work_orders"] else ""
+        tail = ""
+        if wo and wo["work_orders"]:
+            pending = [w["id"] for w in wo["work_orders"] if w["status"] == "pending_approval"]
+            done = [f"{w['id']} ({w['status']})" for w in wo["work_orders"] if w["status"] != "pending_approval"]
+            if pending:
+                tail += f" Work order {', '.join(pending)} for {a} is waiting for your approval."
+            if done:
+                tail += f" Already decided: {', '.join(done)}."
         return " ".join(parts) + ". " + verdict + why + extra + tail, ev, calls
 
     if intent == "windows":

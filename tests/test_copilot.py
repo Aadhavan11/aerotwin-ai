@@ -526,3 +526,19 @@ def test_metrics_block_has_n_test():
     from app.ml import health
 
     assert health.ml_metrics_block()["n_test"] == 100
+
+
+def test_a_plan_that_moves_an_approved_task_is_flagged_for_review_not_silently_followed():
+    w = make_world()
+    wo = workorders.draft_from_plan(w.current)[0][0]
+    workorders.decide(wo.id, "approve", "Aashrith")
+    moved = w.current.model_copy(update={"id": "P-9", "assignments": [
+        a.model_copy(update={"start": a.start + timedelta(hours=24), "end": a.end + timedelta(hours=24)})
+        for a in w.current.assignments]})
+    out, notes = workorders.draft_from_plan(moved)
+    assert out[0].id == wo.id and out[0].status == "approved"          # never moved silently
+    assert any("a person should review it" in n for n in notes)
+    reviews = [a for a in audit.list_entries() if a.action == "work_order_review_needed"]
+    assert [r.ref for r in reviews] == [wo.id]
+    workorders.draft_from_plan(moved)                                   # asking again does not spam the log
+    assert len([a for a in audit.list_entries() if a.action == "work_order_review_needed"]) == 1

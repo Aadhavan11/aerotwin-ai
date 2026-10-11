@@ -195,16 +195,10 @@ export default function Lab() {
 
   return (
     <div className="space-y-4">
-      <div className="page-heading">
+      <div className="page-head">
         <div>
-          <div className="eyebrow">
-            SCENARIO ENGINE / CONTROLLED DISRUPTIONS
-          </div>
-          <h1>Stress the system. See the response.</h1>
-          <p>
-            Inject a fault, disrupt resources, and inspect how maintenance
-            adapts.
-          </p>
+          <h1>Scenarios</h1>
+          <p>Inject a fault or take a resource away, then compare the plan before and after. Every change here is simulated.</p>
         </div>
       </div>
       <ErrorBox error={err} />
@@ -267,7 +261,7 @@ export default function Lab() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase text-slate-500">
+              <thead className="text-xs text-slate-500">
                 <tr>
                   <th className="py-1.5">Scenario</th>
                   <th>Feasible</th>
@@ -338,7 +332,7 @@ function ReplanView({ r }: { r: ReplanResult }) {
         </span>
       </div>
       <table className="w-full max-w-lg text-left">
-        <thead className="text-xs uppercase text-slate-500">
+        <thead className="text-xs text-slate-500">
           <tr>
             <th className="py-1">Metric</th>
             <th className="text-right">Before</th>
@@ -358,7 +352,7 @@ function ReplanView({ r }: { r: ReplanResult }) {
         </tbody>
       </table>
       <div>
-        <div className="mb-1 text-xs font-semibold uppercase text-slate-500">
+        <div className="mb-1 text-xs font-semibold text-slate-500">
           What changed
         </div>
         {r.diff.moved.length + r.diff.added.length + r.diff.dropped.length ===

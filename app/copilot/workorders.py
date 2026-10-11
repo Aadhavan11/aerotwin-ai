@@ -166,8 +166,22 @@ def draft_from_plan(plan: Plan, *, actor: str = "agent:coordinator", tails: Opti
             same_task = [w for w in existing if w.task_id == a.task_id]
             approved = [w for w in same_task if w.status == "approved"]
             if approved and not any(a.start < w.start for w in approved):
-                out.append(approved[0])
-                notes.append(f"{approved[0].id} for {a.task_id} is already approved and not later than plan {plan.id}; kept")
+                keep = approved[0]
+                out.append(keep)
+                if a.start > keep.start or a.station != keep.station:
+                    # The plan has moved this task away from what a person approved. Never move an approval
+                    # silently: keep it, say so, and leave the decision to a person.
+                    notes.append(
+                        f"{keep.id} for {a.task_id} is already approved for {keep.station} {_iso(keep.start)}, but plan {plan.id} "
+                        f"now places the task at {a.station} {_iso(a.start)}. The approved slot may no longer be feasible; "
+                        f"a person should review it. Kept as approved.")
+                    marker = f"plan {plan.id}"
+                    if not any(e.action == "work_order_review_needed" and e.ref == keep.id and marker in e.detail
+                               for e in audit.list_entries()):
+                        audit.record("system", "work_order_review_needed", keep.id,
+                                     f"{marker} places {a.task_id} at {a.station} {_iso(a.start)}; approved for {keep.station} {_iso(keep.start)}")
+                else:
+                    notes.append(f"{keep.id} for {a.task_id} is already approved and matches plan {plan.id}; kept")
                 continue
             for w in same_task:
                 if w.status == "pending_approval" and w.plan_id != plan.id:

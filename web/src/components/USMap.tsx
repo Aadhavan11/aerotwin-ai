@@ -129,78 +129,17 @@ export default function USMap({
   ];
   const path = (a: Station, b: Station) =>
     `M${px(a.lon)},${py(a.lat)} Q${(px(a.lon) + px(b.lon)) / 2},${Math.min(py(a.lat), py(b.lat)) - Math.abs(px(a.lon) - px(b.lon)) * 0.15} ${px(b.lon)},${py(b.lat)}`;
+  const STATUS_FILL: Record<string, string> = { ok: "#2f7a4f", watch: "#a8650c", alert: "#b3261e", in_maintenance: "#2f5d8a", aog: "#16191d" };
+  // A small top-view aircraft glyph, nose towards +x.
+  const glyph = "M7 0 L3 -1 L1 -6 L-1 -6 L0 -1 L-5 -1 L-6.5 -3 L-7.5 -3 L-6.5 0 L-7.5 3 L-6.5 3 L-5 1 L0 1 L-1 6 L1 6 L3 1 Z";
   return (
-    <div className="fleet-network">
-      <div className="network-overlay">
-        <strong>CONTINENTAL OPERATIONS NETWORK</strong>SCHEMATIC PROJECTION /
-        SCHEDULED ROTATIONS
-      </div>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        aria-label="Simulated aircraft locations and scheduled routes"
-      >
-        <defs>
-          <pattern
-            id="map-grid"
-            width="40"
-            height="40"
-            patternUnits="userSpaceOnUse"
-          >
-            <path
-              d="M40 0H0V40"
-              fill="none"
-              stroke="#173142"
-              strokeWidth=".7"
-            />
-          </pattern>
-          <radialGradient id="map-glow">
-            <stop offset="0" stopColor="#1b5866" stopOpacity=".22" />
-            <stop offset="1" stopColor="#0a1825" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width={W} height={H} fill="url(#map-grid)" />
-        <ellipse cx="550" cy="320" rx="430" ry="260" fill="url(#map-glow)" />
-        <polygon
-          points={OUTLINE.map(([lo, la]) => `${px(lo)},${py(la)}`).join(" ")}
-          fill="#102d3d"
-          stroke="#2e657c"
-          strokeWidth="1.5"
-        />
-        {[-120, -110, -100, -90, -80, -70].map((lon) => (
-          <g key={lon}>
-            <line
-              x1={px(lon)}
-              x2={px(lon)}
-              y1="40"
-              y2={H - 25}
-              stroke="#193b4e"
-              strokeDasharray="2 6"
-            />
-            <text
-              x={px(lon) + 4}
-              y={H - 35}
-              fill="#345b71"
-              fontSize="8"
-              fontFamily="monospace"
-            >
-              {Math.abs(lon)}°W
-            </text>
-          </g>
-        ))}
+    <div className="fleet-map">
+      <svg viewBox={`0 0 ${W} ${H}`} aria-label="Simulated aircraft locations and scheduled routes">
+        <polygon points={OUTLINE.map(([lo, la]) => `${px(lo)},${py(la)}`).join(" ")} fill="#f2f2ef" stroke="#c9c9c4" strokeWidth="1.2" />
         {routes.map((l) => {
           const a = station(l.dep),
             b = station(l.arr);
-          return a && b ? (
-            <path
-              key={l.id}
-              d={path(a, b)}
-              fill="none"
-              stroke="#40829a"
-              strokeWidth="1.2"
-              opacity=".6"
-              className="network-flow"
-            />
-          ) : null;
+          return a && b ? <path key={l.id} d={path(a, b)} fill="none" stroke="#b9bdc2" strokeWidth="1" /> : null;
         })}
         {stations.map((s) => {
           const x = px(s.lon),
@@ -209,55 +148,19 @@ export default function USMap({
             closed = s.hangar_slots === 0;
           return (
             <g key={s.iata}>
-              <circle
-                cx={x}
-                cy={y}
-                r="34"
-                fill="none"
-                stroke="#235169"
-                strokeWidth=".7"
-              />
-              <circle
-                cx={x}
-                cy={y}
-                r="12"
-                fill="#0d293a"
-                stroke={closed ? "#fb7185" : "#64d8df"}
-                strokeWidth="1.5"
-              />
-              <circle
-                cx={x}
-                cy={y}
-                r="3"
-                fill={closed ? "#fb7185" : "#8fe7e3"}
-              />
-              <text
-                x={x + 38}
-                y={y + 1}
-                fontSize="13"
-                fontWeight="600"
-                fill="#b2deea"
-                fontFamily="monospace"
-              >
+              <rect x={x - 4} y={y - 4} width={8} height={8} fill={closed ? "#b3261e" : "#16191d"} />
+              <text x={x + 10} y={y - 6} fontSize="14" fontWeight="600" fill="#16191d" fontFamily="var(--font-mono)">
                 {s.iata}
               </text>
-              <text
-                x={x + 38}
-                y={y + 15}
-                fontSize="8"
-                fill="#638fa6"
-                fontFamily="monospace"
-              >
-                {here.length} AC / {s.hangar_slots} BAY
+              <text x={x + 10} y={y + 9} fontSize="11" fill="#6b717a">
+                {here.length} on ground · {closed ? "hangar closed" : `${s.hangar_slots} bay${s.hangar_slots === 1 ? "" : "s"}`}
               </text>
-              <title>{`${s.iata}: ${here.length} aircraft, ${s.hangar_slots} hangar slots`}</title>
+              <title>{`${s.iata}: ${here.length} aircraft on the ground, ${s.hangar_slots} hangar slots`}</title>
               {here.map((a, i) => {
-                const angle =
-                    (i / Math.max(here.length, 1)) * Math.PI * 2 - Math.PI / 2,
-                  r = 24 + Math.floor(i / 8) * 9,
-                  ax = x + Math.cos(angle) * r,
-                  ay = y + Math.sin(angle) * r,
-                  color = STATUS_STYLE[a.status]?.dot ?? "#8ca7b8";
+                const col = i % 6,
+                  row = Math.floor(i / 6),
+                  ax = x - 4 + col * 9,
+                  ay = y + 20 + row * 9;
                 return (
                   <g
                     key={a.tail}
@@ -271,28 +174,11 @@ export default function USMap({
                         nav(`/aircraft/${a.tail}`);
                       }
                     }}
-                    className="cursor-pointer"
+                    style={{ cursor: "pointer" }}
                   >
-                    <circle
-                      cx={ax}
-                      cy={ay}
-                      r="5"
-                      fill={color}
-                      stroke="#0a1824"
-                      strokeWidth="1.5"
-                    />
-                    {a.status === "alert" && (
-                      <circle
-                        cx={ax}
-                        cy={ay}
-                        r="5"
-                        fill="none"
-                        stroke={color}
-                        className="ping-soft"
-                      />
-                    )}
+                    <circle cx={ax} cy={ay} r={a.status === "ok" ? 3 : 4} fill={STATUS_FILL[a.status] ?? "#6b717a"} />
                     <title>
-                      {a.tail} · {a.status}
+                      {a.tail} · {STATUS_STYLE[a.status]?.label ?? a.status}
                     </title>
                   </g>
                 );
@@ -304,11 +190,11 @@ export default function USMap({
           const a = station(l.dep),
             b = station(l.arr);
           if (!a || !b) return null;
-          const progress =
-            (at - Date.parse(l.sched_dep)) /
-            (Date.parse(l.sched_arr) - Date.parse(l.sched_dep));
+          const progress = (at - Date.parse(l.sched_dep)) / (Date.parse(l.sched_arr) - Date.parse(l.sched_dep));
           const x = px(a.lon) + (px(b.lon) - px(a.lon)) * progress,
             y = py(a.lat) + (py(b.lat) - py(a.lat)) * progress;
+          const heading = (Math.atan2(py(b.lat) - py(a.lat), px(b.lon) - px(a.lon)) * 180) / Math.PI;
+          const st = aircraft.find((c) => c.tail === l.tail)?.status ?? "ok";
           return (
             <g
               key={l.id}
@@ -322,27 +208,21 @@ export default function USMap({
                   nav(`/aircraft/${l.tail}`);
                 }
               }}
-              className="cursor-pointer"
+              style={{ cursor: "pointer" }}
             >
-              <circle cx={x} cy={y} r="9" fill="#173c50" stroke="#8cdbe3" />
-              <path
-                d="m-5 0 10 0m-5-4v8"
-                transform={`translate(${x},${y})`}
-                stroke="#b7eff2"
-                strokeWidth="1.5"
-              />
+              <path d={glyph} transform={`translate(${x},${y}) rotate(${heading}) scale(1.35)`} fill={STATUS_FILL[st] ?? "#16191d"} />
               <title>
-                {l.tail} · {l.dep} → {l.arr} · interpolated scheduled position
+                {l.tail} · {l.dep} to {l.arr} · position interpolated from the schedule
               </title>
             </g>
           );
         })}
       </svg>
-      <div className="network-footer">
+      <div className="map-legend">
         <span>
-          {stations.length} STATIONS / {active.length} SCHEDULED IN FLIGHT
+          {stations.length} stations · {active.length} in flight (interpolated from the schedule)
         </span>
-        <span>POSITIONS INTERPOLATED FROM SIM TIME</span>
+        <span>Dots: aircraft on the ground, coloured by status. Arcs: next 24 h of flights.</span>
       </div>
     </div>
   );

@@ -101,3 +101,23 @@ def kind_from_component_id(component_id: str) -> str:
     """'SIM-017/engine_2' -> 'engine'; 'SIM-017/brakes' -> 'brakes'."""
     name = component_id.split("/")[-1]
     return "engine" if name.startswith("engine") else name
+
+
+# Where each engine sensor is measured in a CFM56-type two-spool turbofan:
+# (module, station, short description). Used to place readings on the engine section.
+ENGINE_STATIONS: dict[str, tuple[str, str, str]] = {
+    "Nf": ("fan", "N1", "Fan / low-pressure spool speed"),
+    "NRf": ("fan", "N1", "Corrected fan speed"),
+    "BPR": ("bypass", "duct", "Bypass ratio"),
+    "T24": ("lpc", "24", "Booster (LPC) exit temperature"),
+    "Nc": ("hpc", "N2", "Core / high-pressure spool speed"),
+    "NRc": ("hpc", "N2", "Corrected core speed"),
+    "htBleed": ("hpc", "bleed", "HPC bleed enthalpy"),
+    "T30": ("hpc", "3", "HPC exit temperature"),
+    "P30": ("hpc", "3", "HPC exit total pressure"),
+    "Ps30": ("hpc", "3", "HPC exit static pressure"),
+    "phi": ("combustor", "4", "Fuel flow to Ps30 ratio"),
+    "W31": ("hpt", "cooling", "HPT coolant bleed"),
+    "W32": ("lpt", "cooling", "LPT coolant bleed"),
+    "T50": ("lpt", "5", "LPT exit temperature"),
+}
