@@ -50,15 +50,16 @@ def main() -> None:
     db.kv_set("scenario", args.scenario)
     db.kv_set("sim_now", settings.SIM_START)
     try:
-        from app.sim.fleet import generate_fleet  # type: ignore  (Aadhavan: work/OWNERSHIP.md piece 9)
+        from app.sim.service import Simulator  # Aadhavan's simulator (work/OWNERSHIP.md pieces 9-10): it seeds the database itself
 
-        info = generate_fleet(settings.SEED)
-        source = "app.sim.fleet.generate_fleet"
+        sim = Simulator(str(settings.DB_PATH), settings.SEED)
+        info = {"aircraft": len(sim.state.aircraft), "components": len(sim.state.components), "legs": len(sim.state.legs)}
+        source = "app.sim.service.Simulator"
     except ModuleNotFoundError as e:
         if not (e.name or "").startswith("app.sim"):
             raise
         info = seed_from_fixtures()
-        source = "fixtures (app.sim.fleet not built yet)"
+        source = "fixtures (app.sim not built yet)"
     db.audit("system", "scenario_reset", args.scenario, f"seeded from {source}")
     print(json.dumps({"db": str(settings.DB_PATH), "seeded_from": source, "scenario": args.scenario, "seed": settings.SEED, **(info if isinstance(info, dict) else {})}, indent=1))
 
