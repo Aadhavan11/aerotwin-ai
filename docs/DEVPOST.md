@@ -71,6 +71,8 @@ NASA C-MAPSS turbofan degradation data (FD001; A. Saxena and K. Goebel, "Turbofa
 - No application code existed before the event; the repository was created after hacking opened.
 
 ## Instructions for judges
+**Live demo (no install):** https://shamitbasu.com/hacklanta. It is a shared instance on simulated data, so every visitor shares one simulation; reset it under System if it looks different.
+
 Everything is simulated; no login, no keys, no internet needed at demo time. To run it yourself: see the README (about 5 minutes: `make setup`, `make data`, `make reset`, `make api`, `make web`, open http://localhost:5173). The demo uses the scripted agent path; the optional LLM path needs an `ANTHROPIC_API_KEY` and was tested only with a fake client during the build. The system is advisory only and does not certify an aircraft or execute maintenance.
 
 ## Team (max 4)
