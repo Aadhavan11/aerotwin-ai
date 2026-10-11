@@ -37,6 +37,18 @@ class Http:
         return self.req("POST", p, b if b is not None else {})
 
 
+NO_DATA_WARNING = (
+    "\n*** WARNING: the NASA C-MAPSS data is MISSING on this machine (the app is on a synthetic stand-in). ***\n"
+    "    The injected fault then gets a remaining life near 0, the plan has no feasible slot and checks fail (usually 14/16).\n"
+    "    Fix:  python -m app.ml.cmapss --download   then restart the API (and run  python -m scripts.reset_db ), and run this again.\n"
+)
+
+
+def no_data(health) -> bool:
+    ml = health.get("ml_data") if isinstance(health, dict) else None
+    return bool(ml) and not str(ml).startswith("nasa")
+
+
 def run(h, poll_timeout: float = 90.0, verbose: bool = True) -> list[tuple[str, bool, str]]:
     results: list[tuple[str, bool, str]] = []
 
@@ -46,6 +58,8 @@ def run(h, poll_timeout: float = 90.0, verbose: bool = True) -> list[tuple[str, 
 
     s, health = h.get("/health")
     check("GET /health", s == 200 and health.get("ok"), f"modules: {health.get('modules')}" if s == 200 else str(health))
+    if verbose and s == 200 and no_data(health):
+        print(NO_DATA_WARNING)
     s, r = h.post("/scenario/reset", {"name": "golden"})
     check("POST /scenario/reset", s == 200, str(r)[:80])
     s, r = h.post("/sim/step", {"hours": 6})
@@ -140,6 +154,8 @@ def run(h, poll_timeout: float = 90.0, verbose: bool = True) -> list[tuple[str, 
             print(f"NOTE: these groups are still MOCK ({', '.join(mocked)}): a pass proves the contract and the UI flow, NOT the real module. GET /health shows why.")
         elif mods:
             print("All module groups are REAL.")
+        if no_data(health):
+            print(NO_DATA_WARNING)
     return results
 
 

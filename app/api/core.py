@@ -21,10 +21,20 @@ def _use_db() -> bool:
     return (not settings.MOCK) and registry.MODULES.get("sim") == "real" and db.is_seeded()
 
 
+def _ml_data() -> str:
+    """Which engine data the health model replays: 'nasa-cmapss-fd001', or the synthetic stand-in when the files are missing."""
+    try:
+        from app.ml import cmapss
+
+        return cmapss.data_source()
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 @router.get("/health")
 def health():
     return {"ok": True, "mock": settings.MOCK, "version": settings.VERSION, "sim_now": (STATE.now if not _use_db() else db.sim_now()),
-            "data_source": "database" if _use_db() else "fixture", "modules": registry.MODULES, "errors": registry.ERRORS, "llm_key_present": settings.HAS_LLM_KEY, "llm_model": settings.LLM_MODEL}
+            "data_source": "database" if _use_db() else "fixture", "modules": registry.MODULES, "errors": registry.ERRORS, "llm_key_present": settings.HAS_LLM_KEY, "llm_model": settings.LLM_MODEL, "ml_data": _ml_data()}
 
 
 def fleet_from_db() -> FleetOverview:

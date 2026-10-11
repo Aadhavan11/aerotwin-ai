@@ -91,6 +91,12 @@ export default function App() {
         </div>
       </header>
       {broken.length > 0 && <div className="console-alert">Module import errors: {broken.join(", ")}</div>}
+      {h?.ml_data && !h.ml_data.startsWith("nasa") && (
+        <div className="console-alert">
+          The NASA engine data is missing on this machine, so remaining-life numbers come from a synthetic stand-in and the demo will not behave as designed. Run
+          {" "}python -m app.ml.cmapss --download, then restart the API.
+        </div>
+      )}
       {h?.mock && <div className="console-notice">Fixture mode: scenarios and plans shown here are mock outputs</div>}
       <main className={`page ${open ? "agents-open" : ""}`}>
         <Suspense

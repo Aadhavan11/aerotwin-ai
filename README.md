@@ -27,6 +27,8 @@ make web          # cd web && npm run dev                          (second termi
 Check that it works: `GET http://localhost:8000/health` should list all six module groups as `real`, and `make demo-check` (third terminal) walks the whole story and should print `16/16 passed`.
 `make test` runs the automated tests (about 3 minutes). Without `make data` the app still starts but falls back to synthetic engine data and the numbers differ.
 
+**If `make demo-check` shows 14/16, or the fault shows a remaining life near 0 and the plan says "not feasible":** the NASA data is missing (the app then uses a synthetic stand-in, and the app shows a red banner). Run `python -m app.ml.cmapss --download` (2 seconds, needs internet), restart the API, and try again. `make reset` now fetches the data automatically when it can.
+
 **Optional LLM mode:** copy `.env.example` to `.env` and put your own `ANTHROPIC_API_KEY` in it (never commit `.env`, never paste it in chat), restart the API, then `make check-llm` asks one copilot question and runs the agents once in LLM mode and says whether each used the model or fell back to scripted (and why). The Copilot drawer shows which mode is active. The demo and all numbers use the scripted path and need no key.
 
 ## What you will see

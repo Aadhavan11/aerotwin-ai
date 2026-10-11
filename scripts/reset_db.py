@@ -42,7 +42,25 @@ def seed_from_fixtures() -> dict:
     return {"aircraft": len(fleet.aircraft), "components": n_comp, "legs": len(legs)}
 
 
+def ensure_data() -> None:
+    """The demo needs the NASA C-MAPSS files. Fetch them once if they are missing (about 2 s); never fail the reset over it."""
+    import os
+
+    if os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("NO_AUTO_DOWNLOAD"):
+        return
+    try:
+        from app.ml import cmapss
+
+        if not cmapss.data_available():
+            print("NASA C-MAPSS files not found: downloading them once ...", flush=True)
+            cmapss.download()
+    except Exception as e:  # noqa: BLE001  offline, mirror down, read-only disk ...
+        print(f"WARNING: could not download the NASA data ({type(e).__name__}). The app will fall back to synthetic data and the demo "
+              "will not behave as designed. Run  python -m app.ml.cmapss --download  when you are online.", flush=True)
+
+
 def main() -> None:
+    ensure_data()
     ap = argparse.ArgumentParser()
     ap.add_argument("--scenario", default="golden")
     args = ap.parse_args()

@@ -44,6 +44,6 @@ export type PlanBundle = {
 export type InjectResult = { event_id: string; effects: string[]; twin_changes: string[] };
 export type HealthInfo = {
   ok: boolean; mock: boolean; version: string; sim_now: string; data_source: string;
-  modules: Record<string, string>; errors: Record<string, string>; llm_key_present: boolean; llm_model: string;
+  modules: Record<string, string>; errors: Record<string, string>; llm_key_present: boolean; llm_model: string; ml_data?: string;
 };
 export type Status = "ok" | "watch" | "alert" | "in_maintenance" | "aog";
