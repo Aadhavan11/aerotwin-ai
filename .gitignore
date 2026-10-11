@@ -10,3 +10,8 @@ id_*
 .DS_Store
 __pycache__/
 node_modules/
+
+# local data and environments (never commit)
+data/
+.venv/
+.pytest_cache/
