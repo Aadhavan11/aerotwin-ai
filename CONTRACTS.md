@@ -384,7 +384,7 @@ TypeScript types with `npx openapi-typescript http://localhost:8000/openapi.json
 | `GET /aircraft/{tail}` | | `TwinView` | Aashirth |
 | `GET /aircraft/{tail}/telemetry?component=&last=60` | | `TelemetryRow[]` | Aashirth |
 | `GET /legs?tail=` | | `Leg[]` | Shamit |
-| `GET /plan` | | `{current: Plan, baseline: Plan, compare: Comparison}` | Pardhu |
+| `GET /plan` | | `{current: Plan, baseline: Plan, compare: Comparison, exposure: {baseline: Exposure[], optimized: Exposure[]}}`; `exposure` is optional and additive (default `{}`); `Exposure = {task_id, tail, component_id, scheduled, station, hours_to_fix, flights_before_fix, slack_to_deadline_h}`. It is the risk view that cost metrics can hide when costs tie (hours until the fix, flights flown with the fault open, hours of slack before the hard deadline). Each `compare.rows[]` entry also carries an `exposure` list | Pardhu |
 | `POST /plan/solve` | `{mode: SolveMode, weights?: ObjectiveWeights}` | `Plan` | Pardhu |
 | `POST /plan/replan` | `{event: ScenarioEvent}` | `ReplanResult` | Pardhu |
 | `POST /whatif/compare` | `{scenarios: Scenario[]}` (empty list = the five default what-ifs; `constraints`: `force_station`, `earliest`, optional `tail` to limit them to one aircraft) | `Comparison` | Pardhu |
