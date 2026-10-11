@@ -229,6 +229,55 @@ def test_a_crashing_run_ends_in_error_not_in_running(monkeypatch):
     assert run.status == "error" and "RuntimeError: boom" in run.explanation
 
 
+# ------------------------------------------------------------------ a deadline nobody can meet: honest, with a human-only suggestion
+def _near_failure_world(monkeypatch, p10: float = 1.9):
+    from app.contracts.models import RulEstimate
+    st = golden_state()
+    comp = next(c for c in st.components if c.component_id == "SIM-017/engine_2")
+    comp.rul_cycles = RulEstimate(p10=p10, p50=p10 * 3, p90=p10 * 8)
+    monkeypatch.setattr(service, "_snapshot", lambda: (st, "test"))
+    return st
+
+
+def test_near_failure_is_infeasible_with_a_least_bad_suggestion_that_is_never_applied(monkeypatch):
+    _near_failure_world(monkeypatch)
+    run = run_workflow(GOAL, {}, "scripted")
+    assert run.status == "done" and run.plan.feasible is False
+    assert not any(a.task_id == "T-SIM-017-engine_2-001" for a in run.plan.assignments)          # never scheduled past the deadline
+    assert not any(o.task_id == "T-SIM-017-engine_2-001" for o in run.work_orders)
+    short = next(s for s in run.steps if s.tool == "shortage_report" and s.kind == "tool_result").output["data"]
+    row = next(r for r in short if r["task_id"] == "T-SIM-017-engine_2-001")
+    assert row["least_bad"]["hours_after_deadline"] > 0 and "NOT a plan" in row["least_bad"]["note"]
+    assert "For a human to decide (NOT applied)" in run.explanation and "after its deadline" in run.explanation
+    assert "Savings are simulated" not in run.explanation          # no baseline-vs-optimized claim for a failed plan
+    pool = set()
+    for s in run.steps:
+        if s.kind == "tool_result" and s.output:
+            pool |= numbers(json.dumps(s.output["data"]))
+    pool |= numbers(json.dumps(run.plan.model_dump(mode="json")))
+    assert numbers(run.explanation) - pool == set()                 # still only tool-derived numbers
+
+
+def test_when_no_slot_exists_at_all_the_explanation_says_so(monkeypatch):
+    st = golden_state()
+    for s in st.stations:
+        for t in s.technicians:
+            t.skills = [x for x in t.skills if x != "engine"]
+    monkeypatch.setattr(service, "_snapshot", lambda: (st, "test"))
+    run = run_workflow(GOAL, {}, "scripted")
+    assert "no slot exists for T-SIM-017-engine_2-001 anywhere in the known rotation" in run.explanation
+    assert call_tool("shortage_report")["data"][0]["least_bad"] is None
+
+
+def test_least_bad_is_a_function_of_the_state_and_marks_itself_as_not_a_plan(monkeypatch):
+    from app.solver.leastbad import least_bad
+    st = _near_failure_world(monkeypatch)
+    from app.solver import derive_tasks
+    task = next(t for t in derive_tasks(st) if t.tail == "SIM-017")
+    lb = least_bad(st, task)
+    assert lb["station"] == "DFW" and lb["end"] > task.deadline and lb["hours_after_deadline"] == 6.0 and "NOT a plan" in lb["note"]
+
+
 # ------------------------------------------------------------------ disruption through the tool, then a fresh run in the changed world
 def test_replan_tool_changes_the_world_and_the_next_run_sees_it():
     first = run_workflow(GOAL, {}, "scripted")

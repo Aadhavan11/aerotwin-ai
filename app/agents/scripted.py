@@ -150,14 +150,22 @@ def _explain(plan: Plan, tasks: list[dict], at_risk: list[dict], base: dict, sho
         else:
             head += " It could not be scheduled: " + next((r for r in plan.infeasible_reasons if first_rul["id"] in r), "see the plan's reasons") + "."
         out.append(head)
-    bm = base["metrics"]
-    out.append(f"Baseline (home base, last window before the deadline): logistics ${bm['logistics_cost_usd']:g}, downtime {bm['downtime_h']:g} h, "
-               f"flights affected {bm['flights_affected']}. Optimized: logistics ${m.logistics_cost_usd:g}, downtime {m.downtime_h:g} h, "
-               f"flights affected {m.flights_affected}. Savings are simulated relative to that baseline.")
-    conflicts = [x["detail"] for x in short]
-    if conflicts:
-        out.append("Logistics flags: " + "; ".join(conflicts) + ".")
-    if not plan.feasible:
-        out.append("Infeasible: " + " | ".join(plan.infeasible_reasons))
+    if plan.feasible:
+        bm = base["metrics"]
+        out.append(f"Baseline (home base, last window before the deadline): logistics ${bm['logistics_cost_usd']:g}, downtime {bm['downtime_h']:g} h, "
+                   f"flights affected {bm['flights_affected']}. Optimized: logistics ${m.logistics_cost_usd:g}, downtime {m.downtime_h:g} h, "
+                   f"flights affected {m.flights_affected}. Savings are simulated relative to that baseline.")
+    else:
+        out.append("No plan can meet every hard deadline, so no work order is drafted for the tasks that failed; deadlines are never relaxed by the system.")
+        for x in short:
+            lb = x.get("least_bad")
+            if lb:
+                out.append(f"For a human to decide (NOT applied): the earliest slot that exists for {x['task_id']} is {lb['station']} "
+                           f"{fmt_iso(lb['start'])} to {fmt_iso(lb['end'])}, {lb['hours_after_deadline']:g} h after its deadline.")
+            else:
+                out.append(f"For a human to decide: no slot exists for {x['task_id']} anywhere in the known rotation, even after its deadline.")
+    flags = [x["detail"] for x in short if x.get("least_bad") is None and plan.feasible]
+    if flags:
+        out.append("Logistics flags: " + "; ".join(flags) + ".")
     out.append(f"{len(orders)} work order(s) drafted, all pending human approval. Advisory only; this does not replace approved procedures.")
     return " ".join(out)

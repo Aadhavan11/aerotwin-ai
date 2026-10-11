@@ -23,6 +23,7 @@ from app.solver import service
 from app.solver.candidates import SolveContext
 from app.solver.common import aware
 from app.solver.engine import solve
+from app.solver.leastbad import least_bad
 from app.solver.store import STORE
 from app.solver.tasks import derive_tasks_ex
 from app.solver.windows import ground_windows
@@ -220,7 +221,8 @@ def shortage_report() -> dict:
         if t.id not in scheduled:
             blockers = ctx.blockers(t)
             top = next((k for k, _ in blockers.most_common() if k in kind), None)
-            rows.append({"task_id": t.id, "missing": kind.get(top, "capacity"), "detail": ctx.diagnose(t)})
+            rows.append({"task_id": t.id, "missing": kind.get(top, "capacity"), "detail": ctx.diagnose(t),
+                         "least_bad": least_bad(state, t)})
     for a in plan.assignments:
         t = next((x for x in tasks if x.id == a.task_id), None)
         if a.part_source and t and t.required_part:
