@@ -152,7 +152,7 @@ export default function Admin() {
                 </tbody>
               </table>
               <details className="mt-3 text-xs text-slate-500">
-                <summary className="cursor-pointer text-slate-900 underline">All {Object.keys(ml).length} recorded values</summary>
+                <summary className="cursor-pointer text-blue-600">All {Object.keys(ml).length} recorded values</summary>
                 <table className="mt-2 w-full">
                   <tbody>
                     {Object.entries(ml)

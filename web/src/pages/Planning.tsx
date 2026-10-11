@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -41,12 +41,6 @@ export default function Planning() {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Show the reasoning for the first optimized job straight away instead of an empty panel.
-  const firstOpt = plan.data?.current.assignments[0];
-  useEffect(() => {
-    if (firstOpt) setSel((cur) => cur ?? { kind: "opt", a: firstOpt });
-  }, [firstOpt?.task_id]);
-
   const data = plan.data,
     simNow = health.data?.sim_now;
   const g = useMemo(() => {
@@ -65,8 +59,8 @@ export default function Planning() {
       ),
     ].sort();
     const rows = tails.map((tail, i) => {
+      // Only legs still to fly: earlier legs would drag the first ground window left over the row label
       const ls = legs
-        // Only legs still to fly: earlier legs would drag the first ground window left over the row label.
         .data!.filter((l) => l.tail === tail && new Date(l.sched_arr).getTime() > t0)
         .sort((a, b) => a.sched_dep.localeCompare(b.sched_dep));
       const wins: { station: string; s: number; e: number }[] = [];
@@ -132,12 +126,11 @@ export default function Planning() {
 
   return (
     <div className="space-y-4">
-      <div className="page-head">
+      <div className="page-heading">
         <div>
-          <h1>Planning</h1>
-          <p>
-            Where and when each task is done, fitted around flights, technicians, parts and hangar slots. Plan {cur.id}, solved with {cur.mode}.
-          </p>
+          <div className="eyebrow">Maintenance plan</div>
+          <h1>Where and when the work happens</h1>
+          <p>Each job fits around flights, technicians, parts and hangar space, and finishes before its deadline.</p>
         </div>
       </div>
       <ErrorBox error={plan.error} />
@@ -152,22 +145,43 @@ export default function Planning() {
           </div>
         </div>
       )}
-      <dl className="figures">
+      <div className="facts">
         {[
-          ["Downtime", fmtH(cur.metrics.downtime_h), fmtH(base.metrics.downtime_h)],
-          ["Flights affected", String(cur.metrics.flights_affected), String(base.metrics.flights_affected)],
-          ["Logistics cost", fmtUsd(cur.metrics.logistics_cost_usd), fmtUsd(base.metrics.logistics_cost_usd)],
-          ["Tasks scheduled", `${cur.metrics.tasks_scheduled} of ${cur.metrics.tasks_total}`, `${base.metrics.tasks_scheduled} of ${base.metrics.tasks_total}`],
-          ["Solve time", `${cur.solve_seconds.toFixed(2)} s`, `${base.solve_seconds.toFixed(2)} s`],
+          [
+            "Downtime",
+            fmtH(cur.metrics.downtime_h),
+            fmtH(base.metrics.downtime_h),
+          ],
+          [
+            "Flights affected",
+            String(cur.metrics.flights_affected),
+            String(base.metrics.flights_affected),
+          ],
+          [
+            "Logistics cost",
+            fmtUsd(cur.metrics.logistics_cost_usd),
+            fmtUsd(base.metrics.logistics_cost_usd),
+          ],
+          [
+            "Tasks scheduled",
+            `${cur.metrics.tasks_scheduled}/${cur.metrics.tasks_total}`,
+            `${base.metrics.tasks_scheduled}/${base.metrics.tasks_total}`,
+          ],
+          [
+            "Solve time",
+            `${cur.solve_seconds.toFixed(2)} s`,
+            `${base.solve_seconds.toFixed(2)} s`,
+          ],
         ].map(([label, a, b]) => (
-          <div key={label}>
-            <dt>{label}</dt>
-            <dd>{a}</dd>
-            <dt style={{ marginTop: 2 }}>baseline {b}</dt>
+          <div key={label} className="fact">
+            <div className="fact-label">{label}</div>
+            <div className="fact-value text-emerald-700">{a}</div>
+            <div className="fact-hint">
+              optimized · {b} baseline
+            </div>
           </div>
         ))}
-      </dl>
-      <div style={{ height: 16 }} />
+      </div>
 
       <Card
         title={`Maintenance timeline (next ${(HOURS / 24) | 0}.5 days, UTC)`}
@@ -210,13 +224,13 @@ export default function Planning() {
                   patternUnits="userSpaceOnUse"
                   patternTransform="rotate(45)"
                 >
-                  <rect width="6" height="6" fill="#f2f2ef" />
+                  <rect width="6" height="6" fill="#fee2e2" />
                   <line
                     x1="0"
                     y1="0"
                     x2="0"
                     y2="6"
-                    stroke="#9aa1a7"
+                    stroke="#ef4444"
                     strokeWidth="2"
                   />
                 </pattern>
@@ -228,10 +242,10 @@ export default function Planning() {
                     x2={g.x(d)}
                     y1={18}
                     y2={g.height}
-                    stroke="#e4e4e0"
+                    stroke="#34343f"
                     strokeDasharray="3 4"
                   />
-                  <text x={g.x(d) + 3} y={13} fontSize={11} fill="#64748b">
+                  <text x={g.x(d) + 3} y={13} fontSize={11} fill="#8d8d9b">
                     {fmtZ(new Date(d).toISOString()).slice(0, 6)}
                   </text>
                 </g>
@@ -243,26 +257,26 @@ export default function Planning() {
                     y={r.y + 40}
                     fontSize={13}
                     fontWeight={600}
-                    fill="#16191d"
+                    fill="#e3e3ec"
                   >
                     {r.tail}
                   </text>
                   {r.wins.map((w, i) => (
                     <g key={i}>
                       <rect
-                        x={Math.max(LABEL_W, g.x(w.s))}
+                        x={g.x(w.s)}
                         y={r.y}
-                        width={Math.max(0, g.x(w.e) - Math.max(LABEL_W, g.x(w.s)))}
+                        width={Math.max(0, g.x(w.e) - g.x(w.s))}
                         height={ROW_H - 12}
-                        fill="#eef1f3"
-                        stroke="#d7dce0"
+                        fill="#15151e"
+                        stroke="#2a2a35"
                       />
-                      {g.x(w.e) - Math.max(LABEL_W, g.x(w.s)) > 44 && (
+                      {g.x(w.e) - g.x(w.s) > 44 && (
                         <text
-                          x={Math.max(LABEL_W, g.x(w.s)) + 3}
+                          x={g.x(w.s) + 3}
                           y={r.y + 12}
                           fontSize={10}
-                          fill="#6b717a"
+                          fill="#9d9daa"
                         >
                           {w.station} {((w.e - w.s) / 3.6e6).toFixed(1)}h
                         </text>
@@ -272,11 +286,11 @@ export default function Planning() {
                   {r.ls.map((l) => (
                     <rect
                       key={l.id}
-                      x={Math.max(LABEL_W, g.x(l.sched_dep))}
+                      x={g.x(l.sched_dep)}
                       y={r.y + ROW_H - 10}
-                      width={Math.max(1, g.x(l.sched_arr) - Math.max(LABEL_W, g.x(l.sched_dep)))}
+                      width={Math.max(1, g.x(l.sched_arr) - g.x(l.sched_dep))}
                       height={6}
-                      fill="#94a3b8"
+                      fill="#7a7a88"
                     >
                       <title>{`${l.dep}→${l.arr} ${fmtZ(l.sched_dep)}`}</title>
                     </rect>
@@ -299,7 +313,7 @@ export default function Planning() {
                             fill={colorOf(a.station)}
                             stroke={
                               sel?.a.task_id === a.task_id && sel.kind === "opt"
-                                ? "#0f172a"
+                                ? "#f4f4f8"
                                 : "none"
                             }
                             strokeWidth={2}
@@ -309,7 +323,7 @@ export default function Planning() {
                             y={r.y + 32}
                             fontSize={11}
                             fontWeight={600}
-                            fill="#16191d"
+                            fill="#e3e3ec"
                           >
                             {a.station} ·{" "}
                             {taskLabel(a.task_id).split("-").slice(-1)[0]}
@@ -332,14 +346,14 @@ export default function Planning() {
                             height={20}
                             rx={3}
                             fill="url(#hatch)"
-                            stroke="#6b717a"
+                            stroke="#ef4444"
                             strokeDasharray="4 2"
                           />
                           <text
                             x={g.x(a.end) + 5}
                             y={r.y + 58}
                             fontSize={11}
-                            fill="#4a5058"
+                            fill="#fca5a5"
                           >
                             {a.station}
                             {a.extension_h > 0
@@ -354,10 +368,10 @@ export default function Planning() {
             <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-600">
               <span>
                 <span className="mr-1 inline-block h-2.5 w-4 rounded-sm bg-blue-600 align-middle" />
-                optimized job (colour = station)
+                optimized job (color = station)
               </span>
               <span>
-                <span className="mr-1 inline-block h-2.5 w-4 rounded-sm border border-slate-500 bg-slate-100 align-middle" />
+                <span className="mr-1 inline-block h-2.5 w-4 rounded-sm border border-red-500 bg-red-100 align-middle" />
                 static baseline job
               </span>
               <span>
@@ -438,14 +452,14 @@ export default function Planning() {
                 <Legend />
                 <Bar
                   dataKey="Optimized"
-                  fill="#1d1d1f"
+                  fill="#34d399"
                   isAnimationActive={false}
                 >
                   <LabelList dataKey="Optimized" position="top" fontSize={12} />
                 </Bar>
                 <Bar
                   dataKey="Baseline"
-                  fill="#b9bdc2"
+                  fill="#ef4444"
                   isAnimationActive={false}
                 >
                   <LabelList dataKey="Baseline" position="top" fontSize={12} />
@@ -461,42 +475,6 @@ export default function Planning() {
         </Card>
       </div>
 
-      <Card title="Assignments" right={<span className="muted" style={{ fontSize: 12 }}>{cur.assignments.length} in plan {cur.id}, {base.assignments.length} in the baseline</span>}>
-        <div style={{ overflowX: "auto" }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Plan</th>
-                <th>Task</th>
-                <th>Aircraft</th>
-                <th>Station</th>
-                <th>Window (UTC)</th>
-                <th>Technician</th>
-                <th>Part</th>
-                <th style={{ textAlign: "right" }}>Extension</th>
-                <th>Why</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...cur.assignments.map((a) => ({ a, k: "opt" as const })), ...base.assignments.map((a) => ({ a, k: "base" as const }))].map(({ a, k }) => (
-                <tr key={k + a.task_id} onClick={() => setSel({ kind: k, a })} className={sel?.a.task_id === a.task_id && sel.kind === k ? "picked" : ""}>
-                  <td className="muted">{k === "opt" ? "Optimized" : "Baseline"}</td>
-                  <td className="mono">{a.task_id.replace(/^T-/, "")}</td>
-                  <td className="mono">{a.tail}</td>
-                  <td className="mono">{a.station}</td>
-                  <td className="mono" style={{ whiteSpace: "nowrap" }}>
-                    {fmtZ(a.start)} to {fmtZ(a.end)}
-                  </td>
-                  <td className="mono">{a.technician_id ?? "-"}</td>
-                  <td className="muted">{a.part_source ? `from ${a.part_source}` : "on hand"}</td>
-                  <td className="mono" style={{ textAlign: "right" }}>{a.extension_h > 0 ? `${a.extension_h.toFixed(1)} h` : "none"}</td>
-                  <td className="muted" style={{ minWidth: 260, lineHeight: 1.45 }}>{a.reason}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
       {(data.exposure?.optimized?.length ?? 0) > 0 && (
         <RiskCard
           optimized={data.exposure!.optimized}

@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import type { TwinComponent } from "../api/types";
-import { buildAircraft, profileFor, type Part } from "./aircraftModels";
-import type { SensorCatalog } from "./EngineSection";
-import { partHealth } from "../lib/partHealth";
+import { profileFor } from "../lib/aircraft";
+
+/**
+ * The 3D viewer. The only aircraft geometry is the third-party model in public/models/b737-800 (CC BY 4.0, see docs/ASSETS.md):
+ * "B737-800 Model" by hikami3150. Every tail is drawn with it; an A320-class tail says so on screen.
+ */
+const MODEL_URL = `${import.meta.env.BASE_URL}models/b737-800/scene.gltf`;
+const CREDIT_URL = "https://sketchfab.com/3d-models/b737-800-model-6cbe380405794ea69d6b0a3d144dd1af";
 
 type Props = {
   aircraftType: string;
@@ -13,71 +18,27 @@ type Props = {
   selected: string;
   onSelect: (id: string) => void;
   fallback: ReactNode;
-  catalog?: SensorCatalog;
 };
 
-const GROUPS = ["Engines", "Landing gear", "Systems", "Flight controls", "Airframe"] as const;
-const VIEWS: Record<string, { pos: [number, number, number]; target: [number, number, number]; label: string }> = {
-  three: { pos: [35, 13, -45], target: [-1, 0.6, 0], label: "3/4" },
-  side: { pos: [0, 1.5, -66], target: [0, 1, 0], label: "Side" },
-  top: { pos: [0.01, 92, 0], target: [0, 0, 0], label: "Top" },
-  front: { pos: [66, 1.5, 0], target: [0, 0.5, 0], label: "Front" },
-  engine: { pos: [0, 0, 0], target: [0, 0, 0], label: "Engine" },
-  nose: { pos: [0, 0, 0], target: [0, 0, 0], label: "Nose" },
-};
-// Close-ups frame a part instead of using a fixed camera.
-const CLOSE: Record<string, { part: string; dir: [number, number, number]; dist: number }> = {
-  engine: { part: "engine_1_nacelle", dir: [1, 0.22, -0.95], dist: 8.5 },
-  nose: { part: "cockpit", dir: [0.75, 0.3, -1], dist: 9 },
-};
-
-const tint = { alert: new THREE.Color(0xc0392b), watch: new THREE.Color(0xc27c0e), select: new THREE.Color(0x56606c) };
-
-export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback, catalog }: Props) {
+export default function AircraftScene({ aircraftType, components, selected, onSelect, fallback }: Props) {
   const host = useRef<HTMLDivElement>(null);
-  const latest = useRef({ components, selected, part: "", health: {} as Record<string, string> });
-  const [failed, setFailed] = useState(false);
-  const [cutaway, setCutaway] = useState(false);
-  const [view, setView] = useState("three");
-  const [partId, setPartId] = useState("");
-  const [parts, setParts] = useState<Part[]>([]);
-  const [group, setGroup] = useState<(typeof GROUPS)[number]>("Engines");
-  const healthOf = (p: Part) => partHealth(p.id, p.component ? components.find((c) => c.component_id.endsWith("/" + p.component)) : undefined, catalog);
-  latest.current = {
-    components,
-    selected,
-    part: partId,
-    health: Object.fromEntries(parts.map((p) => [p.id, healthOf(p)?.status ?? "ok"])),
-  };
-  const controller = useRef<{ view: (v: string) => void; cutaway: (v: boolean) => void; focus: (p: Part) => void } | null>(null);
+  const latest = useRef({ components, selected, onSelect });
+  latest.current = { components, selected, onSelect };
+  const [failed, setFailed] = useState(false),
+    [loaded, setLoaded] = useState(false),
+    [orbit, setOrbit] = useState(false),
+    [view, setView] = useState("perspective");
+  const controller = useRef<{ view: (v: string) => void; orbit: (v: boolean) => void } | null>(null);
   const profile = useMemo(() => profileFor(aircraftType), [aircraftType]);
-
-  const statusOf = (component?: string) =>
-    component ? components.find((c) => c.component_id.endsWith("/" + component))?.status : undefined;
-
-  function selectPart(p: Part) {
-    setPartId(p.id);
-    setGroup(p.group as (typeof GROUPS)[number]);
-    if (p.component) {
-      const c = components.find((x) => x.component_id.endsWith("/" + p.component));
-      if (c) onSelect(c.component_id);
-    }
-    if (p.internal && !cutaway) {
-      setCutaway(true);
-      controller.current?.cutaway(true);
-    }
-  }
-  const selectRef = useRef(selectPart);
-  selectRef.current = selectPart;
+  const drawnAs737 = !!profile && !/B738|737/i.test(aircraftType);
 
   useEffect(() => {
     const element = host.current;
     if (!element) return;
     setFailed(false);
-    setPartId("");
-    setCutaway(false);
-    const initial = new URLSearchParams(window.location.search).get("view") ?? "three";
-    setView(VIEWS[initial] ? initial : "three");
+    setLoaded(false);
+    setOrbit(false);
+    setView("perspective");
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -87,110 +48,97 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.NeutralToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     element.replaceChildren(renderer.domElement);
-
     const scene = new THREE.Scene();
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const env = pmrem.fromScene(new RoomEnvironment(), 0.035).texture;
-    scene.environment = env;
-    scene.environmentIntensity = 0.85;
-
-    const camera = new THREE.PerspectiveCamera(30, 1, 0.5, 400);
+    const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+    camera.position.set(14, 8, -18);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
     controls.enablePan = false;
-    controls.minDistance = 4;
-    controls.maxDistance = 120;
-    controls.maxPolarAngle = Math.PI * 0.495;
-
-    const key = new THREE.DirectionalLight(0xffffff, 2.3);
-    key.position.set(18, 42, -22);
+    controls.minDistance = 9;
+    controls.maxDistance = 38;
+    controls.maxPolarAngle = Math.PI * 0.52;
+    controls.target.set(0, 0.3, 0);
+    controls.autoRotateSpeed = 0.55;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c8980, 2.1));
+    const key = new THREE.DirectionalLight(0xfff6e9, 3.2);
+    key.position.set(-6, 12, -8);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
-    Object.assign(key.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, near: 1, far: 120 });
-    key.shadow.bias = -0.0004;
-    key.shadow.normalBias = 0.02;
-    key.shadow.radius = 4;
+    Object.assign(key.shadow.camera, { left: -11, right: 11, top: 11, bottom: -11 });
+    key.shadow.bias = -0.0005;
     scene.add(key);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0xe9e7e2, 0.9));
-
-    const model = buildAircraft(aircraftType);
-    scene.add(model.root);
-    setParts(model.parts);
-    const groundY = model.root.userData.groundY as number;
-    const ground = new THREE.Mesh(new THREE.CircleGeometry(80, 64), new THREE.ShadowMaterial({ opacity: 0.13 }));
+    const fill = new THREE.DirectionalLight(0xdbe5ec, 1.5);
+    fill.position.set(8, 4, 6);
+    scene.add(fill);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.ShadowMaterial({ opacity: 0.18 }));
     ground.rotation.x = -Math.PI / 2;
-    ground.position.y = groundY;
+    ground.position.y = -1.32;
     ground.receiveShadow = true;
     scene.add(ground);
 
-    const place = (name: string) => {
-      const close = CLOSE[name];
-      if (close) {
-        model.root.updateMatrixWorld(true);
-        const box = new THREE.Box3();
-        model.meshes.filter((o) => o.userData.part === close.part).forEach((o) => box.expandByObject(o));
-        if (!box.isEmpty()) {
-          const c = box.getCenter(new THREE.Vector3());
-          controls.target.copy(c);
-          camera.position.copy(c.clone().add(new THREE.Vector3(...close.dir).normalize().multiplyScalar(close.dist)));
-          controls.update();
-          return;
-        }
-      }
-      const v = VIEWS[name] ?? VIEWS.three;
-      camera.position.set(...v.pos);
-      controls.target.set(...v.target);
-      controls.update();
-    };
-    place(VIEWS[initial] ? initial : "three");
+    // Pieces we can tell apart by where they sit: the engines (left and right) and the landing gear. They glow by system status
+    // and select their system when clicked. Everything else is plain airframe.
+    const groups: Record<string, THREE.Mesh[]> = { engine_1: [], engine_2: [], landing_gear: [] };
+    const meshes: THREE.Mesh[] = [];
+    let disposed = false;
+    new GLTFLoader().load(
+      MODEL_URL,
+      (gltf) => {
+        if (disposed) return;
+        const root = gltf.scene;
+        root.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(root);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const bounds = new THREE.Box3();
+        const c = new THREE.Vector3();
+        // Classified in the coordinates as authored: x across, y up, z along the fuselage with the tail at -z. Authored x > 0 ends up at
+        // world x < 0 after the half turn below, which is engine_1.
+        root.traverse((o) => {
+          const mesh = o as THREE.Mesh;
+          if (!mesh.isMesh) return;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          bounds.setFromObject(mesh).getCenter(c);
+          const engine = Math.abs(c.x) > 3.5 && Math.abs(c.x) < 4.7 && c.y > 0.7 && c.y < 2.5 && c.z > -5.6 && c.z < 0.3;
+          const group = engine ? (c.x > 0 ? "engine_1" : "engine_2") : c.y < 1.35 ? "landing_gear" : "";
+          if (group) {
+            mesh.material = (mesh.material as THREE.Material).clone();
+            mesh.userData.component = group;
+            groups[group].push(mesh);
+          }
+          meshes.push(mesh);
+        });
+        const length = (profile?.length ?? 39.5) / 2.7;
+        const holder = new THREE.Group();
+        root.position.set(-center.x, -box.min.y, -center.z);
+        holder.add(root);
+        holder.scale.setScalar(length / size.z);
+        holder.rotation.y = Math.PI; // the model's nose is +z, the scene's nose is -z
+        holder.position.y = -1.24; // tyre bottoms
+        scene.add(holder);
+        setLoaded(true);
+      },
+      undefined,
+      () => {
+        if (!disposed) setFailed(true);
+      },
+    );
 
-    const cut = (enabled: boolean) => {
-      for (const o of model.shells) {
-        const m = o.material as THREE.MeshStandardMaterial;
-        m.transparent = enabled;
-        m.opacity = enabled ? 0.16 : 1;
-        m.depthWrite = !enabled;
-      }
-      for (const o of model.internals) o.visible = enabled;
-    };
     controller.current = {
-      view: place,
-      cutaway: cut,
-      focus(p) {
-        const hits = model.meshes.filter((o) => o.userData.part === p.id && o.visible !== false);
-        if (!hits.length) return;
-        model.root.updateMatrixWorld(true);
-        const box = new THREE.Box3();
-        hits.forEach((o) => box.expandByObject(o));
-        const c = box.getCenter(new THREE.Vector3());
-        const size = box.getSize(new THREE.Vector3()).length();
-        const dir = camera.position.clone().sub(controls.target).normalize();
-        controls.target.copy(c);
-        camera.position.copy(c.clone().add(dir.multiplyScalar(Math.max(14, size * 2.4))));
+      view(mode) {
+        controls.target.set(0, 0.3, 0);
+        camera.position.set(...((mode === "top" ? [0, 32, 0.01] : mode === "side" ? [23, 3, 0] : [14, 8, -18]) as [number, number, number]));
         controls.update();
       },
+      orbit(enabled) {
+        controls.autoRotate = enabled;
+      },
     };
-
-    if (import.meta.env.DEV) {
-      // Dev-only hooks for visual checks: switch view and grab the current frame.
-      const w = window as unknown as Record<string, unknown>;
-      w.__twinView = (name: string) => place(name);
-      w.__twinShot = (type = "image/jpeg") => {
-        renderer.render(scene, camera);
-        return renderer.domElement.toDataURL(type, 0.9);
-      };
-      w.__twinCut = (on: boolean) => cut(on);
-      w.__twinCam = (x: number, y: number, z: number, tx: number, ty: number, tz: number) => {
-        camera.position.set(x, y, z);
-        controls.target.set(tx, ty, tz);
-        controls.update();
-      };
-    }
     const ray = new THREE.Raycaster();
     let down = [0, 0];
     const pointerDown = (e: PointerEvent) => {
@@ -200,18 +148,15 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
       if (Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
       const r = renderer.domElement.getBoundingClientRect();
       ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1), camera);
-      const targets = model.meshes.filter(
-        (o) => o.visible && !(model.shells.includes(o) && (o.material as THREE.MeshStandardMaterial).opacity < 0.5),
-      );
-      const hit = ray.intersectObjects(targets, false)[0];
-      const part = model.parts.find((p) => p.id === hit?.object.userData.part);
-      if (part) selectRef.current(part);
+      const comp = ray.intersectObjects(meshes, false)[0]?.object.userData.component as string | undefined;
+      const hit = comp ? latest.current.components.find((x) => x.component_id.endsWith("/" + comp)) : undefined;
+      if (hit) latest.current.onSelect(hit.component_id);
     };
     renderer.domElement.addEventListener("pointerdown", pointerDown);
     renderer.domElement.addEventListener("pointerup", pointerUp);
     const resize = new ResizeObserver(() => {
-      const w = element.clientWidth;
-      const h = element.clientHeight;
+      const w = element.clientWidth,
+        h = element.clientHeight;
       if (w && h) {
         renderer.setSize(w, h);
         camera.aspect = w / h;
@@ -219,166 +164,109 @@ export default function AircraftScene({ aircraftType, components, selected, onSe
       }
     });
     resize.observe(element);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const partById = new Map(model.parts.map((p) => [p.id, p]));
-    let frame = 0;
-    let last = 0;
-    const animate = (t: number) => {
+    let frame = 0,
+      last = 0;
+    const tintOf = new THREE.Color();
+    function animate(t: number) {
       frame = requestAnimationFrame(animate);
-      // rAF already pauses in background tabs; do not also test document.hidden, which embedded views report as true.
-      if (t - last < 32) return;
+      if (document.hidden || t - last < 32) return;
       last = t;
-      if (!reduced) for (const fan of model.fans) fan.rotation.x = -t * 0.0011;
-      const { selected: sel, part: activeId, health } = latest.current;
-      const active = partById.get(activeId);
-      const exact = active && (!active.component || sel.endsWith("/" + active.component));
-      for (const o of model.meshes) {
-        const p = partById.get(o.userData.part);
-        const isSel = exact ? p?.id === active?.id : !!p?.component && sel.endsWith("/" + p.component);
-        const status = p ? (health[p.id] as "ok" | "watch" | "alert" | undefined) : undefined;
-        const m = o.material as THREE.MeshStandardMaterial;
-        if (isSel) {
-          m.emissive.copy(tint.select);
-          m.emissiveIntensity = 0.28;
-        } else if (status === "alert" || status === "watch") {
-          m.emissive.copy(tint[status]);
-          m.emissiveIntensity = status === "alert" ? 0.32 + (reduced ? 0 : 0.12 * Math.sin(t / 380)) : 0.22;
-        } else {
-          m.emissiveIntensity = 0;
+      // Glow the engines and gear by status; the selected system is brighter.
+      for (const [comp, group] of Object.entries(groups)) {
+        const state = latest.current.components.find((x) => x.component_id.endsWith("/" + comp));
+        const picked = latest.current.selected.endsWith("/" + comp);
+        let color = 0x000000,
+          level = 0;
+        if (state?.status === "alert") [color, level] = [0xff4d4d, picked ? 0.8 : 0.5];
+        else if (state?.status === "watch") [color, level] = [0xffb020, picked ? 0.6 : 0.3];
+        else if (picked) [color, level] = [0x4c8dff, 0.5];
+        const tint = state?.status === "alert" ? 0xff8a8a : state?.status === "watch" ? 0xffd27a : 0xffffff;
+        for (const m of group) {
+          const mat = m.material as THREE.MeshStandardMaterial;
+          mat.emissive.set(color);
+          mat.emissiveIntensity = level;
+          // a white nacelle only turns pink under a red glow, so tint the paint too
+          mat.color.set(m.userData.base ?? (m.userData.base = mat.color.getHex()));
+          if (tint !== 0xffffff) mat.color.lerp(tintOf.set(tint), 0.6);
         }
       }
       controls.update();
       renderer.render(scene, camera);
-    };
+    }
     frame = requestAnimationFrame(animate);
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
       resize.disconnect();
       controls.dispose();
+      renderer.dispose();
       renderer.domElement.removeEventListener("pointerdown", pointerDown);
       renderer.domElement.removeEventListener("pointerup", pointerUp);
-      const geometries = new Set<THREE.BufferGeometry>();
-      const materials = new Set<THREE.Material>();
+      const geometries = new Set<THREE.BufferGeometry>(),
+        materials = new Set<THREE.Material>();
       scene.traverse((o) => {
-        if (o instanceof THREE.Mesh || o instanceof THREE.Line) {
+        if (o instanceof THREE.Mesh) {
           geometries.add(o.geometry);
           (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => materials.add(m));
         }
       });
       geometries.forEach((g) => g.dispose());
       materials.forEach((m) => m.dispose());
-      env.dispose();
-      pmrem.dispose();
-      renderer.dispose();
       element.replaceChildren();
       controller.current = null;
     };
-  }, [aircraftType]);
-
-  const chosen = parts.find((p) => p.id === partId);
-  // Parts of the component currently selected in the twin come first, so an alerting engine is at the top of its list.
-  const visibleParts = parts
-    .filter((p) => p.group === group)
-    .sort((x, y) => Number(!!y.component && selected.endsWith("/" + y.component)) - Number(!!x.component && selected.endsWith("/" + x.component)));
-  const linked = (p: Part) => (p.component ? components.find((c) => c.component_id.endsWith("/" + p.component)) : undefined);
+  }, [aircraftType, profile]);
 
   return (
-    <div className="study">
+    <div className="aircraft-study">
       {failed ? (
-        <div className="study-fallback">
+        <div className="scene-fallback">
           {fallback}
-          <p>3D is not available on this device; the plan view and the parts list still work.</p>
+          <p>The 3D model could not be loaded on this device. The system diagram is shown instead.</p>
         </div>
       ) : (
-        <div className="study-stage">
-          <div ref={host} className="study-canvas" />
-          <div className="study-title">
-            <strong>{profile?.label ?? "Narrow-body (generic)"}</strong>
-            <span>
-              {profile
-                ? `${profile.engine} engines · ${profile.length} m long · ${profile.span} m span`
-                : "Aircraft type not recognised; generic geometry"}
-            </span>
+        <div className="aircraft-scene aircraft-studio">
+          <div ref={host} className="scene-canvas" />
+          {!loaded && <div className="scene-loading-overlay">Loading the 3D model…</div>}
+          <div className="study-caption">
+            <span className="study-kicker">Aircraft</span>
+            <strong>{profile?.label ?? "Narrow-body aircraft"}</strong>
+            <span>{profile ? `${profile.length} m length · ${profile.span.toFixed(2)} m span` : "Type not recognized"}</span>
           </div>
-          <div className="study-views" role="group" aria-label="Camera">
-            {Object.entries(VIEWS).map(([k, v]) => (
+          <div className="study-variant">
+            {drawnAs737 ? "Drawn with a Boeing 737-800 model" : "Third-party 3D model"}
+            <br />
+            Illustrative configuration
+          </div>
+          <a className="scene-credit" href={CREDIT_URL} target="_blank" rel="noreferrer">
+            3D model “B737-800 Model” by hikami3150 · CC BY 4.0
+          </a>
+          <div className="scene-tools">
+            {["perspective", "top", "side"].map((mode) => (
               <button
-                key={k}
-                aria-pressed={view === k}
+                key={mode}
+                aria-pressed={view === mode}
                 onClick={() => {
-                  setView(k);
-                  controller.current?.view(k);
+                  setView(mode);
+                  controller.current?.view(mode);
                 }}
               >
-                {v.label}
+                {mode === "perspective" ? "3/4 view" : mode}
               </button>
             ))}
-            <span className="study-sep" />
             <button
-              aria-pressed={cutaway}
+              aria-pressed={orbit}
               onClick={() => {
-                setCutaway(!cutaway);
-                controller.current?.cutaway(!cutaway);
+                setOrbit(!orbit);
+                controller.current?.orbit(!orbit);
               }}
             >
-              Cutaway
+              Rotate
             </button>
           </div>
-          <p className="study-hint">Drag to turn, scroll to zoom, click a part.</p>
+          <div className="scene-hint">Drag to orbit · Scroll to zoom · Click an engine or the landing gear</div>
         </div>
       )}
-
-      <div className="parts">
-        <div className="parts-tabs" role="tablist" aria-label="Systems">
-          {GROUPS.map((g) => (
-            <button key={g} role="tab" aria-selected={group === g} onClick={() => setGroup(g)}>
-              {g}
-            </button>
-          ))}
-        </div>
-        <ul className="parts-list">
-          {visibleParts.map((p) => {
-            const c = linked(p);
-            const ph = c ? healthOf(p) : undefined;
-            const st = ph?.status ?? statusOf(p.component);
-            return (
-              <li key={p.id}>
-                <button
-                  aria-pressed={chosen?.id === p.id}
-                  onClick={() => {
-                    selectPart(p);
-                    controller.current?.focus(p);
-                  }}
-                >
-                  <span className="parts-name">{p.label}</span>
-                  {c ? (
-                    <span className={`parts-health s-${st}`}>{Math.round((ph?.value ?? c.health) * 100)}%</span>
-                  ) : (
-                    <span className="parts-health muted">{p.internal ? "cutaway" : "structure"}</span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="parts-note">
-          {chosen ? (
-            <>
-              <strong>{chosen.label}</strong>
-              <p>{chosen.description}</p>
-              <p className="muted">
-                {chosen.component
-                  ? `Estimated from the ${chosen.component.replaceAll("_", " ")} component: ${
-                      healthOf(chosen)?.driver ? `${healthOf(chosen)!.driver}, so this part is scored lower. ` : "no abnormal reading is tied to this part. "
-                    }The twin scores the component as a whole; sub-parts are not measured separately.`
-                  : "Structure only; no telemetry is assigned to this part."}
-              </p>
-            </>
-          ) : (
-            <p className="muted">Select a part on the model or in the list. Monitored parts show the health of their twin component.</p>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

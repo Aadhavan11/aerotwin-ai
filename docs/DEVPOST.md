@@ -67,7 +67,7 @@ NASA C-MAPSS turbofan degradation data (FD001; A. Saxena and K. Goebel, "Turbofa
 
 ## Disclosure: what existed before Hacklanta
 - The AeroTwin AI concept document (Aadhavan). A separate planning document for a different idea was removed from the repo before submission (it stays in git history): planning text only.
-- Public data and open-source libraries listed above.
+- Public data and open-source libraries listed above, and one third-party asset: the 3D aircraft model "B737-800 Model" by hikami3150 (Sketchfab, CC BY 4.0), downloaded during the event and credited in the app and in `docs/ASSETS.md`.
 - No application code existed before the event; the repository was created after hacking opened.
 
 ## Instructions for judges

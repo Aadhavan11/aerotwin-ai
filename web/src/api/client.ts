@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const BASE = (import.meta.env.VITE_API as string | undefined) ?? "/api";
+const BASE = (import.meta.env.VITE_API as string | undefined) ?? `${import.meta.env.BASE_URL}api`;
 
 export class ApiError extends Error {
   constructor(
@@ -74,14 +74,10 @@ export function usePoll<T>(path: string | null, ms: number) {
   useEffect(() => {
     active.current.alive = true;
     reload();
-    // Slow down (not stop) when the page reports itself hidden: embedded views and some screen
-    // recorders report hidden while visible, and a frozen dashboard is worse than a few extra polls.
-    let tick = 0;
     const id =
       ms > 0
         ? setInterval(() => {
-            tick++;
-            if (!document.hidden || tick % 4 === 0) reload();
+            if (!document.hidden) reload();
           }, ms)
         : undefined;
     return () => {

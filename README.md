@@ -31,6 +31,10 @@ Check that it works: `GET http://localhost:8000/health` should list all six modu
 Role views for operations control, maintenance planners, pilots, crew and dispatch, and administrators ([`docs/ROLE-VIEWS.md`](docs/ROLE-VIEWS.md)); fleet map and health of 24 aircraft with stations, technician shifts and parts stock; a 3D aircraft twin (737-800 and A320 geometry) with component and part health and remaining-life bands; a Maintenance section per aircraft (next planned job, where and when, parts and technicians, suggestions, work-order approval, history); a planning timeline with the optimized plan against a static baseline and the
 risk of waiting; a scenario lab (fault, part delay, hangar closed, technician out) with explained re-plans; agent and copilot workspace; human approval and an audit log.
 
+## Credits
+
+3D aircraft model: "B737-800 Model" by [hikami3150](https://sketchfab.com/hikami3150), licensed [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) ([source](https://sketchfab.com/3d-models/b737-800-model-6cbe380405794ea69d6b0a3d144dd1af); changes listed in [`docs/ASSETS.md`](docs/ASSETS.md)). NASA C-MAPSS engine data. Geist fonts (OFL).
+
 ## Team docs
 
 | Read in this order | |

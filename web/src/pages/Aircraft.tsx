@@ -1,26 +1,26 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { usePoll } from "../api/client";
-import type { Leg, TwinComponent, TwinView } from "../api/types";
-import { Card, ErrorBox, Loading, StatusPill } from "../components/ui";
-import EngineSection, { deviation, deviationClass, unitLabel, type GenericSpec, type SensorCatalog } from "../components/EngineSection";
-import { profileFor, type Profile } from "../components/aircraftModels";
-import { fmtZ } from "../lib/format";
-import Ring from "../components/Ring";
+import type { TwinComponent, TwinView } from "../api/types";
+import { Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
+import { fmtZ, STATUS_STYLE } from "../lib/format";
 
 const AircraftScene = lazy(() => import("../components/AircraftScene"));
 
 type Telemetry = { cycle: number; ts: string; values: Record<string, number> };
-const NAMES: Record<string, string> = {
-  engine_1: "Engine 1 (left)",
-  engine_2: "Engine 2 (right)",
-  brakes: "Wheel brakes",
-  landing_gear: "Landing gear",
-  hydraulics: "Hydraulic systems",
-  avionics: "Avionics",
-};
-const SHORT: Record<string, string> = {
+const labels: Record<string, string> = {
   engine_1: "Engine 1",
   engine_2: "Engine 2",
   brakes: "Brakes",
@@ -28,252 +28,405 @@ const SHORT: Record<string, string> = {
   hydraulics: "Hydraulics",
   avionics: "Avionics",
 };
-const short = (c: TwinComponent) => c.component_id.split("/").pop() ?? c.component_id;
-const nameOf = (c: TwinComponent) => NAMES[short(c)] ?? short(c);
-const n1 = (v: number) => Number(v.toFixed(1)).toLocaleString();
-const pct = (v: number) => `${Math.round(v * 100)}`;
-/** The models cap remaining life (engines at 125 flights, the rule-based systems at 500): show a capped value as "at least". */
-const rulText = (v: number, kind: string) => {
-  const cap = kind === "engine" ? 125 : 500;
-  return v >= cap - 0.05 ? `${cap}+` : n1(v);
+const units: Record<string, string> = {
+  T24: "°R",
+  T30: "°R",
+  T50: "°R",
+  Nc: "rpm",
+  Nf: "rpm",
+  Ps30: "psia",
+  P30: "psia",
+  pad_wear_mm: "mm",
+  strut_pressure_kpa: "kPa",
+  pump_pressure_kpa: "kPa",
+  error_rate_per_khr: "1/kh",
+  disc_temp_c: "°C",
+  fluid_temp_c: "°C",
+  box_temp_c: "°C",
+  shock_load_g: "g",
+};
+const short = (c: TwinComponent) =>
+  c.component_id.split("/").pop() ?? c.component_id;
+const name = (c: TwinComponent) => labels[short(c)] ?? short(c);
+const number = (n: number) => Number(n.toFixed(1)).toLocaleString();
+const zone: Record<string, { x: number; y: number; w: number; h: number }> = {
+  avionics: { x: 178, y: 38, w: 44, h: 48 },
+  engine_1: { x: 110, y: 163, w: 35, h: 70 },
+  engine_2: { x: 255, y: 163, w: 35, h: 70 },
+  hydraulics: { x: 181, y: 166, w: 38, h: 62 },
+  landing_gear: { x: 182, y: 246, w: 36, h: 40 },
+  brakes: { x: 174, y: 300, w: 52, h: 24 },
 };
 
-/** Remaining useful life as a band on a real scale: p10 to p90 shaded, p50 marked. */
-function RulBand({ p10, p50, p90, kind }: { p10: number; p50: number; p90: number; kind: string }) {
-  const max = Math.max(60, Math.ceil((p90 * 1.15) / 10) * 10);
-  const x = (v: number) => `${(Math.min(v, max) / max) * 100}%`;
+function Airframe({
+  components,
+  selected,
+  onSelect,
+}: {
+  components: TwinComponent[];
+  selected: string;
+  onSelect: (id: string) => void;
+}) {
   return (
-    <div>
-      <div className="rul-band" aria-label={`RUL p10 ${p10}, p50 ${p50}, p90 ${p90} cycles`}>
-        <div style={{ position: "absolute", left: 0, right: 0, top: 15, height: 4, background: "#ececea" }} />
-        <div style={{ position: "absolute", left: x(p10), width: `calc(${x(p90)} - ${x(p10)})`, top: 9, height: 16, background: "#dbe5ef", borderLeft: "2px solid #a8650c" }} />
-        <div style={{ position: "absolute", left: x(p50), top: 5, width: 2, height: 24, background: "#16191d" }} />
-        {[0, max / 2, max].map((t) => (
-          <span key={t} className="mono" style={{ position: "absolute", left: x(t), top: 26, fontSize: 10, color: "#6b717a", transform: t === max ? "translateX(-100%)" : t ? "translateX(-50%)" : undefined }}>
-            {t}
-          </span>
-        ))}
-      </div>
-      <dl className="figures" style={{ marginTop: 18 }}>
-        <div>
-          <dt>Conservative (p10)</dt>
-          <dd>
-            {rulText(p10, kind)}
-            <small>flights</small>
-          </dd>
-        </div>
-        <div>
-          <dt>Median (p50)</dt>
-          <dd>{rulText(p50, kind)}</dd>
-        </div>
-        <div>
-          <dt>Upper (p90)</dt>
-          <dd>{rulText(p90, kind)}</dd>
-        </div>
-      </dl>
-    </div>
+    <svg
+      viewBox="0 0 400 410"
+      className="mx-auto h-80 w-full"
+      aria-label="Aircraft component health diagram"
+    >
+      <path
+        d="M200 15 C173 40 173 75 177 135 L40 225 L40 245 L179 200 L183 325 L125 369 L125 385 L194 364 L200 397 L206 364 L275 385 L275 369 L217 325 L221 200 L360 245 L360 225 L223 135 C227 75 227 40 200 15Z"
+        fill="#191923"
+        stroke="#3a3a46"
+        strokeWidth="2"
+      />
+      {components.map((c) => {
+        const z = zone[short(c)];
+        if (!z) return null;
+        const color = STATUS_STYLE[c.status]?.dot ?? "#94a3b8";
+        return (
+          <g
+            key={c.component_id}
+            role="button"
+            tabIndex={0}
+            aria-label={`${name(c)}: ${c.status}, ${number(c.health * 100)} percent health`}
+            aria-pressed={selected === c.component_id}
+            onClick={() => onSelect(c.component_id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(c.component_id);
+              }
+            }}
+            className="cursor-pointer outline-none focus:drop-shadow-lg"
+          >
+            <title>
+              {name(c)} · {c.status} · {number(c.health * 100)}% health
+            </title>
+            <rect
+              {...{ x: z.x, y: z.y, width: z.w, height: z.h }}
+              rx="8"
+              fill={color}
+              fillOpacity=".75"
+              stroke={selected === c.component_id ? "#f4f4f8" : color}
+              strokeWidth={selected === c.component_id ? 4 : 2}
+            />
+            {c.status === "alert" && (
+              <rect
+                {...{ x: z.x - 4, y: z.y - 4, width: z.w + 8, height: z.h + 8 }}
+                rx="10"
+                fill="none"
+                stroke="#ef4444"
+                strokeWidth="2"
+                strokeDasharray="4 3"
+              />
+            )}
+          </g>
+        );
+      })}
+    </svg>
   );
 }
 
-/** Wear signal of a non-engine component between its new value and its limit. */
-function WearGauge({ spec, values }: { spec: GenericSpec; values: Record<string, number> }) {
-  const v = values[spec.wear_signal];
-  const span = spec.limit - spec.healthy;
-  const used = v == null ? null : Math.min(1, Math.max(0, (v - spec.healthy) / span));
-  const cls = used == null ? "" : used > 0.85 ? "s-alert" : used > 0.6 ? "s-watch" : "";
-  return (
-    <div>
-      <div className="comp-head">
-        <span>{spec.wear_signal.replaceAll("_", " ")}</span>
-        <span className="mono">
-          {v == null ? "-" : n1(v)} {spec.unit}
-        </span>
-      </div>
-      <div className={`bar ${cls}`} style={{ height: 8 }}>
-        <span style={{ width: `${(used ?? 0) * 100}%` }} />
-      </div>
-      <div className="comp-head muted mono" style={{ fontSize: 11, marginTop: 4 }}>
-        <span>new {spec.healthy}</span>
-        <span>limit {spec.limit}</span>
-      </div>
-      {spec.extras.map((e) => (
-        <p key={e} className="muted" style={{ margin: "10px 0 0", fontSize: 13 }}>
-          {e.replaceAll("_", " ")}: <span className="mono">{values[e] == null ? "-" : n1(values[e])}</span>
-        </p>
-      ))}
-      <p className="muted" style={{ fontSize: 12, marginTop: 12 }}>
-        Rule-based demo model with synthetic limits; not a manufacturer limit.
-      </p>
-    </div>
-  );
-}
-
-function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinComponent; tail: string; sensor: string; catalog?: SensorCatalog }) {
+function ComponentDetail({
+  component,
+  tail,
+}: {
+  component: TwinComponent;
+  tail: string;
+}) {
   const telemetry = usePoll<Telemetry[]>(
     `/aircraft/${encodeURIComponent(tail)}/telemetry?component=${encodeURIComponent(component.component_id)}&last=60`,
     3000,
   );
-  const [tab, setTab] = useState<"trend" | "history">("trend");
-  const isEngine = component.kind === "engine";
-  const gen = catalog?.generic[component.kind];
-  const keys = isEngine ? [sensor, ...["T50", "T30", "Ps30"].filter((k) => k !== sensor)].slice(0, 3) : gen ? [gen.wear_signal] : [];
-  const rows = telemetry.data ?? [];
-  const forecast = (component.predicted ?? []).map((p) => ({ cycle: p.cycle, band: [p.health_lo * 100, p.health_hi * 100], median: p.health_p50 * 100 }));
+  const keys = [
+    ...new Set([
+      "T50",
+      "Nc",
+      "Ps30",
+      ...Object.keys(component.sensors_last ?? {}),
+    ]),
+  ]
+    .filter((k) => k in (component.sensors_last ?? {}))
+    .slice(0, 3);
+  const history = component.history ?? [];
+  const forecast = (component.predicted ?? []).map((p) => ({
+    ...p,
+    band: [p.health_lo * 100, p.health_hi * 100],
+    median: p.health_p50 * 100,
+  }));
   const rul = component.rul_cycles;
-  const st = component.status;
+  const rows = telemetry.data ?? [];
+  const [tab, setTab] = useState<"sensors" | "history">("sensors");
   return (
     <div className="space-y-4">
-      <Card>
-        <div className="comp-head">
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 12 }}>
-            <Ring value={component.health} status={st} size={52} stroke={6}>
-              <span className="mono" style={{ fontSize: 13, fontWeight: 600 }}>{pct(component.health)}</span>
-            </Ring>
-            <h2>{nameOf(component)}</h2>
-          </span>
-          <StatusPill status={st} />
+      <Card
+        title={name(component)}
+        right={<StatusPill status={component.status} />}
+      >
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">
+              Component health
+            </p>
+            <div className="my-1 text-3xl font-semibold">
+              {number(component.health * 100)}
+              <span className="text-base text-slate-500">%</span>
+            </div>
+            <div
+              role="meter"
+              aria-label="Component health"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={component.health * 100}
+              className="h-2 rounded-full bg-slate-100"
+            >
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${component.health * 100}%`,
+                  background: STATUS_STYLE[component.status]?.dot,
+                }}
+              />
+            </div>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">
+              Anomaly score
+            </p>
+            <p className="my-1 text-3xl font-semibold">
+              {component.anomaly_score.toFixed(2)}
+            </p>
+            <p className="text-xs text-slate-500">
+              0–1 · larger means more unusual
+            </p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">
+              Data quality
+            </p>
+            <p
+              className={`my-1 text-xl font-semibold ${component.data_quality.status === "ok" ? "text-emerald-700" : "text-amber-700"}`}
+            >
+              {component.data_quality.status}
+            </p>
+            <p className="text-xs text-slate-500">
+              Updated {fmtZ(component.updated)}
+            </p>
+          </div>
         </div>
-        <dl className="figures" style={{ marginTop: 12 }}>
-          <div>
-            <dt>Health</dt>
-            <dd className={st === "alert" ? "tone-alert" : st === "watch" ? "tone-watch" : ""}>
-              {pct(component.health)}
-              <small>%</small>
-            </dd>
-          </div>
-          <div>
-            <dt>Anomaly score</dt>
-            <dd>{component.anomaly_score.toFixed(2)}</dd>
-          </div>
-          <div>
-            <dt>Data quality</dt>
-            <dd style={{ fontFamily: "var(--font-sans)", fontSize: 16, paddingTop: 6 }}>{component.data_quality.status}</dd>
-          </div>
-        </dl>
         {component.data_quality.reasons.length > 0 && (
-          <ul className="reasons">
+          <ul className="mt-4 space-y-1 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
             {component.data_quality.reasons.map((r) => (
               <li key={r}>{r}</li>
             ))}
           </ul>
         )}
-        <dl className="mt-4 grid grid-cols-3 gap-3 text-xs">
+        <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-slate-100 pt-3 text-xs">
           <div>
-            <dt className="muted">Flights since restored</dt>
-            <dd className="mono">{component.cycles.toLocaleString()}</dd>
+            <dt className="text-slate-500">Cycles</dt>
+            <dd className="font-medium">{component.cycles.toLocaleString()}</dd>
           </div>
           <div>
-            <dt className="muted">Hours since restored</dt>
-            <dd className="mono">{Math.round(component.hours).toLocaleString()}</dd>
+            <dt className="text-slate-500">Flight hours</dt>
+            <dd className="font-medium">{number(component.hours)}</dd>
           </div>
           <div>
-            <dt className="muted">Last service</dt>
-            <dd className="mono">{component.last_maintenance ? fmtZ(component.last_maintenance) : "none recorded"}</dd>
+            <dt className="text-slate-500">Last maintenance</dt>
+            <dd className="font-medium">
+              {component.last_maintenance
+                ? fmtZ(component.last_maintenance)
+                : "No record"}
+            </dd>
           </div>
         </dl>
+        <div className="mt-3 flex flex-wrap gap-1">
+          {keys.map((s) => (
+            <Chip key={s} tone="blue">
+              {s}
+            </Chip>
+          ))}
+        </div>
       </Card>
-
-      <Card title="Remaining useful life">
+      <Card title="Remaining useful life" right={<Chip>cycles = flights</Chip>}>
         {rul ? (
           <>
-            <RulBand p10={rul.p10} p50={rul.p50} p90={rul.p90} kind={component.kind} />
-            <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
-              Flights remaining. The scheduler treats p10 as a hard deadline; the band is model uncertainty, not an approved limit.
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                ["Conservative · p10", rul.p10],
+                ["Median · p50", rul.p50],
+                ["Upper · p90", rul.p90],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className={`rounded-lg p-3 ${String(label).includes("p10") ? "bg-amber-50" : "bg-slate-50"}`}
+                >
+                  <div className="text-xs text-slate-500">{label}</div>
+                  <div className="mt-1 text-2xl font-semibold">
+                    {number(Number(value))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Maintenance deadlines use conservative p10. The interval expresses
+              model uncertainty; it is not an approved operating limit.
             </p>
           </>
         ) : (
-          <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-            No estimate yet. Advance the simulation so the twin has telemetry to score.
+          <p className="text-sm text-slate-500">
+            RUL is unavailable. Step the simulation to collect telemetry; check
+            the data-quality reasons above.
           </p>
         )}
       </Card>
-
-      {forecast.length > 0 && (
-        <Card title="Predicted health">
-          <div style={{ height: 200 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={forecast} margin={{ left: -12, right: 12, top: 8, bottom: 0 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="cycle" type="number" domain={["dataMin", "dataMax"]} tickLine={false} />
-                <YAxis domain={[0, 100]} unit="%" tickLine={false} axisLine={false} />
-                <Tooltip labelFormatter={(v) => `Cycle ${v}`} formatter={(v) => (Array.isArray(v) ? v.map((x) => Math.round(Number(x))).join("–") : Math.round(Number(v)))} />
-                <Area type="monotone" dataKey="band" name="p10–p90" stroke="none" fill="#1d1d1f" fillOpacity={0.1} isAnimationActive={false} />
-                <Area type="monotone" dataKey="median" name="p50" stroke="#1d1d1f" fill="none" strokeWidth={1.6} isAnimationActive={false} />
-                <ReferenceLine x={component.cycles} stroke="#6b717a" strokeDasharray="3 3" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="muted" style={{ fontSize: 12, margin: "6px 0 0" }}>
-            Line: median. Shaded: p10 to p90. Dashed: now.
+      <Card title="Predicted health · uncertainty band">
+        {forecast.length > 0 ? (
+          <>
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={forecast}
+                  margin={{ left: 0, right: 15, top: 10, bottom: 12 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#272730" />
+                  <XAxis
+                    dataKey="cycle"
+                    type="number"
+                    domain={["dataMin", "dataMax"]}
+                    tick={{ fontSize: 11 }}
+                    label={{
+                      value: "Component cycles",
+                      position: "insideBottom",
+                      offset: -10,
+                      fontSize: 11,
+                    }}
+                  />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} unit="%" />
+                  <Tooltip labelFormatter={(v) => `Cycle ${v}`} />
+                  <Area
+                    type="monotone"
+                    dataKey="band"
+                    name="Lower–upper health (%)"
+                    stroke="none"
+                    fill="#4c8dff"
+                    fillOpacity={0.65}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="median"
+                    name="Median health (%)"
+                    stroke="#4c8dff"
+                    fill="none"
+                    strokeWidth={2}
+                  />
+                  <ReferenceLine
+                    x={component.cycles}
+                    stroke="#8d8d9b"
+                    strokeDasharray="4 4"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-xs text-slate-500">
+              Solid line: median prediction. Blue band: lower to upper health
+              estimate from the twin.
+            </p>
+          </>
+        ) : (
+          <p className="text-sm text-slate-500">
+            No predicted curve is available for this component yet.
           </p>
-        </Card>
-      )}
-
+        )}
+      </Card>
       <Card
-        title={tab === "trend" ? "Sensor trend" : "Scored history"}
+        title="Component evidence"
         right={
-          <div className="seg">
-            <button aria-pressed={tab === "trend"} onClick={() => setTab("trend")}>
-              Trend
-            </button>
-            <button aria-pressed={tab === "history"} onClick={() => setTab("history")}>
-              History
-            </button>
+          <div className="flex gap-1">
+            {(["sensors", "history"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                aria-pressed={tab === t}
+                className={`rounded-md px-2 py-1 text-xs ${tab === t ? "bg-slate-900 text-white" : "bg-slate-100"}`}
+              >
+                {t === "sensors" ? "Sensor trends" : "Health history"}
+              </button>
+            ))}
           </div>
         }
       >
-        {tab === "trend" ? (
+        {tab === "sensors" ? (
           <>
             <ErrorBox error={telemetry.error} />
-            {telemetry.loading && !rows.length ? (
-              <Loading what="telemetry" />
+            {telemetry.loading ? (
+              <Loading what="sensor trends" />
             ) : rows.length === 0 || keys.length === 0 ? (
-              <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-                No telemetry recorded yet.
+              <p className="text-sm text-slate-500">
+                No sensor telemetry recorded yet.
               </p>
             ) : (
-              keys.map((key, i) => {
-                const m = catalog?.engine.find((s) => s.name === key);
-                return (
-                  <div key={key} style={{ marginTop: i ? 14 : 0 }}>
-                    <div className="comp-head" style={{ fontSize: 12 }}>
-                      <span>
-                        <strong className="mono">{key}</strong> <span className="muted">{m?.description ?? ""}</span>
+              <div className="space-y-4">
+                {keys.map((key, i) => (
+                  <div key={key}>
+                    <div className="mb-1 flex justify-between text-xs">
+                      <span className="font-medium">
+                        {key} {units[key] && `(${units[key]})`}
                       </span>
-                      <span className="mono muted">{m ? unitLabel(m.unit) : ""}</span>
+                      <span className="text-slate-500">
+                        latest {number(component.sensors_last?.[key] ?? 0)}
+                      </span>
                     </div>
-                    <div style={{ height: i === 0 ? 150 : 100 }}>
+                    <div className="h-32">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={rows.map((r) => ({ cycle: r.cycle, value: r.values[key] ?? null }))} margin={{ left: -4, right: 12, top: 6, bottom: 0 }}>
-                          <CartesianGrid vertical={false} />
-                          <XAxis dataKey="cycle" tickLine={false} />
-                          <YAxis domain={["auto", "auto"]} width={58} tickLine={false} axisLine={false} />
+                        <LineChart
+                          data={rows.map((r) => ({
+                            cycle: r.cycle,
+                            value: r.values[key] ?? null,
+                          }))}
+                          margin={{ left: 4, right: 15, top: 5, bottom: 0 }}
+                        >
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#272730"
+                          />
+                          <XAxis dataKey="cycle" tick={{ fontSize: 10 }} />
+                          <YAxis
+                            domain={["auto", "auto"]}
+                            tick={{ fontSize: 10 }}
+                            width={60}
+                          />
                           <Tooltip labelFormatter={(v) => `Cycle ${v}`} />
-                          {m?.healthy_mean != null && <ReferenceLine y={m.healthy_mean} stroke="#2f7a4f" strokeDasharray="4 3" />}
-                          <Line type="monotone" dataKey="value" name={key} stroke={i === 0 ? "#16191d" : "#6b717a"} strokeWidth={i === 0 ? 1.6 : 1.2} dot={false} isAnimationActive={false} />
+                          <Line
+                            type="monotone"
+                            dataKey="value"
+                            name={key}
+                            stroke={["#4c8dff", "#4ade80", "#c4b5fd"][i]}
+                            strokeWidth={2}
+                            dot={false}
+                            connectNulls={false}
+                          />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
-                );
-              })
+                ))}
+              </div>
             )}
-            {isEngine && (
-              <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>
-                Green dashed: healthy fleet baseline. Horizontal axis: engine cycles.
-              </p>
-            )}
+            <p className="mt-2 text-xs text-slate-500">
+              Measured simulator outputs · each sensor has its own scale ·
+              horizontal axis is component cycles.
+            </p>
           </>
-        ) : (component.history ?? []).length === 0 ? (
-          <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-            No scored history yet.
+        ) : history.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            No scored history available yet.
           </p>
         ) : (
-          <div style={{ maxHeight: 260, overflow: "auto" }}>
-            <table className="sensor-table">
-              <thead>
+          <div className="max-h-64 overflow-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="sticky top-0 bg-white text-slate-500">
                 <tr>
-                  <th>Time (UTC)</th>
+                  <th className="py-2">Time (UTC)</th>
                   <th>Cycle</th>
                   <th>Health</th>
                   <th>Anomaly</th>
@@ -281,16 +434,21 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
                 </tr>
               </thead>
               <tbody>
-                {[...(component.history ?? [])]
+                {[...history]
                   .reverse()
-                  .slice(0, 80)
+                  .slice(0, 60)
                   .map((h) => (
-                    <tr key={`${h.cycle}-${h.ts}`}>
-                      <td className="mono">{fmtZ(h.ts)}</td>
-                      <td className="mono">{h.cycle}</td>
-                      <td className="mono">{pct(h.health)}%</td>
-                      <td className="mono">{h.anomaly_score.toFixed(2)}</td>
-                      <td className="mono">{h.rul_p50 == null ? "-" : n1(h.rul_p50)}</td>
+                    <tr
+                      key={`${h.cycle}-${h.ts}`}
+                      className="border-t border-slate-100"
+                    >
+                      <td className="py-2">{fmtZ(h.ts)}</td>
+                      <td>{h.cycle}</td>
+                      <td>{number(h.health * 100)}%</td>
+                      <td>{h.anomaly_score.toFixed(2)}</td>
+                      <td>
+                        {h.rul_p50 == null ? "Unknown" : number(h.rul_p50)}
+                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -302,204 +460,24 @@ function ComponentPanel({ component, tail, sensor, catalog }: { component: TwinC
   );
 }
 
-
-/** Every monitored system of the aircraft in one table; a row selects the component everywhere else on the page. */
-function SystemsTable({ components, selected, onSelect }: { components: TwinComponent[]; selected: string; onSelect: (id: string) => void }) {
-  const rows = [...components].sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
-  return (
-    <Card title="Monitored systems">
-      <div style={{ overflowX: "auto" }}>
-        <table className="data-table compact">
-          <thead>
-            <tr>
-              <th>System</th>
-              <th>Status</th>
-              <th>Health</th>
-              <th>Anomaly</th>
-              <th style={{ textAlign: "right" }}>RUL p10/p50/p90</th>
-              <th style={{ textAlign: "right" }} title="Flights since the system was last restored (overhaul, replacement or shop visit)">Since restored</th>
-              <th style={{ textAlign: "right" }}>Hours</th>
-              <th>Last service</th>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr key={c.component_id} className={c.component_id === selected ? "picked" : ""} onClick={() => onSelect(c.component_id)}>
-                <td style={{ fontWeight: 500, whiteSpace: "nowrap" }}>{SHORT[short(c)] ?? nameOf(c)}</td>
-                <td>
-                  <StatusPill status={c.status} />
-                </td>
-                <td style={{ minWidth: 84 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                    <Ring value={c.health} status={c.status} size={30} stroke={4} />
-                    <span className="mono" style={{ fontSize: 12 }}>
-                      {pct(c.health)}%
-                    </span>
-                  </span>
-                </td>
-                <td className="mono">{c.anomaly_score.toFixed(2)}</td>
-                <td className="mono" style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                  {c.rul_cycles ? `${rulText(c.rul_cycles.p10, c.kind)} / ${rulText(c.rul_cycles.p50, c.kind)} / ${rulText(c.rul_cycles.p90, c.kind)}` : "-"}
-                </td>
-                <td className="mono" style={{ textAlign: "right" }}>
-                  {c.cycles.toLocaleString()}
-                </td>
-                <td className="mono" style={{ textAlign: "right" }}>
-                  {Math.round(c.hours).toLocaleString()}
-                </td>
-                <td className="mono muted" style={{ whiteSpace: "nowrap" }}>{c.last_maintenance ? fmtZ(c.last_maintenance) : "none"}</td>
-                <td className="muted">{c.data_quality.status === "degraded" ? "partial" : c.data_quality.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
-        RUL is in flights; a capped value (125+ for engines, 500+ for the other systems) means at least that many. Select a row to show that system on the model and in the panels.
-      </p>
-    </Card>
-  );
-}
-
-function Specs({ profile, type }: { profile: Profile | null; type: string }) {
-  const rows: [string, string][] = profile
-    ? [
-        ["Type", profile.label],
-        ["Engines", `2 × ${profile.engine}`],
-        ["Fan diameter", `${(profile.nacelle.fanR * 2).toFixed(2)} m, ${profile.nacelle.blades} blades`],
-        ["Length", `${profile.length} m`],
-        ["Wingspan", `${profile.span} m`],
-        ["Height", `${profile.height} m`],
-        ["Fuselage", `${profile.fusW} m wide, ${profile.fusH} m high`],
-        ["Wing", `${profile.wing.leSweep}° sweep, ${profile.wing.dihedral}° dihedral`],
-        ["Wing tip", profile.winglet.kind === "sharklet" ? "Sharklet" : "Blended winglet"],
-        ["Landing gear", `track ${profile.gear.track} m, main tyres ⌀ ${profile.gear.mainTire} m`],
-        ["Hydraulics", profile.hydraulics.join(", ")],
-      ]
-    : [["Type", type]];
-  return (
-    <Card title="Specification">
-      <dl className="spec-list">
-        {rows.map(([k, v]) => (
-          <div key={k}>
-            <dt>{k}</dt>
-            <dd>{v}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="muted" style={{ fontSize: 12, margin: "10px 0 0" }}>
-        Published type dimensions; the aircraft model is a reference, not manufacturer CAD.
-      </p>
-    </Card>
-  );
-}
-
-/** What needs attention on the aircraft itself. Planning the fix lives in the Maintenance section. */
-function Alerts({ data, tail }: { data: TwinView; tail: string }) {
-  const open = data.components.filter((c) => c.status === "alert" || c.status === "watch");
-  const notes = data.components.filter((c) => c.status === "ok" && c.data_quality.status === "bad");
-  const latest = (id: string) =>
-    [...data.timeline].filter((e) => e.kind === "anomaly" && e.ref === id).sort((x, y) => Date.parse(y.ts) - Date.parse(x.ts))[0];
-  return (
-    <Card title="Alerts">
-      {open.length === 0 && notes.length === 0 ? (
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-          No system is on watch or in alert. Anomaly scores and remaining life are inside their normal range.
-        </p>
-      ) : (
-        <ul className="suggest">
-          {open.map((c) => {
-            const ev = latest(c.component_id);
-            return (
-              <li key={c.component_id}>
-                <div className="comp-head">
-                  <strong>{nameOf(c)}</strong>
-                  <StatusPill status={c.status} />
-                </div>
-                <div className="muted" style={{ fontSize: 13, marginTop: 3, lineHeight: 1.5 }}>
-                  Anomaly score {c.anomaly_score.toFixed(2)} · health {pct(c.health)}%
-                  {c.rul_cycles ? ` · conservative life ${rulText(c.rul_cycles.p10, c.kind)} flights` : ""}
-                </div>
-                {ev && (
-                  <div style={{ fontSize: 13, marginTop: 4, lineHeight: 1.5 }}>
-                    {ev.summary} <span className="muted mono">({fmtZ(ev.ts)})</span>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-          {notes.map((c) => (
-            <li key={c.component_id}>
-              <div className="comp-head">
-                <strong>{nameOf(c)}</strong>
-                <span className="status s-watch">Data quality</span>
-              </div>
-              <div className="muted" style={{ fontSize: 13, marginTop: 3 }}>{c.data_quality.reasons.join("; ") || "Telemetry cannot be scored."}</div>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p style={{ fontSize: 13, margin: "12px 0 0" }}>
-        <Link to={`/maintenance/${tail}`}>Open maintenance for {tail} →</Link>
-      </p>
-    </Card>
-  );
-}
-
-function NextFlights({ tail, now }: { tail: string; now?: string }) {
-  const legs = usePoll<Leg[]>(`/legs?tail=${encodeURIComponent(tail)}`, 15000).data;
-  const t0 = now ? Date.parse(now) : 0;
-  const next = (legs ?? []).filter((l) => Date.parse(l.sched_arr) > t0).sort((a, b) => Date.parse(a.sched_dep) - Date.parse(b.sched_dep)).slice(0, 6);
-  return (
-    <Card title="Next flights">
-      {next.length === 0 ? (
-        <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-          No further scheduled flights in the loaded horizon.
-        </p>
-      ) : (
-        <ul className="plain-list">
-          {next.map((l) => (
-            <li key={l.id}>
-              <span className="mono">
-                {l.dep} to {l.arr}
-              </span>
-              <span className="muted">
-                {fmtZ(l.sched_dep)} to {fmtZ(l.sched_arr)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Card>
-  );
-}
-
 export default function Aircraft() {
   const { tail = "" } = useParams();
-  const { data, error, reload } = usePoll<TwinView>(`/aircraft/${encodeURIComponent(tail)}`, 3000);
-  const catalog = usePoll<SensorCatalog>("/ml/sensors", 600_000).data;
-  const health = usePoll<{ sim_now: string }>("/health", 5000);
+  const { data, error, source, reload } = usePoll<TwinView>(
+    `/aircraft/${encodeURIComponent(tail)}`,
+    3000,
+  );
   const [selected, setSelected] = useState("");
-  const [sensor, setSensor] = useState("T50");
-  useEffect(() => setSelected(""), [tail]);
-  const component = useMemo(() => {
-    if (!data) return undefined;
-    return (
-      data.components.find((c) => c.component_id === selected) ??
-      [...data.components].sort((x, y) => (x.rul_cycles?.p10 ?? Infinity) - (y.rul_cycles?.p10 ?? Infinity))[0]
-    );
-  }, [data, selected]);
-
   if (!data)
     return (
       <div>
-        <Link to="/">← Fleet</Link>
+        <Link to="/" className="text-sm text-blue-600">
+          ← Fleet
+        </Link>
         {error ? (
           <>
             <ErrorBox error={error} />
-            <button onClick={reload} className="app-agents" style={{ marginTop: 12 }}>
-              Retry
+            <button onClick={reload} className="mt-3 text-sm text-blue-600">
+              Retry loading aircraft
             </button>
           </>
         ) : (
@@ -507,141 +485,114 @@ export default function Aircraft() {
         )}
       </div>
     );
-
   const a = data.aircraft;
-  const profile = profileFor(a.type);
-  const values = component?.sensors_last ?? {};
-  const engineMeta = catalog?.engine ?? [];
+  const component =
+    data.components.find((c) => c.component_id === selected) ??
+    [...data.components].sort(
+      (x, y) =>
+        (x.rul_cycles?.p10 ?? Infinity) - (y.rul_cycles?.p10 ?? Infinity),
+    )[0];
   return (
-    <div>
-      <div className="twin-head">
-        <Link to="/" style={{ fontSize: 13 }}>
+    <div className="space-y-4">
+      <div className="eyebrow twin-eyebrow">Aircraft twin</div>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link to="/" className="text-sm text-blue-600 hover:underline">
           ← Fleet
         </Link>
-        <h1>{a.tail}</h1>
-        <span style={{ fontSize: 15 }}>{profile?.label ?? a.type}</span>
+        <h1 className="page-title">
+          {a.tail}{" "}
+          <span className="font-normal text-slate-500">twin</span>
+        </h1>
         <StatusPill status={a.status} />
-        <div className="seg" role="tablist" aria-label="Section" style={{ marginLeft: "auto" }}>
-          <span role="tab" aria-selected={true} className="on">
-            Aircraft
-          </span>
-          <Link to={`/maintenance/${a.tail}`} role="tab" aria-selected={false}>
-            Maintenance
-          </Link>
-        </div>
+        {source?.includes("fixture") && <Chip tone="amber">Fixture data</Chip>}
       </div>
-      <p className="twin-meta">
-        Home {a.home} · {a.location === "AIR" ? "in flight" : `on the ground at ${a.location}`} · {a.cycles.toLocaleString()} flights ·{" "}
-        {Math.round(a.hours).toLocaleString()} flight hours
+      <p className="text-sm text-slate-500">
+        {a.type} · home {a.home} ·{" "}
+        {a.location === "AIR" ? "In flight" : `At ${a.location}`} ·{" "}
+        {a.cycles.toLocaleString()} flights · {number(a.hours)} flight hours
       </p>
       <ErrorBox error={error} />
-      <div className="twin-grid">
+      <div className="grid items-start gap-4 xl:grid-cols-[1.15fr_1fr]">
         <div className="space-y-4">
-          <Suspense fallback={<div className="study" style={{ height: 500 }} />}>
-            <AircraftScene
-              aircraftType={a.type}
-              catalog={catalog}
-              components={data.components}
-              selected={component?.component_id ?? ""}
-              onSelect={setSelected}
+          <Card title="Aircraft" right={<Chip>3D MODEL</Chip>}>
+            <Suspense
               fallback={
-                <ul>
-                  {data.components.map((c) => (
-                    <li key={c.component_id}>
-                      <button className="app-agents" onClick={() => setSelected(c.component_id)}>
-                        {nameOf(c)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <div className="scene-loading">
+                  Loading the 3D model…
+                </div>
               }
-            />
-          </Suspense>
-
-          <SystemsTable components={data.components} selected={component?.component_id ?? ""} onSelect={setSelected} />
-
-          {component && component.kind === "engine" && catalog && (
-            <Card title={`${nameOf(component)} · ${profile?.engine ?? "turbofan"} sensor stations`}>
-              <EngineSection engine={profile?.engine ?? "CFM56-7B"} values={values} catalog={catalog} selected={sensor} onSelect={setSensor} />
-              <table className="sensor-table">
-                <thead>
-                  <tr>
-                    <th>Sensor</th>
-                    <th>Station</th>
-                    <th style={{ textAlign: "right" }}>Latest</th>
-                    <th style={{ textAlign: "right" }}>Healthy baseline</th>
-                    <th style={{ textAlign: "right" }}>Deviation</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {engineMeta.map((m) => {
-                    const z = deviation(m, values[m.name]);
-                    return (
-                      <tr key={m.name} className={sensor === m.name ? "picked" : ""} onClick={() => setSensor(m.name)}>
-                        <td>
-                          <strong className="mono">{m.name}</strong> <span className="muted">{m.description}</span>
-                        </td>
-                        <td className="mono muted">{m.station}</td>
-                        <td className="mono" style={{ textAlign: "right" }}>
-                          {values[m.name] == null ? "-" : n1(values[m.name])} <span className="muted">{unitLabel(m.unit)}</span>
-                        </td>
-                        <td className="mono muted" style={{ textAlign: "right" }}>
-                          {m.healthy_mean == null ? "-" : `${n1(m.healthy_mean)} ± ${n1(m.healthy_std ?? 0)}`}
-                        </td>
-                        <td className={`mono status-text ${deviationClass(z)}`} style={{ textAlign: "right" }}>
-                          {z == null ? "-" : `${z >= 0 ? "+" : ""}${z.toFixed(1)}σ`}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <p className="muted" style={{ fontSize: 12, margin: "8px 0 0" }}>
-                Baseline: {catalog.baseline}. Healthy engines differ from each other, so readings within about 2σ are normal.
-              </p>
-            </Card>
-          )}
-          {component && component.kind !== "engine" && catalog?.generic[component.kind] && (
-            <Card title={`${nameOf(component)} · wear`}>
-              <WearGauge spec={catalog.generic[component.kind]} values={values} />
-            </Card>
-          )}
-
-          <Card title="Timeline">
-            {data.timeline.length === 0 ? (
-              <p className="muted" style={{ fontSize: 13, margin: 0 }}>
-                Nothing recorded yet. Flights, injected faults, alerts and maintenance appear here.
-              </p>
-            ) : (
-              <ol className="timeline">
-                {[...data.timeline]
-                  .sort((x, y) => Date.parse(y.ts) - Date.parse(x.ts))
-                  .slice(0, 60)
-                  .map((e, i) => (
-                    <li key={`${e.ts}-${e.ref}-${i}`}>
-                      <time>{fmtZ(e.ts)}</time>
-                      <div>
-                        <div className="kind">{e.kind.replaceAll("_", " ")}</div>
-                        <div>{e.summary}</div>
-                      </div>
-                    </li>
-                  ))}
-              </ol>
-            )}
+            >
+              <AircraftScene
+                aircraftType={a.type}
+                components={data.components}
+                selected={component?.component_id ?? ""}
+                onSelect={setSelected}
+                fallback={
+                  <Airframe
+                    components={data.components}
+                    selected={component?.component_id ?? ""}
+                    onSelect={setSelected}
+                  />
+                }
+              />
+            </Suspense>
+            <div className="grid grid-cols-2 gap-2">
+              {data.components.map((c) => (
+                <button
+                  key={c.component_id}
+                  onClick={() => setSelected(c.component_id)}
+                  aria-pressed={component?.component_id === c.component_id}
+                  className={`rounded-lg border p-2 text-left text-xs ${component?.component_id === c.component_id ? "border-blue-500 bg-blue-50" : "border-slate-200 hover:bg-slate-50"}`}
+                >
+                  <span className="mb-1 block font-semibold">{name(c)}</span>
+                  <StatusPill status={c.status} />
+                </button>
+              ))}
+            </div>
+          </Card>
+          <Card title="Aircraft timeline">
+            <ol className="max-h-96 space-y-4 overflow-auto">
+              {data.timeline.length === 0 && (
+                <li className="text-sm text-slate-500">
+                  No events recorded. Flights, injected faults and maintenance
+                  events appear here.
+                </li>
+              )}
+              {[...data.timeline]
+                .sort((x, y) => Date.parse(y.ts) - Date.parse(x.ts))
+                .map((e, i) => (
+                  <li
+                    key={`${e.ts}-${e.ref}-${i}`}
+                    className="border-l-2 border-slate-200 pl-3"
+                  >
+                    <p className="text-xs text-slate-500">{fmtZ(e.ts)}</p>
+                    <p className="mt-1 text-xs font-semibold capitalize">
+                      {e.kind.replaceAll("_", " ")}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">{e.summary}</p>
+                    {e.ref && (
+                      <span className="mt-1 block text-xs text-slate-400">
+                        {e.ref}
+                      </span>
+                    )}
+                  </li>
+                ))}
+            </ol>
           </Card>
         </div>
-        <div className="space-y-4">
-          <Alerts data={data} tail={tail} />
-          {component ? (
-            <ComponentPanel key={component.component_id} component={component} tail={tail} sensor={sensor} catalog={catalog} />
-          ) : (
-            <Card title="Components">
-              <p className="muted">This aircraft has no registered components.</p>
-            </Card>
-          )}
-          <Specs profile={profile} type={a.type} />
-          <NextFlights tail={tail} now={health.data?.sim_now} />
-        </div>
+        {component ? (
+          <ComponentDetail
+            key={component.component_id}
+            component={component}
+            tail={tail}
+          />
+        ) : (
+          <Card title="Components">
+            <p className="text-sm text-slate-500">
+              This aircraft has no registered components.
+            </p>
+          </Card>
+        )}
       </div>
     </div>
   );

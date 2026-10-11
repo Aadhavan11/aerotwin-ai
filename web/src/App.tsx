@@ -4,86 +4,65 @@ import { usePoll } from "./api/client";
 import type { HealthInfo } from "./api/types";
 import { fmtZ } from "./lib/format";
 import CopilotDrawer from "./components/CopilotDrawer";
+import Icon from "./components/Icon";
 import { ROLES, useRole, type RoleId } from "./lib/role";
 import Fleet from "./pages/Fleet";
 const Aircraft = lazy(() => import("./pages/Aircraft"));
-const Maintenance = lazy(() => import("./pages/Maintenance"));
 const Planning = lazy(() => import("./pages/Planning"));
 const Lab = lazy(() => import("./pages/Lab"));
 const Control = lazy(() => import("./pages/Control"));
-const WorkOrders = lazy(() => import("./pages/WorkOrders"));
+const Maintenance = lazy(() => import("./pages/Maintenance"));
 const FlightBrief = lazy(() => import("./pages/FlightBrief"));
 const Dispatch = lazy(() => import("./pages/Dispatch"));
 const Admin = lazy(() => import("./pages/Admin"));
-
-// Short names for the top bar; the role's own longer labels are used as tooltips.
-const SHORT: Record<string, string> = {
-  "/": "Fleet",
-  "/control": "Control room",
-  "/aircraft/SIM-017": "Aircraft",
-  "/maintenance": "Maintenance",
-  "/planning": "Planning",
-  "/lab": "Scenarios",
-  "/workorders": "Work orders",
-  "/brief": "Readiness brief",
-  "/departures": "Departures",
-  "/admin": "System & audit",
-};
-
 export default function App() {
   const [open, setOpen] = useState(false);
   const health = usePoll<HealthInfo>("/health", 4000);
   const location = useLocation();
   const navigate = useNavigate();
   const { role, setRole } = useRole();
+  const h = health.data;
   // Land on the role's own home the first time the console opens at "/".
   useEffect(() => {
     if (location.pathname === "/" && role.home !== "/") navigate(role.home, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Any page can open the agent workspace with window.dispatchEvent(new Event("aerotwin:open-agents")).
   useEffect(() => {
     const openIt = () => setOpen(true);
-    window.addEventListener("aerotwin:copilot", openIt);
     window.addEventListener("aerotwin:open-agents", openIt);
-    return () => {
-      window.removeEventListener("aerotwin:copilot", openIt);
-      window.removeEventListener("aerotwin:open-agents", openIt);
-    };
+    return () => window.removeEventListener("aerotwin:open-agents", openIt);
   }, []);
-  const h = health.data;
   const modules = h ? Object.entries(h.modules) : [];
-  const mocked = modules.filter(([, value]) => value.startsWith("mock")).map(([k]) => k);
+  const mocked = modules.filter(([, value]) => value.startsWith("mock"));
   const broken = h ? Object.keys(h.errors) : [];
+  const real = modules.filter(([, value]) => value === "real").length;
   return (
     <div className="app">
-      <header className="app-header">
-        <NavLink to="/" className="app-brand">
-          AeroTwin <small>maintenance planning</small>
+      <header className="topbar">
+        <NavLink to={role.home} className="brand" aria-label="AeroTwin home">
+          <span className="brand-mark">AT</span>
+          <span className="brand-name">AeroTwin</span>
         </NavLink>
-        <nav className="app-nav" aria-label="Main">
+        <nav className="capsule" aria-label={role.label}>
           {role.nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.to === "/"}
-              title={n.label}
-              className={({ isActive }) =>
-                isActive || (n.to.startsWith("/aircraft") && location.pathname.startsWith("/aircraft")) || (n.to === "/maintenance" && location.pathname.startsWith("/maintenance"))
-                  ? "active"
-                  : ""
-              }
+              className={({ isActive }) => (isActive || (n.to.startsWith("/aircraft") && location.pathname.startsWith("/aircraft")) ? "active" : "")}
             >
-              {SHORT[n.to] ?? n.label}
+              {n.label}
             </NavLink>
           ))}
         </nav>
-        <div className="app-status">
+        <div className="topbar-right">
           <label className="sr-only" htmlFor="role-select">
             Viewing as
           </label>
           <select
             id="role-select"
-            className="select role-select"
+            className="role-select"
             value={role.id}
             title={role.blurb}
             onChange={(e) => {
@@ -98,41 +77,53 @@ export default function App() {
               </option>
             ))}
           </select>
-          <span className="sim-tag" title="All aircraft, telemetry and results are simulated">
-            SIMULATED
+          <span className="sim-pill" title="Every aircraft, flight and sensor value is simulated">
+            Simulated
           </span>
-          <span className={`app-conn ${health.error ? "down" : ""}`}>
-            {health.error ? "API unreachable" : mocked.length ? `Mock: ${mocked.join(", ")}` : h ? "Live API" : "Connecting"}
-          </span>
-          <span className="app-clock" title="Simulation time, UTC">
+          <span className="clock" title={health.error ? "Connection to the API lost" : "Connected to the API"}>
+            <i className={`conn ${health.error ? "down" : ""}`} />
             {fmtZ(h?.sim_now)}
           </span>
-          <button className="app-agents" onClick={() => setOpen(!open)} aria-expanded={open}>
-            {open ? "Close copilot" : "Copilot"}
+          <button className="agent-trigger" onClick={() => setOpen(!open)}>
+            <Icon name="agents" size={16} />
+            <span>{open ? "Close agents" : "Agents"}</span>
           </button>
         </div>
       </header>
-      {broken.length > 0 && <div className="app-alert">Module import errors: {broken.join(", ")}</div>}
-      {h?.mock && <div className="app-notice">Fixture mode: scenarios and plans shown are mock outputs, not results.</div>}
-      <main className={`app-main ${open ? "agents-open" : ""}`}>
-        <Suspense fallback={<div className="page-loading">Loading…</div>}>
-          <Routes>
-            <Route path="/" element={<Fleet />} />
-            <Route path="/aircraft/:tail" element={<Aircraft />} />
-            <Route path="/maintenance" element={<Maintenance />} />
-            <Route path="/maintenance/:tail" element={<Maintenance />} />
-            <Route path="/planning" element={<Planning />} />
-            <Route path="/lab" element={<Lab />} />
-            <Route path="/control" element={<Control />} />
-            <Route path="/workorders" element={<WorkOrders />} />
-            <Route path="/brief" element={<FlightBrief />} />
-            <Route path="/departures" element={<Dispatch />} />
-            <Route path="/admin" element={<Admin />} />
-          </Routes>
+      {broken.length > 0 && <div className="console-alert">Module import errors: {broken.join(", ")}</div>}
+      {h?.mock && <div className="console-notice">Fixture mode: scenarios and plans shown here are mock outputs</div>}
+      <main className={`page ${open ? "agents-open" : ""}`}>
+        <Suspense
+          fallback={
+            <div className="console-loading">
+              <Icon name="pulse" />
+              Loading…
+            </div>
+          }
+        >
+          <div key={location.pathname} className="page-enter">
+            <Routes>
+              <Route path="/" element={<Fleet />} />
+              <Route path="/aircraft/:tail" element={<Aircraft />} />
+              <Route path="/planning" element={<Planning />} />
+              <Route path="/lab" element={<Lab />} />
+              <Route path="/control" element={<Control />} />
+              <Route path="/workorders" element={<Maintenance />} />
+              <Route path="/brief" element={<FlightBrief />} />
+              <Route path="/departures" element={<Dispatch />} />
+              <Route path="/admin" element={<Admin />} />
+            </Routes>
+          </div>
         </Suspense>
-        <footer className="app-footer">
-          <span>Advisory prototype on simulated data (NASA C-MAPSS engines, synthetic fleet).</span>
-          <span>Not certified for operational use. A person approves every maintenance action.</span>
+        <footer className="page-foot">
+          <span>
+            Advisory prototype on simulated data. Not certified for operational use; a person approves every maintenance action.
+            {import.meta.env.VITE_PUBLIC_DEMO ? " This is a shared public demo: every visitor shares one simulation, so reset it under System if it looks different." : ""}
+          </span>
+          <span>
+            {h ? `${real} of ${modules.length} services running real code${mocked.length ? ` (${mocked.map(([k]) => k).join(", ")} mocked)` : ""}` : "connecting"} ·{" "}
+            <NavLink to="/admin">system</NavLink> · v{h?.version ?? "?"}
+          </span>
         </footer>
       </main>
       <CopilotDrawer open={open} onClose={() => setOpen(false)} />

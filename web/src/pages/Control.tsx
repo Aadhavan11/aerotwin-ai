@@ -74,7 +74,7 @@ export default function Control() {
           )}
         </Card>
 
-        <Card title="Watch list" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/">All {f.aircraft.length} aircraft</Link>}>
+        <Card title="Watch list" right={<Link className="text-xs text-blue-600 hover:underline" to="/">All {f.aircraft.length} aircraft</Link>}>
           {watch.length === 0 ? (
             <p className="text-sm text-slate-500">Every aircraft is OK.</p>
           ) : (
@@ -91,7 +91,7 @@ export default function Control() {
                 {watch.map((a) => (
                   <tr key={a.tail} className="border-t border-slate-200">
                     <td className="py-1.5">
-                      <Link className="font-medium text-slate-900 underline hover:underline" to={`/aircraft/${a.tail}`}>
+                      <Link className="font-medium text-blue-600 hover:underline" to={`/aircraft/${a.tail}`}>
                         {a.tail}
                       </Link>
                       <div className="text-xs text-slate-500">
@@ -112,7 +112,7 @@ export default function Control() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card title="Maintenance in the plan" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/planning">Open the plan</Link>}>
+        <Card title="Maintenance in the plan" right={<Link className="text-xs text-blue-600 hover:underline" to="/planning">Open the plan</Link>}>
           {jobs.length === 0 ? (
             <p className="text-sm text-slate-500">No maintenance is planned. When a component's conservative remaining life falls inside the planning horizon, the solver schedules it here.</p>
           ) : (
@@ -121,7 +121,7 @@ export default function Control() {
                 <li key={a.task_id} className="rounded-lg border border-slate-200 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span>
-                      <Link className="font-semibold text-slate-900 underline hover:underline" to={`/aircraft/${a.tail}`}>
+                      <Link className="font-semibold text-blue-600 hover:underline" to={`/aircraft/${a.tail}`}>
                         {a.tail}
                       </Link>{" "}
                       <span className="text-slate-600">at {a.station}</span>
@@ -165,15 +165,15 @@ export default function Control() {
                           <div className="text-xs text-slate-500">{niceComponent(e.component_id)}</div>
                         </td>
                         <td className="py-1.5 tabular-nums">
-                          <b className="text-slate-900">{hoursText(e.hours_to_fix)}</b>
+                          <b className="text-emerald-600">{hoursText(e.hours_to_fix)}</b>
                           <div className="text-xs text-slate-500">{hoursText(b?.hours_to_fix)} baseline</div>
                         </td>
                         <td className="py-1.5 tabular-nums">
-                          <b className="text-slate-900">{e.flights_before_fix ?? "n/a"}</b>
+                          <b className="text-emerald-600">{e.flights_before_fix ?? "n/a"}</b>
                           <div className="text-xs text-slate-500">{b?.flights_before_fix ?? "n/a"} baseline</div>
                         </td>
                         <td className="py-1.5 tabular-nums">
-                          <b className="text-slate-900">{hoursText(e.slack_to_deadline_h)}</b>
+                          <b className="text-emerald-600">{hoursText(e.slack_to_deadline_h)}</b>
                           <div className="text-xs text-slate-500">{hoursText(b?.slack_to_deadline_h)} baseline</div>
                         </td>
                       </tr>
@@ -184,7 +184,7 @@ export default function Control() {
             )}
           </Card>
 
-          <Card title="Recent activity" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/admin">Full audit trail</Link>}>
+          <Card title="Recent activity" right={<Link className="text-xs text-blue-600 hover:underline" to="/admin">Full audit trail</Link>}>
             {recent.length === 0 ? (
               <p className="text-sm text-slate-500">No activity recorded yet.</p>
             ) : (

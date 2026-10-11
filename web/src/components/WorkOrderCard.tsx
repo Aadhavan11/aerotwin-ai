@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { post } from "../api/client";
 import type { WorkOrder } from "../api/types";
 import { fmtH, fmtZ, hoursBetween } from "../lib/format";
-import { actorName, setActorName, useRole } from "../lib/role";
+import { actorName, useRole } from "../lib/role";
 import { Btn, Chip } from "./ui";
 
 const TONE: Record<string, string> = {
@@ -17,13 +17,12 @@ export default function WorkOrderCard({ w, onDone }: { w: WorkOrder; onDone: () 
   const { role } = useRole();
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
-  const [who, setWho] = useState(actorName);
   const [err, setErr] = useState("");
   const decide = async (decision: "approve" | "reject") => {
     setBusy(true);
     setErr("");
     try {
-      await post(`/workorders/${w.id}/decision`, { decision, user: who.trim(), note });
+      await post(`/workorders/${w.id}/decision`, { decision, user: actorName(), note });
       setNote("");
       onDone();
     } catch (e) {
@@ -75,22 +74,13 @@ export default function WorkOrderCard({ w, onDone }: { w: WorkOrder; onDone: () 
             className="w-full rounded-md border border-slate-300 bg-transparent px-2 py-1 text-xs text-slate-800"
           />
           <div className="flex items-center gap-2">
-            <Btn tone="primary" disabled={busy || !who.trim()} onClick={() => decide("approve")} title={who.trim() ? "" : "Enter your name first"}>
+            <Btn tone="primary" disabled={busy} onClick={() => decide("approve")}>
               Approve
             </Btn>
-            <Btn disabled={busy || !who.trim()} onClick={() => decide("reject")}>
+            <Btn disabled={busy} onClick={() => decide("reject")}>
               Reject
             </Btn>
-            <input
-              value={who}
-              onChange={(e) => {
-                setWho(e.target.value);
-                setActorName(e.target.value);
-              }}
-              placeholder="your name"
-              aria-label="Your name for the audit log"
-              className="name-input"
-            />
+            <span className="text-xs text-slate-500">as {actorName()}</span>
           </div>
         </div>
       )}

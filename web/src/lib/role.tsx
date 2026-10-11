@@ -20,7 +20,6 @@ const N = {
   fleet: { to: "/", label: "Fleet overview", icon: "fleet" },
   control: { to: "/control", label: "Control room", icon: "pulse" },
   twin: { to: "/aircraft/SIM-017", label: "Aircraft twin", icon: "aircraft" },
-  maintenance: { to: "/maintenance", label: "Aircraft maintenance", icon: "planning" },
   plan: { to: "/planning", label: "Maintenance plan", icon: "planning" },
   lab: { to: "/lab", label: "Simulation lab", icon: "lab" },
   workorders: { to: "/workorders", label: "Work orders & resources", icon: "agents" },
@@ -36,7 +35,7 @@ export const ROLES: Role[] = [
     blurb: "Fleet health, decisions waiting, the plan, and the risk of waiting.",
     home: "/",
     canDecide: true,
-    nav: [N.fleet, N.control, N.twin, N.maintenance, N.plan, N.lab],
+    nav: [N.fleet, N.control, N.twin, N.plan, N.lab],
   },
   {
     id: "maintenance",
@@ -44,7 +43,7 @@ export const ROLES: Role[] = [
     blurb: "Work orders to approve, technicians, parts and hangar slots, and the jobs planned at each station.",
     home: "/workorders",
     canDecide: true,
-    nav: [N.workorders, N.maintenance, N.plan, N.twin, N.control],
+    nav: [N.workorders, N.plan, N.twin, N.control],
   },
   {
     id: "pilot",
@@ -109,16 +108,9 @@ export function useRole(): Ctx {
 /** The name shown as "Acting as" in the agent workspace; used as the approver on work orders. */
 export const actorName = (): string => {
   try {
-    return localStorage.getItem("aerotwin.user") ?? "";
+    return localStorage.getItem("aerotwin.user") || "Shamit";
   } catch {
-    return "";
-  }
-};
-export const setActorName = (name: string) => {
-  try {
-    localStorage.setItem("aerotwin.user", name);
-  } catch {
-    /* ignore */
+    return "Shamit";
   }
 };
 
