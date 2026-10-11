@@ -386,6 +386,13 @@ def get_telemetry(tail: str, component_id: Optional[str] = None, last: int = 60)
         return rows[-last * 6:] if last else rows
 
 
+def top_signals(component_id: str) -> list[str]:
+    """The sensors that drove the latest score of a component (explainability)."""
+    with _LOCK:
+        c = _comps.get(component_id)
+        return list(c.score.top_signals) if c is not None and c.score is not None else []
+
+
 def list_aircraft() -> list[Aircraft]:
     with _LOCK:
         return [_aircraft_view(t) for t in sorted(_aircraft)]  # type: ignore[misc]

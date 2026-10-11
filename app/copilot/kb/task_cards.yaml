@@ -1,0 +1,156 @@
+# AeroTwin AI: synthetic maintenance task cards (the demo "knowledge base")
+#
+# SYNTHETIC DEMO DATA. These are MADE-UP values for a hackathon prototype. They are NOT real
+# maintenance data, NOT from any manufacturer manual or airline program, and must never be used
+# to plan real maintenance. Durations, parts and intervals are invented so the scheduler has
+# something to plan with. The ATA numbers are only the public chapter numbering (loosely used).
+#
+# Author: Pardhu. Readers: app/solver/tasks.py (derive_tasks) and Shamit's copilot (search_kb).
+#
+# Fields per card
+#   id             stable card id; the copilot cites it as kb:<id>
+#   title          what the job is
+#   component_kind one of ComponentKind: engine | brakes | landing_gear | hydraulics | avionics
+#   ata            ATA-style chapter label (loose)
+#   duration_h     job length in hours (float)
+#   skill          technician skill needed: engine | gear | hydraulics | avionics
+#                  (note: brakes and landing_gear components both need the "gear" skill)
+#   part           part needed (matches PartStock.part) or null
+#   part_qty       units of that part consumed
+#   trigger        rul        -> created when a component's conservative RUL (p10) is low
+#                  scheduled  -> routine check, created when due (last_maintenance + interval_days)
+#   interval_days  scheduled cards only: days after the component's last maintenance
+#   note           one-line description (shown by the copilot)
+#   synthetic      always true
+synthetic: true
+disclaimer: >-
+  Synthetic demo task cards. Not real maintenance data. Advisory prototype only; an authorized
+  professional must approve every action and approved procedures always apply.
+
+cards:
+  # ---- created from low RUL (one default card per component kind) ----
+  - id: TC-ENG-BORESCOPE
+    title: Engine borescope inspection
+    component_kind: engine
+    ata: "ATA 72"
+    duration_h: 6.0
+    skill: engine
+    part: BORESCOPE-KIT
+    part_qty: 1
+    trigger: rul
+    note: Inspect the hot section with a borescope probe after an abnormal temperature trend (SYNTHETIC card).
+    synthetic: true
+
+  - id: TC-BRK-REPLACE
+    title: Brake assembly replacement
+    component_kind: brakes
+    ata: "ATA 32"
+    duration_h: 3.0
+    skill: gear
+    part: BRAKE-ASSY
+    part_qty: 1
+    trigger: rul
+    note: Replace a worn brake assembly (SYNTHETIC card).
+    synthetic: true
+
+  - id: TC-GEAR-ACT
+    title: Landing gear actuator check
+    component_kind: landing_gear
+    ata: "ATA 32"
+    duration_h: 4.0
+    skill: gear
+    part: null
+    part_qty: 0
+    trigger: rul
+    note: Functional check of the gear actuator; no spare consumed (SYNTHETIC card).
+    synthetic: true
+
+  - id: TC-HYD-PUMP
+    title: Hydraulic pump replacement
+    component_kind: hydraulics
+    ata: "ATA 29"
+    duration_h: 5.0
+    skill: hydraulics
+    part: HYD-PUMP
+    part_qty: 1
+    trigger: rul
+    note: Replace a hydraulic pump showing degraded output (SYNTHETIC card).
+    synthetic: true
+
+  - id: TC-AVI-LRU
+    title: Avionics LRU swap
+    component_kind: avionics
+    ata: "ATA 34"
+    duration_h: 2.0
+    skill: avionics
+    part: AVIONICS-LRU
+    part_qty: 1
+    trigger: rul
+    note: Swap a line-replaceable avionics unit (SYNTHETIC card).
+    synthetic: true
+
+  # ---- routine checks (background work so the fleet always has something to plan) ----
+  - id: TC-ENG-OILCHIP
+    title: Engine oil and chip detector check
+    component_kind: engine
+    ata: "ATA 72"
+    duration_h: 2.0
+    skill: engine
+    part: null
+    part_qty: 0
+    trigger: scheduled
+    interval_days: 45
+    note: Routine oil and chip detector check (SYNTHETIC card, made-up interval).
+    synthetic: true
+
+  - id: TC-ENG-SCHED
+    title: Generic scheduled engine inspection
+    component_kind: engine
+    ata: "ATA 05"
+    duration_h: 3.0
+    skill: engine
+    part: null
+    part_qty: 0
+    trigger: scheduled
+    interval_days: 90
+    note: Generic scheduled inspection slot (SYNTHETIC card, made-up interval).
+    synthetic: true
+
+  - id: TC-HYD-LEAK
+    title: Hydraulic leak check
+    component_kind: hydraulics
+    ata: "ATA 29"
+    duration_h: 2.0
+    skill: hydraulics
+    part: null
+    part_qty: 0
+    trigger: scheduled
+    interval_days: 30
+    note: Routine hydraulic leak check (SYNTHETIC card, made-up interval).
+    synthetic: true
+
+  - id: TC-AVI-SW
+    title: Avionics software load
+    component_kind: avionics
+    ata: "ATA 34"
+    duration_h: 1.5
+    skill: avionics
+    part: null
+    part_qty: 0
+    trigger: scheduled
+    interval_days: 60
+    note: Load the current avionics software build (SYNTHETIC card, made-up interval).
+    synthetic: true
+
+  - id: TC-WHEEL
+    title: Tire and wheel change
+    component_kind: brakes
+    ata: "ATA 32"
+    duration_h: 1.5
+    skill: gear
+    part: null
+    part_qty: 0
+    trigger: scheduled
+    interval_days: 40
+    note: Routine tire and wheel change at the brake unit (SYNTHETIC card, made-up interval).
+    synthetic: true
