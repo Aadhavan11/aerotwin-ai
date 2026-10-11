@@ -10,3 +10,6 @@ Black and white, lit glass. Keep to these rules when you change the UI.
 - **Copy:** plain, specific, content-led. Headings state the situation. American English.
 - **Honesty on screen:** a "Simulated" tag is always in the top bar; part-level percentages are labelled as estimates derived from the component's sensors.
 - **Where:** tokens and shared styles are in `web/src/index.css` (the last blocks win); shell, navigation and the role switcher in `web/src/App.tsx`; roles in `web/src/lib/role.tsx`; shared components in `web/src/components/ui.tsx`; the 3D geometry in `web/src/components/aircraftModels.ts`.
+
+## Decision record
+The black-and-white glass look replaces the earlier near-black Geist redesign. Decided by Aadhavan on behalf of the team (Shamit was unavailable); the role views from that redesign are kept and restyled. Merged to `main` by Aashirth on that instruction.
