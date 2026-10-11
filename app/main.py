@@ -18,6 +18,23 @@ app = FastAPI(title="AeroTwin AI API", version=settings.VERSION,
               description="Advisory-only maintenance planning prototype on SIMULATED data. See CONTRACTS.md for the spec.")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"],
                    allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Data-Source"])
+
+
+class _NoTrailingSlash:
+    """Serve `/plan/` the same as `/plan` instead of FastAPI's 307, whose Location points at the internal host and breaks fetch behind the proxy."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and len(scope["path"]) > 1 and scope["path"].endswith("/"):
+            scope = {**scope, "path": scope["path"].rstrip("/") or "/"}
+            if scope.get("raw_path"):
+                scope["raw_path"] = scope["raw_path"].rstrip(b"/") or b"/"
+        await self.inner(scope, receive, send)
+
+
+app.add_middleware(_NoTrailingSlash)
 db.init_db()
 app.include_router(core.router)
 
