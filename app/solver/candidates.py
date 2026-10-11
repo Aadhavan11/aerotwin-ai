@@ -24,6 +24,7 @@ from app.contracts.models import FleetState, GroundWindow, PartStock, Station, T
 from app.solver.common import (
     DEFAULT_HORIZON_H, DEFAULT_MAX_EXT_H, aware, ceil_min, floor_min, fmt, hours_to_min,
 )
+from app.solver.skills import has_skill, skill_label
 from app.solver.windows import ground_windows_checked
 
 
@@ -156,7 +157,7 @@ class SolveContext:
             if st is None or st.hangar_slots <= 0:
                 blockers["hangar_closed"] += 1
                 continue
-            with_skill = [t for t in st.technicians if task.required_skill in t.skills]
+            with_skill = [t for t in st.technicians if has_skill(t.skills, task.required_skill)]
             if not with_skill:
                 blockers["no_skill"] += 1
                 continue
@@ -210,7 +211,7 @@ class SolveContext:
                 if why:
                     msg += ": " + ", ".join(f"{k} ({n} option(s))" for k, n in why.most_common(3))
             return head + msg
-        skill, part = task.required_skill, task.required_part or "part"
+        skill, part = skill_label(task.required_skill), task.required_part or "part"
         names = {
             "hangar_closed": "at stations with no hangar capacity",
             "no_skill": f"at stations with no {skill} technician",

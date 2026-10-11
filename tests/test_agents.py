@@ -23,7 +23,7 @@ from app.solver.store import STORE
 CONTRACT_TOOLS = {  # CONTRACTS.md section 6: agent -> tools
     "health": {"list_at_risk", "get_component_health", "get_sensor_trend", "get_maintenance_history"},
     "scheduling": {"find_ground_windows", "derive_tasks", "solve_schedule", "compare_plans"},
-    "logistics": {"check_parts", "match_technicians", "shortage_report"},
+    "logistics": {"check_parts", "match_technicians", "shortage_report", "suggest_repositioning"},
     "operations": {"simulate_plan", "flights_affected", "replan_with_event"},
     "coordinator": {"draft_work_orders", "search_kb"},
 }
@@ -66,7 +66,7 @@ def numbers(text: str) -> set[float]:
 
 
 # ------------------------------------------------------------------ registry
-def test_registry_has_exactly_the_sixteen_contract_tools_with_valid_schemas():
+def test_registry_has_the_sixteen_contract_tools_plus_repositioning_with_valid_schemas():
     assert {t for ts in CONTRACT_TOOLS.values() for t in ts} == set(TOOLS)
     for name, spec in TOOLS.items():
         assert name in CONTRACT_TOOLS[spec.agent]
@@ -335,3 +335,12 @@ def test_agent_run_fixture_matches_the_model():
     path = Path(__file__).resolve().parent.parent / "fixtures" / "agent_run_golden.json"
     run = AgentRun.model_validate_json(path.read_text())
     assert run.status == "done" and run.work_orders and {s.agent for s in run.steps} == set(CONTRACT_TOOLS)
+
+
+def test_repositioning_tool_is_advisory_and_shows_up_in_the_run(golden_run):
+    res = call_tool("suggest_repositioning", {})
+    assert res.get("error") is None and res["data"]
+    assert all("Advisory" in r["note"] for r in res["data"])
+    step = next(s for s in golden_run.steps if s.tool == "suggest_repositioning" and s.kind == "tool_result")
+    assert step.agent == "logistics" and "Advisory, not applied" in golden_run.explanation
+    assert "move 1 BORESCOPE-KIT from DFW to ATL" in golden_run.explanation

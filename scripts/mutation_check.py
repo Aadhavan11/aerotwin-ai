@@ -37,6 +37,7 @@ MUTATIONS = [
     ("final validity guard disabled", "app/solver/engine.py", "problems = validate_plan(state, ctx.tasks, assignments, ctx.max_ext_h, force_station, force_tails)\n    if problems and mode_run == \"cpsat\":", "problems = []\n    if problems and mode_run == \"cpsat\":"),
     ("replan diff forgets added tasks", "app/solver/plan_metrics.py", "added = [new[t] for t in sorted(new) if t not in old]", "added = []"),
     ("part delay not applied", "app/whatif/events.py", "ps.eta_hours = lead + float(event.delay_hours)", "ps.eta_hours = 0.0"),
+    ("technician skill level ignored", "app/solver/skills.py", "any(n == need_name and lvl >= need_level for", "any(n == need_name for"),
     # agents (piece 11)
     ("work orders drafted already approved", "app/copilot/workorders.py", 'status="pending_approval", plan_id=plan.id, evidence=evidence', 'status="approved", plan_id=plan.id, evidence=evidence'),
     ("work orders without evidence", "app/copilot/workorders.py", 'status="pending_approval", plan_id=plan.id, evidence=evidence', 'status="pending_approval", plan_id=plan.id, evidence=[]'),

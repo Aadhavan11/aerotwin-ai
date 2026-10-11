@@ -549,3 +549,95 @@ def test_candidates_exclude_closed_hangars_unavailable_technicians_and_missing_p
             assert c.station not in ("DFW", "ATL") and c.tech_id != "ORD-T1"
     kit_task = next(t for t in ctx.tasks if t.required_part == "BORESCOPE-KIT")
     assert all(c.opt.pool is not None for c in ctx.candidates(kit_task))       # a part option is always attached
+
+
+# ------------------------------------------------------------------ technician skill levels ("engine" = level 1, "engine:2" = level 2)
+def test_skill_strings_parse_and_a_higher_level_covers_a_lower_requirement():
+    from app.solver.skills import has_skill, parse_skill, skill_label, with_level
+    assert parse_skill("engine") == ("engine", 1) and parse_skill("engine:2") == ("engine", 2) and parse_skill("engine:x") == ("engine", 1)
+    assert has_skill(["engine"], "engine") and has_skill(["engine:2"], "engine") and has_skill(["engine:2"], "engine:2")
+    assert not has_skill(["engine"], "engine:2") and not has_skill(["gear:3"], "engine")
+    assert skill_label("engine") == "engine" and skill_label("engine:2") == "engine (level 2)" and with_level("engine", 2) == "engine:2"
+
+
+def _senior_world(levels: list[list[str]]):
+    from app.contracts.models import Technician
+    st = simple_station("AAA", slots=2, n_tech=1, kits=2)
+    st.technicians = [Technician(id=f"AAA-T{i + 1}", skills=sk, shift_start=T0 - hrs(12), shift_end=T0 + hrs(24 * 6)) for i, sk in enumerate(levels)]
+    return mini_state(windows={"SIM-001": [("AAA", 1.0, 12.0)]}, stations=[st])
+
+
+@pytest.mark.parametrize("mode", MODES)
+def test_a_level_2_task_goes_to_the_level_2_technician_only(mode):
+    s = _senior_world([["engine"], ["engine:2"]])
+    task = engine_task("T1", "SIM-001", 30).model_copy(update={"required_skill": "engine:2"})
+    p = solve(s, [task], mode=mode)
+    assert_no_fallback(p, mode)
+    assert p.feasible and p.assignments[0].technician_id == "AAA-T2"
+    from app.solver.plan_metrics import validate_plan
+    assert validate_plan(s, [task], p.assignments, 3.0) == []
+
+
+def test_without_a_level_2_technician_the_task_is_infeasible_and_says_which_level():
+    s = _senior_world([["engine"], ["engine"]])
+    task = engine_task("T1", "SIM-001", 30).model_copy(update={"required_skill": "engine:2"})
+    p = solve(s, [task], mode="cpsat")
+    assert not p.feasible and not p.assignments
+    assert "no engine (level 2) technician" in p.infeasible_reasons[0]
+
+
+def test_a_level_2_technician_can_still_do_a_plain_task():
+    s = _senior_world([["engine:2"]])
+    p = solve(s, [engine_task("T1", "SIM-001", 30)], mode="cpsat")
+    assert p.feasible and p.assignments[0].technician_id == "AAA-T1"
+
+
+def test_validate_plan_rejects_a_junior_technician_on_a_senior_task():
+    from app.solver.plan_metrics import validate_plan
+    s = _senior_world([["engine"], ["engine:2"]])
+    task = engine_task("T1", "SIM-001", 30).model_copy(update={"required_skill": "engine:2"})
+    good = solve(s, [task], mode="cpsat")
+    bad = [good.assignments[0].model_copy(update={"technician_id": "AAA-T1"})]
+    assert validate_plan(s, [task], good.assignments, 3.0) == []
+    assert any("lacks skill engine:2" in m for m in validate_plan(s, [task], bad, 3.0))
+
+
+def test_card_min_level_becomes_the_task_skill(golden, tmp_path):
+    from app.solver.cards import load_cards
+    from app.solver.tasks import derive_tasks_ex
+    y = tmp_path / "c.yaml"
+    y.write_text(open("app/copilot/kb/task_cards.yaml").read().replace(
+        "  - id: TC-ENG-BORESCOPE\n", "  - id: TC-ENG-BORESCOPE\n    min_level: 2\n", 1))
+    cards = load_cards(y)
+    assert next(c for c in cards if c.id == "TC-ENG-BORESCOPE").min_level == 2
+    tasks = derive_tasks_ex(golden, cards=cards).tasks
+    assert next(t for t in tasks if t.tail == GOLDEN_TAIL).required_skill == "engine:2"
+    assert [t.id for t in tasks if ":" in t.required_skill] == [t.id for t in tasks if t.required_part == "BORESCOPE-KIT"]   # only borescope jobs need level 2
+
+
+# ------------------------------------------------------------------ spare-part repositioning (advisory)
+def test_repositioning_moves_stock_from_the_donor_to_the_station_that_will_need_it(golden):
+    from app.solver.reposition import suggest_repositioning
+    rows = {(r["part"], r["to_station"]): r for r in suggest_repositioning(golden)}
+    kit = rows[("BORESCOPE-KIT", "ATL")]
+    assert kit["kind"] == "reposition" and kit["from_station"] == "DFW" and kit["qty"] == 1          # SIM-017 is homed at ATL, ATL holds 0
+    assert (kit["ship_hours"], kit["cost_usd"]) == (18.0, 800.0)                                      # straight from the stock record
+    assert kit["task_ids"] == ["T-SIM-017-engine_2-001"] and "Advisory" in kit["note"]
+    assert all(r["kind"] == "reposition" for r in rows.values())
+
+
+def test_repositioning_never_drains_a_donor_below_its_own_demand(golden):
+    from app.solver.reposition import suggest_repositioning
+    st = golden.model_copy(deep=True)
+    dfw = next(s for s in st.stations if s.iata == "DFW")
+    next(p for p in dfw.parts if p.part == "BORESCOPE-KIT").qty = 1       # only one spare left at the donor, two stations are short
+    rows = [r for r in suggest_repositioning(st) if r["part"] == "BORESCOPE-KIT"]
+    assert sum(r["qty"] for r in rows if r["kind"] == "reposition") == 1
+    assert any(r["kind"] == "shortage_no_donor" for r in rows)            # the second shortage is reported, not hidden
+
+
+def test_repositioning_changes_nothing_and_is_deterministic(golden):
+    from app.solver.reposition import suggest_repositioning
+    before = golden.model_dump()
+    a, b = suggest_repositioning(golden), suggest_repositioning(golden)
+    assert a == b and golden.model_dump() == before

@@ -30,6 +30,7 @@ class TaskCard:
     part_qty: int
     trigger: str                      # "rul" | "scheduled"
     interval_days: Optional[float]    # scheduled cards only
+    min_level: int                    # technician skill level needed (1 = any qualified technician)
     note: str
     synthetic: bool = True
 
@@ -59,6 +60,7 @@ def _parse(raw: dict) -> TaskCard:
         part_qty=int(raw.get("part_qty") or (1 if part else 0)),
         trigger=trigger,
         interval_days=float(interval) if interval else None,
+        min_level=int(raw.get("min_level", 1)),
         note=raw.get("note", ""),
     )
 

@@ -14,6 +14,7 @@
 #   ata            ATA-style chapter label (loose)
 #   duration_h     job length in hours (float)
 #   skill          technician skill needed: engine | gear | hydraulics | avionics
+#   min_level      optional, default 1: technician skill level needed (a technician with skill "engine:2" is level 2; plain "engine" is level 1)
 #                  (note: brakes and landing_gear components both need the "gear" skill)
 #   part           part needed (matches PartStock.part) or null
 #   part_qty       units of that part consumed
