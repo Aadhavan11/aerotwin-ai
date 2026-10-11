@@ -1,0 +1,493 @@
+[
+ {
+  "synthetic": true,
+  "iata": "ATL",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "ATL-T1",
+    "skills": [
+     "engine",
+     "gear"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "ATL-T2",
+    "skills": [
+     "hydraulics",
+     "avionics"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 2,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 33.64,
+  "lon": -84.43
+ },
+ {
+  "synthetic": true,
+  "iata": "DFW",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "DFW-T1",
+    "skills": [
+     "gear",
+     "hydraulics"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "DFW-T2",
+    "skills": [
+     "engine",
+     "avionics"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "DFW-T3",
+    "skills": [
+     "engine"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 2,
+    "eta_hours": 8.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 32.9,
+  "lon": -97.04
+ },
+ {
+  "synthetic": true,
+  "iata": "ORD",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "ORD-T1",
+    "skills": [
+     "gear",
+     "engine"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "ORD-T2",
+    "skills": [
+     "hydraulics",
+     "avionics"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 2,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 41.98,
+  "lon": -87.9
+ },
+ {
+  "synthetic": true,
+  "iata": "DEN",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "DEN-T1",
+    "skills": [
+     "hydraulics",
+     "gear"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "DEN-T2",
+    "skills": [
+     "engine"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 39.86,
+  "lon": -104.67
+ },
+ {
+  "synthetic": true,
+  "iata": "LAX",
+  "hangar_slots": 2,
+  "technicians": [
+   {
+    "id": "LAX-T1",
+    "skills": [
+     "avionics",
+     "gear"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "LAX-T2",
+    "skills": [
+     "engine",
+     "hydraulics"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 2,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 33.94,
+  "lon": -118.41
+ },
+ {
+  "synthetic": true,
+  "iata": "JFK",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "JFK-T1",
+    "skills": [
+     "engine",
+     "gear"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 40.64,
+  "lon": -73.78
+ },
+ {
+  "synthetic": true,
+  "iata": "MIA",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "MIA-T1",
+    "skills": [
+     "gear",
+     "hydraulics"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 25.79,
+  "lon": -80.29
+ },
+ {
+  "synthetic": true,
+  "iata": "SEA",
+  "hangar_slots": 1,
+  "technicians": [
+   {
+    "id": "SEA-T1",
+    "skills": [
+     "avionics",
+     "gear"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   },
+   {
+    "id": "SEA-T2",
+    "skills": [
+     "engine"
+    ],
+    "shift_start": "2026-10-11T12:00:00Z",
+    "shift_end": "2026-10-20T12:00:00Z",
+    "available": true
+   }
+  ],
+  "parts": [
+   {
+    "part": "BORESCOPE-KIT",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "BRAKE-ASSY",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "ATL",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "HYD-PUMP",
+    "qty": 0,
+    "eta_hours": 0.0,
+    "ship_from": "DFW",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   },
+   {
+    "part": "AVIONICS-LRU",
+    "qty": 1,
+    "eta_hours": 0.0,
+    "ship_from": "LAX",
+    "ship_hours": 12.0,
+    "ship_cost_usd": 800.0
+   }
+  ],
+  "lat": 47.45,
+  "lon": -122.31
+ }
+]

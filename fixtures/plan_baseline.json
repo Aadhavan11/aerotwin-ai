@@ -1,0 +1,84 @@
+{
+ "synthetic": true,
+ "id": "P-1",
+ "created": "2026-10-12T12:05:00Z",
+ "mode": "static_baseline",
+ "feasible": true,
+ "infeasible_reasons": [],
+ "assignments": [
+  {
+   "task_id": "T-SIM-017-engine_2-001",
+   "tail": "SIM-017",
+   "station": "ATL",
+   "start": "2026-10-16T15:53:00Z",
+   "end": "2026-10-16T21:53:00Z",
+   "technician_id": "ATL-T1",
+   "part_source": "DFW",
+   "window_hours": 1.37,
+   "extension_h": 4.63,
+   "reason": "Static policy: last home-base (ATL) window before the deadline; window is 1.4 h, job needs 6 h, so the next departure is delayed 4.6 h; part shipped from DFW."
+  },
+  {
+   "task_id": "T-SIM-004-brakes-001",
+   "tail": "SIM-004",
+   "station": "ORD",
+   "start": "2026-10-15T08:57:00Z",
+   "end": "2026-10-15T11:57:00Z",
+   "technician_id": "ORD-T1",
+   "part_source": null,
+   "window_hours": 1.3,
+   "extension_h": 1.7,
+   "reason": "Static policy: last home-base (ORD) window before the deadline; window is 1.3 h, job needs 3 h, so the next departure is delayed 1.7 h."
+  },
+  {
+   "task_id": "T-SIM-011-hydraulics-001",
+   "tail": "SIM-011",
+   "station": "DEN",
+   "start": "2026-10-15T16:09:00Z",
+   "end": "2026-10-15T21:09:00Z",
+   "technician_id": "DEN-T1",
+   "part_source": null,
+   "window_hours": 1.1,
+   "extension_h": 3.9,
+   "reason": "Static policy: last home-base (DEN) window before the deadline; window is 1.1 h, job needs 5 h, so the next departure is delayed 3.9 h."
+  },
+  {
+   "task_id": "T-SIM-020-avionics-001",
+   "tail": "SIM-020",
+   "station": "LAX",
+   "start": "2026-10-14T09:05:00Z",
+   "end": "2026-10-14T11:05:00Z",
+   "technician_id": "LAX-T1",
+   "part_source": null,
+   "window_hours": 1.17,
+   "extension_h": 0.83,
+   "reason": "Static policy: last home-base (LAX) window before the deadline; window is 1.2 h, job needs 2 h, so the next departure is delayed 0.8 h."
+  },
+  {
+   "task_id": "T-SIM-008-landing_gear-001",
+   "tail": "SIM-008",
+   "station": "ATL",
+   "start": "2026-10-15T15:37:00Z",
+   "end": "2026-10-15T19:37:00Z",
+   "technician_id": "ATL-T1",
+   "part_source": null,
+   "window_hours": 1.63,
+   "extension_h": 2.37,
+   "reason": "Static policy: last home-base (ATL) window before the deadline; window is 1.6 h, job needs 4 h, so the next departure is delayed 2.4 h."
+  }
+ ],
+ "metrics": {
+  "downtime_h": 13.43,
+  "flights_affected": 5,
+  "logistics_cost_usd": 800.0,
+  "tech_utilization": 0.011,
+  "hangar_utilization": 0.012,
+  "schedule_changes": 0,
+  "tasks_total": 5,
+  "tasks_scheduled": 5,
+  "late_or_unscheduled": 0
+ },
+ "objective_value": 267.3,
+ "solve_seconds": 0.1,
+ "evidence": []
+}

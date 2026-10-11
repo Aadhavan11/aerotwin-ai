@@ -1,0 +1,37 @@
+{
+ "ml": {
+  "status": "MOCK: not computed",
+  "data_source": "fixture",
+  "rul_mae": null,
+  "rul_rmse": null,
+  "anomaly_precision": null,
+  "anomaly_recall": null,
+  "anomaly_fpr": null
+ },
+ "plan": {
+  "baseline": {
+   "downtime_h": 13.43,
+   "flights_affected": 5,
+   "logistics_cost_usd": 800.0,
+   "tech_utilization": 0.011,
+   "hangar_utilization": 0.012,
+   "schedule_changes": 0,
+   "tasks_total": 5,
+   "tasks_scheduled": 5,
+   "late_or_unscheduled": 0
+  },
+  "optimized": {
+   "downtime_h": 0.0,
+   "flights_affected": 0,
+   "logistics_cost_usd": 0.0,
+   "tech_utilization": 0.011,
+   "hangar_utilization": 0.012,
+   "schedule_changes": 0,
+   "tasks_total": 5,
+   "tasks_scheduled": 5,
+   "late_or_unscheduled": 0
+  },
+  "replan_seconds": 1.1,
+  "note": "fixture numbers, not results"
+ }
+}

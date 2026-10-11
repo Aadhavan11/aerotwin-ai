@@ -1,0 +1,3287 @@
+{
+ "synthetic": true,
+ "aircraft": {
+  "synthetic": true,
+  "tail": "SIM-017",
+  "type": "A320-class",
+  "home": "ATL",
+  "location": "DFW",
+  "status": "alert",
+  "cycles": 8123,
+  "hours": 14210.5
+ },
+ "components": [
+  {
+   "synthetic": true,
+   "tail": "SIM-017",
+   "component_id": "SIM-017/engine_1",
+   "kind": "engine",
+   "cycles": 231,
+   "hours": 408.9,
+   "health": 0.8,
+   "anomaly_score": 0.08,
+   "rul_cycles": {
+    "p10": 88.0,
+    "p50": 96.0,
+    "p90": 108.0
+   },
+   "data_quality": {
+    "status": "ok",
+    "reasons": []
+   },
+   "last_maintenance": null,
+   "status": "ok",
+   "updated": "2026-10-12T12:00:00Z",
+   "history": [
+    {
+     "cycle": 192,
+     "ts": "2026-10-02T18:00:00Z",
+     "health": 0.98,
+     "anomaly_score": 0.0,
+     "rul_p50": 135.0
+    },
+    {
+     "cycle": 193,
+     "ts": "2026-10-03T00:00:00Z",
+     "health": 0.975,
+     "anomaly_score": 0.015,
+     "rul_p50": 134.0
+    },
+    {
+     "cycle": 194,
+     "ts": "2026-10-03T06:00:00Z",
+     "health": 0.971,
+     "anomaly_score": 0.029,
+     "rul_p50": 133.0
+    },
+    {
+     "cycle": 195,
+     "ts": "2026-10-03T12:00:00Z",
+     "health": 0.966,
+     "anomaly_score": 0.002,
+     "rul_p50": 132.0
+    },
+    {
+     "cycle": 196,
+     "ts": "2026-10-03T18:00:00Z",
+     "health": 0.962,
+     "anomaly_score": 0.017,
+     "rul_p50": 131.0
+    },
+    {
+     "cycle": 197,
+     "ts": "2026-10-04T00:00:00Z",
+     "health": 0.957,
+     "anomaly_score": 0.015,
+     "rul_p50": 130.0
+    },
+    {
+     "cycle": 198,
+     "ts": "2026-10-04T06:00:00Z",
+     "health": 0.952,
+     "anomaly_score": 0.02,
+     "rul_p50": 129.0
+    },
+    {
+     "cycle": 199,
+     "ts": "2026-10-04T12:00:00Z",
+     "health": 0.948,
+     "anomaly_score": 0.005,
+     "rul_p50": 128.0
+    },
+    {
+     "cycle": 200,
+     "ts": "2026-10-04T18:00:00Z",
+     "health": 0.943,
+     "anomaly_score": 0.021,
+     "rul_p50": 127.0
+    },
+    {
+     "cycle": 201,
+     "ts": "2026-10-05T00:00:00Z",
+     "health": 0.938,
+     "anomaly_score": 0.012,
+     "rul_p50": 126.0
+    },
+    {
+     "cycle": 202,
+     "ts": "2026-10-05T06:00:00Z",
+     "health": 0.934,
+     "anomaly_score": 0.022,
+     "rul_p50": 125.0
+    },
+    {
+     "cycle": 203,
+     "ts": "2026-10-05T12:00:00Z",
+     "health": 0.929,
+     "anomaly_score": 0.026,
+     "rul_p50": 124.0
+    },
+    {
+     "cycle": 204,
+     "ts": "2026-10-05T18:00:00Z",
+     "health": 0.925,
+     "anomaly_score": 0.022,
+     "rul_p50": 123.0
+    },
+    {
+     "cycle": 205,
+     "ts": "2026-10-06T00:00:00Z",
+     "health": 0.92,
+     "anomaly_score": 0.02,
+     "rul_p50": 122.0
+    },
+    {
+     "cycle": 206,
+     "ts": "2026-10-06T06:00:00Z",
+     "health": 0.915,
+     "anomaly_score": 0.018,
+     "rul_p50": 121.0
+    },
+    {
+     "cycle": 207,
+     "ts": "2026-10-06T12:00:00Z",
+     "health": 0.911,
+     "anomaly_score": 0.04,
+     "rul_p50": 120.0
+    },
+    {
+     "cycle": 208,
+     "ts": "2026-10-06T18:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.027,
+     "rul_p50": 119.0
+    },
+    {
+     "cycle": 209,
+     "ts": "2026-10-07T00:00:00Z",
+     "health": 0.902,
+     "anomaly_score": 0.031,
+     "rul_p50": 118.0
+    },
+    {
+     "cycle": 210,
+     "ts": "2026-10-07T06:00:00Z",
+     "health": 0.897,
+     "anomaly_score": 0.018,
+     "rul_p50": 117.0
+    },
+    {
+     "cycle": 211,
+     "ts": "2026-10-07T12:00:00Z",
+     "health": 0.892,
+     "anomaly_score": 0.034,
+     "rul_p50": 116.0
+    },
+    {
+     "cycle": 212,
+     "ts": "2026-10-07T18:00:00Z",
+     "health": 0.888,
+     "anomaly_score": 0.021,
+     "rul_p50": 115.0
+    },
+    {
+     "cycle": 213,
+     "ts": "2026-10-08T00:00:00Z",
+     "health": 0.883,
+     "anomaly_score": 0.028,
+     "rul_p50": 114.0
+    },
+    {
+     "cycle": 214,
+     "ts": "2026-10-08T06:00:00Z",
+     "health": 0.878,
+     "anomaly_score": 0.04,
+     "rul_p50": 113.0
+    },
+    {
+     "cycle": 215,
+     "ts": "2026-10-08T12:00:00Z",
+     "health": 0.874,
+     "anomaly_score": 0.039,
+     "rul_p50": 112.0
+    },
+    {
+     "cycle": 216,
+     "ts": "2026-10-08T18:00:00Z",
+     "health": 0.869,
+     "anomaly_score": 0.032,
+     "rul_p50": 111.0
+    },
+    {
+     "cycle": 217,
+     "ts": "2026-10-09T00:00:00Z",
+     "health": 0.865,
+     "anomaly_score": 0.05,
+     "rul_p50": 110.0
+    },
+    {
+     "cycle": 218,
+     "ts": "2026-10-09T06:00:00Z",
+     "health": 0.86,
+     "anomaly_score": 0.04,
+     "rul_p50": 109.0
+    },
+    {
+     "cycle": 219,
+     "ts": "2026-10-09T12:00:00Z",
+     "health": 0.855,
+     "anomaly_score": 0.055,
+     "rul_p50": 108.0
+    },
+    {
+     "cycle": 220,
+     "ts": "2026-10-09T18:00:00Z",
+     "health": 0.851,
+     "anomaly_score": 0.046,
+     "rul_p50": 107.0
+    },
+    {
+     "cycle": 221,
+     "ts": "2026-10-10T00:00:00Z",
+     "health": 0.846,
+     "anomaly_score": 0.072,
+     "rul_p50": 106.0
+    },
+    {
+     "cycle": 222,
+     "ts": "2026-10-10T06:00:00Z",
+     "health": 0.842,
+     "anomaly_score": 0.07,
+     "rul_p50": 105.0
+    },
+    {
+     "cycle": 223,
+     "ts": "2026-10-10T12:00:00Z",
+     "health": 0.837,
+     "anomaly_score": 0.079,
+     "rul_p50": 104.0
+    },
+    {
+     "cycle": 224,
+     "ts": "2026-10-10T18:00:00Z",
+     "health": 0.832,
+     "anomaly_score": 0.058,
+     "rul_p50": 103.0
+    },
+    {
+     "cycle": 225,
+     "ts": "2026-10-11T00:00:00Z",
+     "health": 0.828,
+     "anomaly_score": 0.066,
+     "rul_p50": 102.0
+    },
+    {
+     "cycle": 226,
+     "ts": "2026-10-11T06:00:00Z",
+     "health": 0.823,
+     "anomaly_score": 0.062,
+     "rul_p50": 101.0
+    },
+    {
+     "cycle": 227,
+     "ts": "2026-10-11T12:00:00Z",
+     "health": 0.818,
+     "anomaly_score": 0.073,
+     "rul_p50": 100.0
+    },
+    {
+     "cycle": 228,
+     "ts": "2026-10-11T18:00:00Z",
+     "health": 0.814,
+     "anomaly_score": 0.092,
+     "rul_p50": 99.0
+    },
+    {
+     "cycle": 229,
+     "ts": "2026-10-12T00:00:00Z",
+     "health": 0.809,
+     "anomaly_score": 0.077,
+     "rul_p50": 98.0
+    },
+    {
+     "cycle": 230,
+     "ts": "2026-10-12T06:00:00Z",
+     "health": 0.805,
+     "anomaly_score": 0.081,
+     "rul_p50": 97.0
+    },
+    {
+     "cycle": 231,
+     "ts": "2026-10-12T12:00:00Z",
+     "health": 0.8,
+     "anomaly_score": 0.109,
+     "rul_p50": 96.0
+    }
+   ],
+   "predicted": [
+    {
+     "cycle": 232,
+     "health_p50": 0.792,
+     "health_lo": 0.791,
+     "health_hi": 0.793
+    },
+    {
+     "cycle": 233,
+     "health_p50": 0.783,
+     "health_lo": 0.782,
+     "health_hi": 0.785
+    },
+    {
+     "cycle": 234,
+     "health_p50": 0.775,
+     "health_lo": 0.773,
+     "health_hi": 0.778
+    },
+    {
+     "cycle": 235,
+     "health_p50": 0.767,
+     "health_lo": 0.764,
+     "health_hi": 0.77
+    },
+    {
+     "cycle": 236,
+     "health_p50": 0.758,
+     "health_lo": 0.755,
+     "health_hi": 0.763
+    },
+    {
+     "cycle": 237,
+     "health_p50": 0.75,
+     "health_lo": 0.745,
+     "health_hi": 0.756
+    },
+    {
+     "cycle": 238,
+     "health_p50": 0.742,
+     "health_lo": 0.736,
+     "health_hi": 0.748
+    },
+    {
+     "cycle": 239,
+     "health_p50": 0.733,
+     "health_lo": 0.727,
+     "health_hi": 0.741
+    },
+    {
+     "cycle": 240,
+     "health_p50": 0.725,
+     "health_lo": 0.718,
+     "health_hi": 0.733
+    },
+    {
+     "cycle": 241,
+     "health_p50": 0.717,
+     "health_lo": 0.709,
+     "health_hi": 0.726
+    },
+    {
+     "cycle": 242,
+     "health_p50": 0.708,
+     "health_lo": 0.7,
+     "health_hi": 0.719
+    },
+    {
+     "cycle": 243,
+     "health_p50": 0.7,
+     "health_lo": 0.691,
+     "health_hi": 0.711
+    },
+    {
+     "cycle": 244,
+     "health_p50": 0.692,
+     "health_lo": 0.682,
+     "health_hi": 0.704
+    },
+    {
+     "cycle": 245,
+     "health_p50": 0.683,
+     "health_lo": 0.673,
+     "health_hi": 0.696
+    },
+    {
+     "cycle": 246,
+     "health_p50": 0.675,
+     "health_lo": 0.664,
+     "health_hi": 0.689
+    },
+    {
+     "cycle": 247,
+     "health_p50": 0.667,
+     "health_lo": 0.655,
+     "health_hi": 0.681
+    },
+    {
+     "cycle": 248,
+     "health_p50": 0.658,
+     "health_lo": 0.645,
+     "health_hi": 0.674
+    },
+    {
+     "cycle": 249,
+     "health_p50": 0.65,
+     "health_lo": 0.636,
+     "health_hi": 0.667
+    },
+    {
+     "cycle": 250,
+     "health_p50": 0.642,
+     "health_lo": 0.627,
+     "health_hi": 0.659
+    },
+    {
+     "cycle": 251,
+     "health_p50": 0.633,
+     "health_lo": 0.618,
+     "health_hi": 0.652
+    },
+    {
+     "cycle": 252,
+     "health_p50": 0.625,
+     "health_lo": 0.609,
+     "health_hi": 0.644
+    },
+    {
+     "cycle": 253,
+     "health_p50": 0.617,
+     "health_lo": 0.6,
+     "health_hi": 0.637
+    },
+    {
+     "cycle": 254,
+     "health_p50": 0.608,
+     "health_lo": 0.591,
+     "health_hi": 0.63
+    },
+    {
+     "cycle": 255,
+     "health_p50": 0.6,
+     "health_lo": 0.582,
+     "health_hi": 0.622
+    },
+    {
+     "cycle": 256,
+     "health_p50": 0.592,
+     "health_lo": 0.573,
+     "health_hi": 0.615
+    },
+    {
+     "cycle": 257,
+     "health_p50": 0.583,
+     "health_lo": 0.564,
+     "health_hi": 0.607
+    },
+    {
+     "cycle": 258,
+     "health_p50": 0.575,
+     "health_lo": 0.555,
+     "health_hi": 0.6
+    },
+    {
+     "cycle": 259,
+     "health_p50": 0.567,
+     "health_lo": 0.545,
+     "health_hi": 0.593
+    },
+    {
+     "cycle": 260,
+     "health_p50": 0.558,
+     "health_lo": 0.536,
+     "health_hi": 0.585
+    },
+    {
+     "cycle": 261,
+     "health_p50": 0.55,
+     "health_lo": 0.527,
+     "health_hi": 0.578
+    },
+    {
+     "cycle": 262,
+     "health_p50": 0.542,
+     "health_lo": 0.518,
+     "health_hi": 0.57
+    },
+    {
+     "cycle": 263,
+     "health_p50": 0.533,
+     "health_lo": 0.509,
+     "health_hi": 0.563
+    },
+    {
+     "cycle": 264,
+     "health_p50": 0.525,
+     "health_lo": 0.5,
+     "health_hi": 0.556
+    },
+    {
+     "cycle": 265,
+     "health_p50": 0.517,
+     "health_lo": 0.491,
+     "health_hi": 0.548
+    },
+    {
+     "cycle": 266,
+     "health_p50": 0.508,
+     "health_lo": 0.482,
+     "health_hi": 0.541
+    },
+    {
+     "cycle": 267,
+     "health_p50": 0.5,
+     "health_lo": 0.473,
+     "health_hi": 0.533
+    },
+    {
+     "cycle": 268,
+     "health_p50": 0.492,
+     "health_lo": 0.464,
+     "health_hi": 0.526
+    },
+    {
+     "cycle": 269,
+     "health_p50": 0.483,
+     "health_lo": 0.455,
+     "health_hi": 0.519
+    },
+    {
+     "cycle": 270,
+     "health_p50": 0.475,
+     "health_lo": 0.445,
+     "health_hi": 0.511
+    },
+    {
+     "cycle": 271,
+     "health_p50": 0.467,
+     "health_lo": 0.436,
+     "health_hi": 0.504
+    }
+   ],
+   "sensors_last": {
+    "T24": 641.9,
+    "T30": 1586.0,
+    "T50": 1402.0,
+    "P30": 554.4,
+    "Nf": 2388.0,
+    "Nc": 9046.0,
+    "Ps30": 47.5,
+    "phi": 521.7,
+    "NRf": 2388.0,
+    "NRc": 8138.0,
+    "BPR": 8.42,
+    "htBleed": 391.0,
+    "W31": 39.1,
+    "W32": 23.4
+   }
+  },
+  {
+   "synthetic": true,
+   "tail": "SIM-017",
+   "component_id": "SIM-017/engine_2",
+   "kind": "engine",
+   "cycles": 231,
+   "hours": 408.9,
+   "health": 0.18,
+   "anomaly_score": 0.91,
+   "rul_cycles": {
+    "p10": 18.0,
+    "p50": 22.0,
+    "p90": 25.0
+   },
+   "data_quality": {
+    "status": "ok",
+    "reasons": []
+   },
+   "last_maintenance": null,
+   "status": "alert",
+   "updated": "2026-10-12T12:00:00Z",
+   "history": [
+    {
+     "cycle": 192,
+     "ts": "2026-10-02T18:00:00Z",
+     "health": 0.585,
+     "anomaly_score": 0.005,
+     "rul_p50": 61.0
+    },
+    {
+     "cycle": 193,
+     "ts": "2026-10-03T00:00:00Z",
+     "health": 0.575,
+     "anomaly_score": 0.026,
+     "rul_p50": 60.0
+    },
+    {
+     "cycle": 194,
+     "ts": "2026-10-03T06:00:00Z",
+     "health": 0.564,
+     "anomaly_score": 0.004,
+     "rul_p50": 59.0
+    },
+    {
+     "cycle": 195,
+     "ts": "2026-10-03T12:00:00Z",
+     "health": 0.554,
+     "anomaly_score": 0.017,
+     "rul_p50": 58.0
+    },
+    {
+     "cycle": 196,
+     "ts": "2026-10-03T18:00:00Z",
+     "health": 0.543,
+     "anomaly_score": 0.02,
+     "rul_p50": 57.0
+    },
+    {
+     "cycle": 197,
+     "ts": "2026-10-04T00:00:00Z",
+     "health": 0.533,
+     "anomaly_score": 0.025,
+     "rul_p50": 56.0
+    },
+    {
+     "cycle": 198,
+     "ts": "2026-10-04T06:00:00Z",
+     "health": 0.523,
+     "anomaly_score": 0.046,
+     "rul_p50": 55.0
+    },
+    {
+     "cycle": 199,
+     "ts": "2026-10-04T12:00:00Z",
+     "health": 0.512,
+     "anomaly_score": 0.044,
+     "rul_p50": 54.0
+    },
+    {
+     "cycle": 200,
+     "ts": "2026-10-04T18:00:00Z",
+     "health": 0.502,
+     "anomaly_score": 0.062,
+     "rul_p50": 53.0
+    },
+    {
+     "cycle": 201,
+     "ts": "2026-10-05T00:00:00Z",
+     "health": 0.492,
+     "anomaly_score": 0.063,
+     "rul_p50": 52.0
+    },
+    {
+     "cycle": 202,
+     "ts": "2026-10-05T06:00:00Z",
+     "health": 0.481,
+     "anomaly_score": 0.084,
+     "rul_p50": 51.0
+    },
+    {
+     "cycle": 203,
+     "ts": "2026-10-05T12:00:00Z",
+     "health": 0.471,
+     "anomaly_score": 0.099,
+     "rul_p50": 50.0
+    },
+    {
+     "cycle": 204,
+     "ts": "2026-10-05T18:00:00Z",
+     "health": 0.46,
+     "anomaly_score": 0.099,
+     "rul_p50": 49.0
+    },
+    {
+     "cycle": 205,
+     "ts": "2026-10-06T00:00:00Z",
+     "health": 0.45,
+     "anomaly_score": 0.125,
+     "rul_p50": 48.0
+    },
+    {
+     "cycle": 206,
+     "ts": "2026-10-06T06:00:00Z",
+     "health": 0.44,
+     "anomaly_score": 0.142,
+     "rul_p50": 47.0
+    },
+    {
+     "cycle": 207,
+     "ts": "2026-10-06T12:00:00Z",
+     "health": 0.429,
+     "anomaly_score": 0.143,
+     "rul_p50": 46.0
+    },
+    {
+     "cycle": 208,
+     "ts": "2026-10-06T18:00:00Z",
+     "health": 0.419,
+     "anomaly_score": 0.157,
+     "rul_p50": 45.0
+    },
+    {
+     "cycle": 209,
+     "ts": "2026-10-07T00:00:00Z",
+     "health": 0.408,
+     "anomaly_score": 0.178,
+     "rul_p50": 44.0
+    },
+    {
+     "cycle": 210,
+     "ts": "2026-10-07T06:00:00Z",
+     "health": 0.398,
+     "anomaly_score": 0.207,
+     "rul_p50": 43.0
+    },
+    {
+     "cycle": 211,
+     "ts": "2026-10-07T12:00:00Z",
+     "health": 0.388,
+     "anomaly_score": 0.22,
+     "rul_p50": 42.0
+    },
+    {
+     "cycle": 212,
+     "ts": "2026-10-07T18:00:00Z",
+     "health": 0.377,
+     "anomaly_score": 0.255,
+     "rul_p50": 41.0
+    },
+    {
+     "cycle": 213,
+     "ts": "2026-10-08T00:00:00Z",
+     "health": 0.367,
+     "anomaly_score": 0.289,
+     "rul_p50": 40.0
+    },
+    {
+     "cycle": 214,
+     "ts": "2026-10-08T06:00:00Z",
+     "health": 0.357,
+     "anomaly_score": 0.304,
+     "rul_p50": 39.0
+    },
+    {
+     "cycle": 215,
+     "ts": "2026-10-08T12:00:00Z",
+     "health": 0.346,
+     "anomaly_score": 0.341,
+     "rul_p50": 38.0
+    },
+    {
+     "cycle": 216,
+     "ts": "2026-10-08T18:00:00Z",
+     "health": 0.336,
+     "anomaly_score": 0.364,
+     "rul_p50": 37.0
+    },
+    {
+     "cycle": 217,
+     "ts": "2026-10-09T00:00:00Z",
+     "health": 0.325,
+     "anomaly_score": 0.393,
+     "rul_p50": 36.0
+    },
+    {
+     "cycle": 218,
+     "ts": "2026-10-09T06:00:00Z",
+     "health": 0.315,
+     "anomaly_score": 0.415,
+     "rul_p50": 35.0
+    },
+    {
+     "cycle": 219,
+     "ts": "2026-10-09T12:00:00Z",
+     "health": 0.305,
+     "anomaly_score": 0.457,
+     "rul_p50": 34.0
+    },
+    {
+     "cycle": 220,
+     "ts": "2026-10-09T18:00:00Z",
+     "health": 0.294,
+     "anomaly_score": 0.493,
+     "rul_p50": 33.0
+    },
+    {
+     "cycle": 221,
+     "ts": "2026-10-10T00:00:00Z",
+     "health": 0.284,
+     "anomaly_score": 0.508,
+     "rul_p50": 32.0
+    },
+    {
+     "cycle": 222,
+     "ts": "2026-10-10T06:00:00Z",
+     "health": 0.273,
+     "anomaly_score": 0.566,
+     "rul_p50": 31.0
+    },
+    {
+     "cycle": 223,
+     "ts": "2026-10-10T12:00:00Z",
+     "health": 0.263,
+     "anomaly_score": 0.583,
+     "rul_p50": 30.0
+    },
+    {
+     "cycle": 224,
+     "ts": "2026-10-10T18:00:00Z",
+     "health": 0.253,
+     "anomaly_score": 0.617,
+     "rul_p50": 29.0
+    },
+    {
+     "cycle": 225,
+     "ts": "2026-10-11T00:00:00Z",
+     "health": 0.242,
+     "anomaly_score": 0.677,
+     "rul_p50": 28.0
+    },
+    {
+     "cycle": 226,
+     "ts": "2026-10-11T06:00:00Z",
+     "health": 0.232,
+     "anomaly_score": 0.713,
+     "rul_p50": 27.0
+    },
+    {
+     "cycle": 227,
+     "ts": "2026-10-11T12:00:00Z",
+     "health": 0.222,
+     "anomaly_score": 0.757,
+     "rul_p50": 26.0
+    },
+    {
+     "cycle": 228,
+     "ts": "2026-10-11T18:00:00Z",
+     "health": 0.211,
+     "anomaly_score": 0.789,
+     "rul_p50": 25.0
+    },
+    {
+     "cycle": 229,
+     "ts": "2026-10-12T00:00:00Z",
+     "health": 0.201,
+     "anomaly_score": 0.821,
+     "rul_p50": 24.0
+    },
+    {
+     "cycle": 230,
+     "ts": "2026-10-12T06:00:00Z",
+     "health": 0.19,
+     "anomaly_score": 0.876,
+     "rul_p50": 23.0
+    },
+    {
+     "cycle": 231,
+     "ts": "2026-10-12T12:00:00Z",
+     "health": 0.18,
+     "anomaly_score": 0.911,
+     "rul_p50": 22.0
+    }
+   ],
+   "predicted": [
+    {
+     "cycle": 232,
+     "health_p50": 0.172,
+     "health_lo": 0.17,
+     "health_hi": 0.173
+    },
+    {
+     "cycle": 233,
+     "health_p50": 0.164,
+     "health_lo": 0.16,
+     "health_hi": 0.166
+    },
+    {
+     "cycle": 234,
+     "health_p50": 0.155,
+     "health_lo": 0.15,
+     "health_hi": 0.158
+    },
+    {
+     "cycle": 235,
+     "health_p50": 0.147,
+     "health_lo": 0.14,
+     "health_hi": 0.151
+    },
+    {
+     "cycle": 236,
+     "health_p50": 0.139,
+     "health_lo": 0.13,
+     "health_hi": 0.144
+    },
+    {
+     "cycle": 237,
+     "health_p50": 0.131,
+     "health_lo": 0.12,
+     "health_hi": 0.137
+    },
+    {
+     "cycle": 238,
+     "health_p50": 0.123,
+     "health_lo": 0.11,
+     "health_hi": 0.13
+    },
+    {
+     "cycle": 239,
+     "health_p50": 0.115,
+     "health_lo": 0.1,
+     "health_hi": 0.122
+    },
+    {
+     "cycle": 240,
+     "health_p50": 0.106,
+     "health_lo": 0.09,
+     "health_hi": 0.115
+    },
+    {
+     "cycle": 241,
+     "health_p50": 0.098,
+     "health_lo": 0.08,
+     "health_hi": 0.108
+    },
+    {
+     "cycle": 242,
+     "health_p50": 0.09,
+     "health_lo": 0.07,
+     "health_hi": 0.101
+    },
+    {
+     "cycle": 243,
+     "health_p50": 0.082,
+     "health_lo": 0.06,
+     "health_hi": 0.094
+    },
+    {
+     "cycle": 244,
+     "health_p50": 0.074,
+     "health_lo": 0.05,
+     "health_hi": 0.086
+    },
+    {
+     "cycle": 245,
+     "health_p50": 0.065,
+     "health_lo": 0.04,
+     "health_hi": 0.079
+    },
+    {
+     "cycle": 246,
+     "health_p50": 0.057,
+     "health_lo": 0.03,
+     "health_hi": 0.072
+    },
+    {
+     "cycle": 247,
+     "health_p50": 0.049,
+     "health_lo": 0.02,
+     "health_hi": 0.065
+    },
+    {
+     "cycle": 248,
+     "health_p50": 0.041,
+     "health_lo": 0.01,
+     "health_hi": 0.058
+    },
+    {
+     "cycle": 249,
+     "health_p50": 0.033,
+     "health_lo": 0.0,
+     "health_hi": 0.05
+    },
+    {
+     "cycle": 250,
+     "health_p50": 0.025,
+     "health_lo": 0.0,
+     "health_hi": 0.043
+    },
+    {
+     "cycle": 251,
+     "health_p50": 0.016,
+     "health_lo": 0.0,
+     "health_hi": 0.036
+    },
+    {
+     "cycle": 252,
+     "health_p50": 0.008,
+     "health_lo": 0.0,
+     "health_hi": 0.029
+    },
+    {
+     "cycle": 253,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.022
+    },
+    {
+     "cycle": 254,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.014
+    },
+    {
+     "cycle": 255,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.007
+    },
+    {
+     "cycle": 256,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.0
+    },
+    {
+     "cycle": 257,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.0
+    },
+    {
+     "cycle": 258,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.0
+    },
+    {
+     "cycle": 259,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.0
+    },
+    {
+     "cycle": 260,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.0
+    },
+    {
+     "cycle": 261,
+     "health_p50": 0.0,
+     "health_lo": 0.0,
+     "health_hi": 0.0
+    }
+   ],
+   "sensors_last": {
+    "T24": 643.6,
+    "T30": 1604.0,
+    "T50": 1431.0,
+    "P30": 551.5,
+    "Nf": 2388.3,
+    "Nc": 9061.0,
+    "Ps30": 47.0,
+    "phi": 519.9,
+    "NRf": 2388.2,
+    "NRc": 8155.0,
+    "BPR": 8.47,
+    "htBleed": 396.0,
+    "W31": 38.5,
+    "W32": 23.0
+   }
+  },
+  {
+   "synthetic": true,
+   "tail": "SIM-017",
+   "component_id": "SIM-017/brakes",
+   "kind": "brakes",
+   "cycles": 719,
+   "hours": 1272.6,
+   "health": 0.78,
+   "anomaly_score": 0.07,
+   "rul_cycles": {
+    "p10": 60.0,
+    "p50": 75.0,
+    "p90": 90.0
+   },
+   "data_quality": {
+    "status": "ok",
+    "reasons": []
+   },
+   "last_maintenance": null,
+   "status": "ok",
+   "updated": "2026-10-12T12:00:00Z",
+   "history": [
+    {
+     "cycle": 680,
+     "ts": "2026-10-02T18:00:00Z",
+     "health": 0.978,
+     "anomaly_score": 0.007,
+     "rul_p50": 114.0
+    },
+    {
+     "cycle": 681,
+     "ts": "2026-10-03T00:00:00Z",
+     "health": 0.973,
+     "anomaly_score": 0.025,
+     "rul_p50": 113.0
+    },
+    {
+     "cycle": 682,
+     "ts": "2026-10-03T06:00:00Z",
+     "health": 0.968,
+     "anomaly_score": 0.024,
+     "rul_p50": 112.0
+    },
+    {
+     "cycle": 683,
+     "ts": "2026-10-03T12:00:00Z",
+     "health": 0.963,
+     "anomaly_score": 0.029,
+     "rul_p50": 111.0
+    },
+    {
+     "cycle": 684,
+     "ts": "2026-10-03T18:00:00Z",
+     "health": 0.958,
+     "anomaly_score": 0.031,
+     "rul_p50": 110.0
+    },
+    {
+     "cycle": 685,
+     "ts": "2026-10-04T00:00:00Z",
+     "health": 0.953,
+     "anomaly_score": 0.01,
+     "rul_p50": 109.0
+    },
+    {
+     "cycle": 686,
+     "ts": "2026-10-04T06:00:00Z",
+     "health": 0.948,
+     "anomaly_score": 0.015,
+     "rul_p50": 108.0
+    },
+    {
+     "cycle": 687,
+     "ts": "2026-10-04T12:00:00Z",
+     "health": 0.942,
+     "anomaly_score": 0.02,
+     "rul_p50": 107.0
+    },
+    {
+     "cycle": 688,
+     "ts": "2026-10-04T18:00:00Z",
+     "health": 0.937,
+     "anomaly_score": 0.029,
+     "rul_p50": 106.0
+    },
+    {
+     "cycle": 689,
+     "ts": "2026-10-05T00:00:00Z",
+     "health": 0.932,
+     "anomaly_score": 0.024,
+     "rul_p50": 105.0
+    },
+    {
+     "cycle": 690,
+     "ts": "2026-10-05T06:00:00Z",
+     "health": 0.927,
+     "anomaly_score": 0.033,
+     "rul_p50": 104.0
+    },
+    {
+     "cycle": 691,
+     "ts": "2026-10-05T12:00:00Z",
+     "health": 0.922,
+     "anomaly_score": 0.009,
+     "rul_p50": 103.0
+    },
+    {
+     "cycle": 692,
+     "ts": "2026-10-05T18:00:00Z",
+     "health": 0.917,
+     "anomaly_score": 0.012,
+     "rul_p50": 102.0
+    },
+    {
+     "cycle": 693,
+     "ts": "2026-10-06T00:00:00Z",
+     "health": 0.912,
+     "anomaly_score": 0.034,
+     "rul_p50": 101.0
+    },
+    {
+     "cycle": 694,
+     "ts": "2026-10-06T06:00:00Z",
+     "health": 0.907,
+     "anomaly_score": 0.023,
+     "rul_p50": 100.0
+    },
+    {
+     "cycle": 695,
+     "ts": "2026-10-06T12:00:00Z",
+     "health": 0.902,
+     "anomaly_score": 0.017,
+     "rul_p50": 99.0
+    },
+    {
+     "cycle": 696,
+     "ts": "2026-10-06T18:00:00Z",
+     "health": 0.897,
+     "anomaly_score": 0.036,
+     "rul_p50": 98.0
+    },
+    {
+     "cycle": 697,
+     "ts": "2026-10-07T00:00:00Z",
+     "health": 0.892,
+     "anomaly_score": 0.041,
+     "rul_p50": 97.0
+    },
+    {
+     "cycle": 698,
+     "ts": "2026-10-07T06:00:00Z",
+     "health": 0.887,
+     "anomaly_score": 0.021,
+     "rul_p50": 96.0
+    },
+    {
+     "cycle": 699,
+     "ts": "2026-10-07T12:00:00Z",
+     "health": 0.882,
+     "anomaly_score": 0.043,
+     "rul_p50": 95.0
+    },
+    {
+     "cycle": 700,
+     "ts": "2026-10-07T18:00:00Z",
+     "health": 0.876,
+     "anomaly_score": 0.031,
+     "rul_p50": 94.0
+    },
+    {
+     "cycle": 701,
+     "ts": "2026-10-08T00:00:00Z",
+     "health": 0.871,
+     "anomaly_score": 0.049,
+     "rul_p50": 93.0
+    },
+    {
+     "cycle": 702,
+     "ts": "2026-10-08T06:00:00Z",
+     "health": 0.866,
+     "anomaly_score": 0.028,
+     "rul_p50": 92.0
+    },
+    {
+     "cycle": 703,
+     "ts": "2026-10-08T12:00:00Z",
+     "health": 0.861,
+     "anomaly_score": 0.026,
+     "rul_p50": 91.0
+    },
+    {
+     "cycle": 704,
+     "ts": "2026-10-08T18:00:00Z",
+     "health": 0.856,
+     "anomaly_score": 0.037,
+     "rul_p50": 90.0
+    },
+    {
+     "cycle": 705,
+     "ts": "2026-10-09T00:00:00Z",
+     "health": 0.851,
+     "anomaly_score": 0.033,
+     "rul_p50": 89.0
+    },
+    {
+     "cycle": 706,
+     "ts": "2026-10-09T06:00:00Z",
+     "health": 0.846,
+     "anomaly_score": 0.058,
+     "rul_p50": 88.0
+    },
+    {
+     "cycle": 707,
+     "ts": "2026-10-09T12:00:00Z",
+     "health": 0.841,
+     "anomaly_score": 0.062,
+     "rul_p50": 87.0
+    },
+    {
+     "cycle": 708,
+     "ts": "2026-10-09T18:00:00Z",
+     "health": 0.836,
+     "anomaly_score": 0.05,
+     "rul_p50": 86.0
+    },
+    {
+     "cycle": 709,
+     "ts": "2026-10-10T00:00:00Z",
+     "health": 0.831,
+     "anomaly_score": 0.043,
+     "rul_p50": 85.0
+    },
+    {
+     "cycle": 710,
+     "ts": "2026-10-10T06:00:00Z",
+     "health": 0.826,
+     "anomaly_score": 0.043,
+     "rul_p50": 84.0
+    },
+    {
+     "cycle": 711,
+     "ts": "2026-10-10T12:00:00Z",
+     "health": 0.821,
+     "anomaly_score": 0.049,
+     "rul_p50": 83.0
+    },
+    {
+     "cycle": 712,
+     "ts": "2026-10-10T18:00:00Z",
+     "health": 0.816,
+     "anomaly_score": 0.051,
+     "rul_p50": 82.0
+    },
+    {
+     "cycle": 713,
+     "ts": "2026-10-11T00:00:00Z",
+     "health": 0.81,
+     "anomaly_score": 0.067,
+     "rul_p50": 81.0
+    },
+    {
+     "cycle": 714,
+     "ts": "2026-10-11T06:00:00Z",
+     "health": 0.805,
+     "anomaly_score": 0.075,
+     "rul_p50": 80.0
+    },
+    {
+     "cycle": 715,
+     "ts": "2026-10-11T12:00:00Z",
+     "health": 0.8,
+     "anomaly_score": 0.062,
+     "rul_p50": 79.0
+    },
+    {
+     "cycle": 716,
+     "ts": "2026-10-11T18:00:00Z",
+     "health": 0.795,
+     "anomaly_score": 0.08,
+     "rul_p50": 78.0
+    },
+    {
+     "cycle": 717,
+     "ts": "2026-10-12T00:00:00Z",
+     "health": 0.79,
+     "anomaly_score": 0.065,
+     "rul_p50": 77.0
+    },
+    {
+     "cycle": 718,
+     "ts": "2026-10-12T06:00:00Z",
+     "health": 0.785,
+     "anomaly_score": 0.069,
+     "rul_p50": 76.0
+    },
+    {
+     "cycle": 719,
+     "ts": "2026-10-12T12:00:00Z",
+     "health": 0.78,
+     "anomaly_score": 0.094,
+     "rul_p50": 75.0
+    }
+   ],
+   "predicted": [
+    {
+     "cycle": 720,
+     "health_p50": 0.77,
+     "health_lo": 0.767,
+     "health_hi": 0.771
+    },
+    {
+     "cycle": 721,
+     "health_p50": 0.759,
+     "health_lo": 0.754,
+     "health_hi": 0.763
+    },
+    {
+     "cycle": 722,
+     "health_p50": 0.749,
+     "health_lo": 0.741,
+     "health_hi": 0.754
+    },
+    {
+     "cycle": 723,
+     "health_p50": 0.738,
+     "health_lo": 0.728,
+     "health_hi": 0.745
+    },
+    {
+     "cycle": 724,
+     "health_p50": 0.728,
+     "health_lo": 0.715,
+     "health_hi": 0.737
+    },
+    {
+     "cycle": 725,
+     "health_p50": 0.718,
+     "health_lo": 0.702,
+     "health_hi": 0.728
+    },
+    {
+     "cycle": 726,
+     "health_p50": 0.707,
+     "health_lo": 0.689,
+     "health_hi": 0.719
+    },
+    {
+     "cycle": 727,
+     "health_p50": 0.697,
+     "health_lo": 0.676,
+     "health_hi": 0.711
+    },
+    {
+     "cycle": 728,
+     "health_p50": 0.686,
+     "health_lo": 0.663,
+     "health_hi": 0.702
+    },
+    {
+     "cycle": 729,
+     "health_p50": 0.676,
+     "health_lo": 0.65,
+     "health_hi": 0.693
+    },
+    {
+     "cycle": 730,
+     "health_p50": 0.666,
+     "health_lo": 0.637,
+     "health_hi": 0.685
+    },
+    {
+     "cycle": 731,
+     "health_p50": 0.655,
+     "health_lo": 0.624,
+     "health_hi": 0.676
+    },
+    {
+     "cycle": 732,
+     "health_p50": 0.645,
+     "health_lo": 0.611,
+     "health_hi": 0.667
+    },
+    {
+     "cycle": 733,
+     "health_p50": 0.634,
+     "health_lo": 0.598,
+     "health_hi": 0.659
+    },
+    {
+     "cycle": 734,
+     "health_p50": 0.624,
+     "health_lo": 0.585,
+     "health_hi": 0.65
+    },
+    {
+     "cycle": 735,
+     "health_p50": 0.614,
+     "health_lo": 0.572,
+     "health_hi": 0.641
+    },
+    {
+     "cycle": 736,
+     "health_p50": 0.603,
+     "health_lo": 0.559,
+     "health_hi": 0.633
+    },
+    {
+     "cycle": 737,
+     "health_p50": 0.593,
+     "health_lo": 0.546,
+     "health_hi": 0.624
+    },
+    {
+     "cycle": 738,
+     "health_p50": 0.582,
+     "health_lo": 0.533,
+     "health_hi": 0.615
+    },
+    {
+     "cycle": 739,
+     "health_p50": 0.572,
+     "health_lo": 0.52,
+     "health_hi": 0.607
+    },
+    {
+     "cycle": 740,
+     "health_p50": 0.562,
+     "health_lo": 0.507,
+     "health_hi": 0.598
+    },
+    {
+     "cycle": 741,
+     "health_p50": 0.551,
+     "health_lo": 0.494,
+     "health_hi": 0.589
+    },
+    {
+     "cycle": 742,
+     "health_p50": 0.541,
+     "health_lo": 0.481,
+     "health_hi": 0.581
+    },
+    {
+     "cycle": 743,
+     "health_p50": 0.53,
+     "health_lo": 0.468,
+     "health_hi": 0.572
+    },
+    {
+     "cycle": 744,
+     "health_p50": 0.52,
+     "health_lo": 0.455,
+     "health_hi": 0.563
+    },
+    {
+     "cycle": 745,
+     "health_p50": 0.51,
+     "health_lo": 0.442,
+     "health_hi": 0.555
+    },
+    {
+     "cycle": 746,
+     "health_p50": 0.499,
+     "health_lo": 0.429,
+     "health_hi": 0.546
+    },
+    {
+     "cycle": 747,
+     "health_p50": 0.489,
+     "health_lo": 0.416,
+     "health_hi": 0.537
+    },
+    {
+     "cycle": 748,
+     "health_p50": 0.478,
+     "health_lo": 0.403,
+     "health_hi": 0.529
+    },
+    {
+     "cycle": 749,
+     "health_p50": 0.468,
+     "health_lo": 0.39,
+     "health_hi": 0.52
+    },
+    {
+     "cycle": 750,
+     "health_p50": 0.458,
+     "health_lo": 0.377,
+     "health_hi": 0.511
+    },
+    {
+     "cycle": 751,
+     "health_p50": 0.447,
+     "health_lo": 0.364,
+     "health_hi": 0.503
+    },
+    {
+     "cycle": 752,
+     "health_p50": 0.437,
+     "health_lo": 0.351,
+     "health_hi": 0.494
+    },
+    {
+     "cycle": 753,
+     "health_p50": 0.426,
+     "health_lo": 0.338,
+     "health_hi": 0.485
+    },
+    {
+     "cycle": 754,
+     "health_p50": 0.416,
+     "health_lo": 0.325,
+     "health_hi": 0.477
+    },
+    {
+     "cycle": 755,
+     "health_p50": 0.406,
+     "health_lo": 0.312,
+     "health_hi": 0.468
+    },
+    {
+     "cycle": 756,
+     "health_p50": 0.395,
+     "health_lo": 0.299,
+     "health_hi": 0.459
+    },
+    {
+     "cycle": 757,
+     "health_p50": 0.385,
+     "health_lo": 0.286,
+     "health_hi": 0.451
+    },
+    {
+     "cycle": 758,
+     "health_p50": 0.374,
+     "health_lo": 0.273,
+     "health_hi": 0.442
+    },
+    {
+     "cycle": 759,
+     "health_p50": 0.364,
+     "health_lo": 0.26,
+     "health_hi": 0.433
+    }
+   ],
+   "sensors_last": {}
+  },
+  {
+   "synthetic": true,
+   "tail": "SIM-017",
+   "component_id": "SIM-017/landing_gear",
+   "kind": "landing_gear",
+   "cycles": 720,
+   "hours": 1274.4,
+   "health": 0.91,
+   "anomaly_score": 0.07,
+   "rul_cycles": {
+    "p10": 60.0,
+    "p50": 75.0,
+    "p90": 90.0
+   },
+   "data_quality": {
+    "status": "ok",
+    "reasons": []
+   },
+   "last_maintenance": null,
+   "status": "ok",
+   "updated": "2026-10-12T12:00:00Z",
+   "history": [
+    {
+     "cycle": 681,
+     "ts": "2026-10-02T18:00:00Z",
+     "health": 0.909,
+     "anomaly_score": 0.022,
+     "rul_p50": 114.0
+    },
+    {
+     "cycle": 682,
+     "ts": "2026-10-03T00:00:00Z",
+     "health": 0.904,
+     "anomaly_score": 0.025,
+     "rul_p50": 113.0
+    },
+    {
+     "cycle": 683,
+     "ts": "2026-10-03T06:00:00Z",
+     "health": 0.908,
+     "anomaly_score": 0.026,
+     "rul_p50": 112.0
+    },
+    {
+     "cycle": 684,
+     "ts": "2026-10-03T12:00:00Z",
+     "health": 0.919,
+     "anomaly_score": 0.017,
+     "rul_p50": 111.0
+    },
+    {
+     "cycle": 685,
+     "ts": "2026-10-03T18:00:00Z",
+     "health": 0.918,
+     "anomaly_score": 0.013,
+     "rul_p50": 110.0
+    },
+    {
+     "cycle": 686,
+     "ts": "2026-10-04T00:00:00Z",
+     "health": 0.914,
+     "anomaly_score": 0.027,
+     "rul_p50": 109.0
+    },
+    {
+     "cycle": 687,
+     "ts": "2026-10-04T06:00:00Z",
+     "health": 0.917,
+     "anomaly_score": 0.004,
+     "rul_p50": 108.0
+    },
+    {
+     "cycle": 688,
+     "ts": "2026-10-04T12:00:00Z",
+     "health": 0.905,
+     "anomaly_score": 0.015,
+     "rul_p50": 107.0
+    },
+    {
+     "cycle": 689,
+     "ts": "2026-10-04T18:00:00Z",
+     "health": 0.917,
+     "anomaly_score": 0.011,
+     "rul_p50": 106.0
+    },
+    {
+     "cycle": 690,
+     "ts": "2026-10-05T00:00:00Z",
+     "health": 0.902,
+     "anomaly_score": 0.015,
+     "rul_p50": 105.0
+    },
+    {
+     "cycle": 691,
+     "ts": "2026-10-05T06:00:00Z",
+     "health": 0.904,
+     "anomaly_score": 0.026,
+     "rul_p50": 104.0
+    },
+    {
+     "cycle": 692,
+     "ts": "2026-10-05T12:00:00Z",
+     "health": 0.912,
+     "anomaly_score": 0.007,
+     "rul_p50": 103.0
+    },
+    {
+     "cycle": 693,
+     "ts": "2026-10-05T18:00:00Z",
+     "health": 0.918,
+     "anomaly_score": 0.02,
+     "rul_p50": 102.0
+    },
+    {
+     "cycle": 694,
+     "ts": "2026-10-06T00:00:00Z",
+     "health": 0.916,
+     "anomaly_score": 0.013,
+     "rul_p50": 101.0
+    },
+    {
+     "cycle": 695,
+     "ts": "2026-10-06T06:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.011,
+     "rul_p50": 100.0
+    },
+    {
+     "cycle": 696,
+     "ts": "2026-10-06T12:00:00Z",
+     "health": 0.908,
+     "anomaly_score": 0.023,
+     "rul_p50": 99.0
+    },
+    {
+     "cycle": 697,
+     "ts": "2026-10-06T18:00:00Z",
+     "health": 0.914,
+     "anomaly_score": 0.026,
+     "rul_p50": 98.0
+    },
+    {
+     "cycle": 698,
+     "ts": "2026-10-07T00:00:00Z",
+     "health": 0.908,
+     "anomaly_score": 0.028,
+     "rul_p50": 97.0
+    },
+    {
+     "cycle": 699,
+     "ts": "2026-10-07T06:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.026,
+     "rul_p50": 96.0
+    },
+    {
+     "cycle": 700,
+     "ts": "2026-10-07T12:00:00Z",
+     "health": 0.912,
+     "anomaly_score": 0.023,
+     "rul_p50": 95.0
+    },
+    {
+     "cycle": 701,
+     "ts": "2026-10-07T18:00:00Z",
+     "health": 0.91,
+     "anomaly_score": 0.046,
+     "rul_p50": 94.0
+    },
+    {
+     "cycle": 702,
+     "ts": "2026-10-08T00:00:00Z",
+     "health": 0.909,
+     "anomaly_score": 0.04,
+     "rul_p50": 93.0
+    },
+    {
+     "cycle": 703,
+     "ts": "2026-10-08T06:00:00Z",
+     "health": 0.913,
+     "anomaly_score": 0.046,
+     "rul_p50": 92.0
+    },
+    {
+     "cycle": 704,
+     "ts": "2026-10-08T12:00:00Z",
+     "health": 0.915,
+     "anomaly_score": 0.044,
+     "rul_p50": 91.0
+    },
+    {
+     "cycle": 705,
+     "ts": "2026-10-08T18:00:00Z",
+     "health": 0.902,
+     "anomaly_score": 0.038,
+     "rul_p50": 90.0
+    },
+    {
+     "cycle": 706,
+     "ts": "2026-10-09T00:00:00Z",
+     "health": 0.916,
+     "anomaly_score": 0.031,
+     "rul_p50": 89.0
+    },
+    {
+     "cycle": 707,
+     "ts": "2026-10-09T06:00:00Z",
+     "health": 0.903,
+     "anomaly_score": 0.058,
+     "rul_p50": 88.0
+    },
+    {
+     "cycle": 708,
+     "ts": "2026-10-09T12:00:00Z",
+     "health": 0.912,
+     "anomaly_score": 0.063,
+     "rul_p50": 87.0
+    },
+    {
+     "cycle": 709,
+     "ts": "2026-10-09T18:00:00Z",
+     "health": 0.915,
+     "anomaly_score": 0.066,
+     "rul_p50": 86.0
+    },
+    {
+     "cycle": 710,
+     "ts": "2026-10-10T00:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.059,
+     "rul_p50": 85.0
+    },
+    {
+     "cycle": 711,
+     "ts": "2026-10-10T06:00:00Z",
+     "health": 0.907,
+     "anomaly_score": 0.07,
+     "rul_p50": 84.0
+    },
+    {
+     "cycle": 712,
+     "ts": "2026-10-10T12:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.05,
+     "rul_p50": 83.0
+    },
+    {
+     "cycle": 713,
+     "ts": "2026-10-10T18:00:00Z",
+     "health": 0.916,
+     "anomaly_score": 0.055,
+     "rul_p50": 82.0
+    },
+    {
+     "cycle": 714,
+     "ts": "2026-10-11T00:00:00Z",
+     "health": 0.911,
+     "anomaly_score": 0.068,
+     "rul_p50": 81.0
+    },
+    {
+     "cycle": 715,
+     "ts": "2026-10-11T06:00:00Z",
+     "health": 0.907,
+     "anomaly_score": 0.063,
+     "rul_p50": 80.0
+    },
+    {
+     "cycle": 716,
+     "ts": "2026-10-11T12:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.064,
+     "rul_p50": 79.0
+    },
+    {
+     "cycle": 717,
+     "ts": "2026-10-11T18:00:00Z",
+     "health": 0.915,
+     "anomaly_score": 0.077,
+     "rul_p50": 78.0
+    },
+    {
+     "cycle": 718,
+     "ts": "2026-10-12T00:00:00Z",
+     "health": 0.911,
+     "anomaly_score": 0.088,
+     "rul_p50": 77.0
+    },
+    {
+     "cycle": 719,
+     "ts": "2026-10-12T06:00:00Z",
+     "health": 0.905,
+     "anomaly_score": 0.071,
+     "rul_p50": 76.0
+    },
+    {
+     "cycle": 720,
+     "ts": "2026-10-12T12:00:00Z",
+     "health": 0.901,
+     "anomaly_score": 0.071,
+     "rul_p50": 75.0
+    }
+   ],
+   "predicted": [
+    {
+     "cycle": 721,
+     "health_p50": 0.898,
+     "health_lo": 0.895,
+     "health_hi": 0.9
+    },
+    {
+     "cycle": 722,
+     "health_p50": 0.886,
+     "health_lo": 0.88,
+     "health_hi": 0.89
+    },
+    {
+     "cycle": 723,
+     "health_p50": 0.874,
+     "health_lo": 0.864,
+     "health_hi": 0.88
+    },
+    {
+     "cycle": 724,
+     "health_p50": 0.861,
+     "health_lo": 0.849,
+     "health_hi": 0.87
+    },
+    {
+     "cycle": 725,
+     "health_p50": 0.849,
+     "health_lo": 0.834,
+     "health_hi": 0.859
+    },
+    {
+     "cycle": 726,
+     "health_p50": 0.837,
+     "health_lo": 0.819,
+     "health_hi": 0.849
+    },
+    {
+     "cycle": 727,
+     "health_p50": 0.825,
+     "health_lo": 0.804,
+     "health_hi": 0.839
+    },
+    {
+     "cycle": 728,
+     "health_p50": 0.813,
+     "health_lo": 0.789,
+     "health_hi": 0.829
+    },
+    {
+     "cycle": 729,
+     "health_p50": 0.801,
+     "health_lo": 0.773,
+     "health_hi": 0.819
+    },
+    {
+     "cycle": 730,
+     "health_p50": 0.789,
+     "health_lo": 0.758,
+     "health_hi": 0.809
+    },
+    {
+     "cycle": 731,
+     "health_p50": 0.777,
+     "health_lo": 0.743,
+     "health_hi": 0.799
+    },
+    {
+     "cycle": 732,
+     "health_p50": 0.764,
+     "health_lo": 0.728,
+     "health_hi": 0.789
+    },
+    {
+     "cycle": 733,
+     "health_p50": 0.752,
+     "health_lo": 0.713,
+     "health_hi": 0.779
+    },
+    {
+     "cycle": 734,
+     "health_p50": 0.74,
+     "health_lo": 0.698,
+     "health_hi": 0.768
+    },
+    {
+     "cycle": 735,
+     "health_p50": 0.728,
+     "health_lo": 0.682,
+     "health_hi": 0.758
+    },
+    {
+     "cycle": 736,
+     "health_p50": 0.716,
+     "health_lo": 0.667,
+     "health_hi": 0.748
+    },
+    {
+     "cycle": 737,
+     "health_p50": 0.704,
+     "health_lo": 0.652,
+     "health_hi": 0.738
+    },
+    {
+     "cycle": 738,
+     "health_p50": 0.692,
+     "health_lo": 0.637,
+     "health_hi": 0.728
+    },
+    {
+     "cycle": 739,
+     "health_p50": 0.679,
+     "health_lo": 0.622,
+     "health_hi": 0.718
+    },
+    {
+     "cycle": 740,
+     "health_p50": 0.667,
+     "health_lo": 0.607,
+     "health_hi": 0.708
+    },
+    {
+     "cycle": 741,
+     "health_p50": 0.655,
+     "health_lo": 0.592,
+     "health_hi": 0.698
+    },
+    {
+     "cycle": 742,
+     "health_p50": 0.643,
+     "health_lo": 0.576,
+     "health_hi": 0.688
+    },
+    {
+     "cycle": 743,
+     "health_p50": 0.631,
+     "health_lo": 0.561,
+     "health_hi": 0.677
+    },
+    {
+     "cycle": 744,
+     "health_p50": 0.619,
+     "health_lo": 0.546,
+     "health_hi": 0.667
+    },
+    {
+     "cycle": 745,
+     "health_p50": 0.607,
+     "health_lo": 0.531,
+     "health_hi": 0.657
+    },
+    {
+     "cycle": 746,
+     "health_p50": 0.595,
+     "health_lo": 0.516,
+     "health_hi": 0.647
+    },
+    {
+     "cycle": 747,
+     "health_p50": 0.582,
+     "health_lo": 0.501,
+     "health_hi": 0.637
+    },
+    {
+     "cycle": 748,
+     "health_p50": 0.57,
+     "health_lo": 0.485,
+     "health_hi": 0.627
+    },
+    {
+     "cycle": 749,
+     "health_p50": 0.558,
+     "health_lo": 0.47,
+     "health_hi": 0.617
+    },
+    {
+     "cycle": 750,
+     "health_p50": 0.546,
+     "health_lo": 0.455,
+     "health_hi": 0.607
+    },
+    {
+     "cycle": 751,
+     "health_p50": 0.534,
+     "health_lo": 0.44,
+     "health_hi": 0.597
+    },
+    {
+     "cycle": 752,
+     "health_p50": 0.522,
+     "health_lo": 0.425,
+     "health_hi": 0.586
+    },
+    {
+     "cycle": 753,
+     "health_p50": 0.51,
+     "health_lo": 0.409,
+     "health_hi": 0.576
+    },
+    {
+     "cycle": 754,
+     "health_p50": 0.497,
+     "health_lo": 0.394,
+     "health_hi": 0.566
+    },
+    {
+     "cycle": 755,
+     "health_p50": 0.485,
+     "health_lo": 0.379,
+     "health_hi": 0.556
+    },
+    {
+     "cycle": 756,
+     "health_p50": 0.473,
+     "health_lo": 0.364,
+     "health_hi": 0.546
+    },
+    {
+     "cycle": 757,
+     "health_p50": 0.461,
+     "health_lo": 0.349,
+     "health_hi": 0.536
+    },
+    {
+     "cycle": 758,
+     "health_p50": 0.449,
+     "health_lo": 0.334,
+     "health_hi": 0.526
+    },
+    {
+     "cycle": 759,
+     "health_p50": 0.437,
+     "health_lo": 0.319,
+     "health_hi": 0.516
+    },
+    {
+     "cycle": 760,
+     "health_p50": 0.425,
+     "health_lo": 0.303,
+     "health_hi": 0.506
+    }
+   ],
+   "sensors_last": {}
+  },
+  {
+   "synthetic": true,
+   "tail": "SIM-017",
+   "component_id": "SIM-017/hydraulics",
+   "kind": "hydraulics",
+   "cycles": 806,
+   "hours": 1426.6,
+   "health": 0.93,
+   "anomaly_score": 0.07,
+   "rul_cycles": {
+    "p10": 60.0,
+    "p50": 75.0,
+    "p90": 90.0
+   },
+   "data_quality": {
+    "status": "ok",
+    "reasons": []
+   },
+   "last_maintenance": null,
+   "status": "ok",
+   "updated": "2026-10-12T12:00:00Z",
+   "history": [
+    {
+     "cycle": 767,
+     "ts": "2026-10-02T18:00:00Z",
+     "health": 0.933,
+     "anomaly_score": 0.03,
+     "rul_p50": 114.0
+    },
+    {
+     "cycle": 768,
+     "ts": "2026-10-03T00:00:00Z",
+     "health": 0.93,
+     "anomaly_score": 0.013,
+     "rul_p50": 113.0
+    },
+    {
+     "cycle": 769,
+     "ts": "2026-10-03T06:00:00Z",
+     "health": 0.93,
+     "anomaly_score": 0.002,
+     "rul_p50": 112.0
+    },
+    {
+     "cycle": 770,
+     "ts": "2026-10-03T12:00:00Z",
+     "health": 0.935,
+     "anomaly_score": 0.01,
+     "rul_p50": 111.0
+    },
+    {
+     "cycle": 771,
+     "ts": "2026-10-03T18:00:00Z",
+     "health": 0.934,
+     "anomaly_score": 0.028,
+     "rul_p50": 110.0
+    },
+    {
+     "cycle": 772,
+     "ts": "2026-10-04T00:00:00Z",
+     "health": 0.924,
+     "anomaly_score": 0.016,
+     "rul_p50": 109.0
+    },
+    {
+     "cycle": 773,
+     "ts": "2026-10-04T06:00:00Z",
+     "health": 0.933,
+     "anomaly_score": 0.026,
+     "rul_p50": 108.0
+    },
+    {
+     "cycle": 774,
+     "ts": "2026-10-04T12:00:00Z",
+     "health": 0.934,
+     "anomaly_score": 0.012,
+     "rul_p50": 107.0
+    },
+    {
+     "cycle": 775,
+     "ts": "2026-10-04T18:00:00Z",
+     "health": 0.931,
+     "anomaly_score": 0.008,
+     "rul_p50": 106.0
+    },
+    {
+     "cycle": 776,
+     "ts": "2026-10-05T00:00:00Z",
+     "health": 0.93,
+     "anomaly_score": 0.032,
+     "rul_p50": 105.0
+    },
+    {
+     "cycle": 777,
+     "ts": "2026-10-05T06:00:00Z",
+     "health": 0.939,
+     "anomaly_score": 0.009,
+     "rul_p50": 104.0
+    },
+    {
+     "cycle": 778,
+     "ts": "2026-10-05T12:00:00Z",
+     "health": 0.931,
+     "anomaly_score": 0.024,
+     "rul_p50": 103.0
+    },
+    {
+     "cycle": 779,
+     "ts": "2026-10-05T18:00:00Z",
+     "health": 0.923,
+     "anomaly_score": 0.035,
+     "rul_p50": 102.0
+    },
+    {
+     "cycle": 780,
+     "ts": "2026-10-06T00:00:00Z",
+     "health": 0.925,
+     "anomaly_score": 0.013,
+     "rul_p50": 101.0
+    },
+    {
+     "cycle": 781,
+     "ts": "2026-10-06T06:00:00Z",
+     "health": 0.93,
+     "anomaly_score": 0.024,
+     "rul_p50": 100.0
+    },
+    {
+     "cycle": 782,
+     "ts": "2026-10-06T12:00:00Z",
+     "health": 0.935,
+     "anomaly_score": 0.036,
+     "rul_p50": 99.0
+    },
+    {
+     "cycle": 783,
+     "ts": "2026-10-06T18:00:00Z",
+     "health": 0.927,
+     "anomaly_score": 0.033,
+     "rul_p50": 98.0
+    },
+    {
+     "cycle": 784,
+     "ts": "2026-10-07T00:00:00Z",
+     "health": 0.931,
+     "anomaly_score": 0.029,
+     "rul_p50": 97.0
+    },
+    {
+     "cycle": 785,
+     "ts": "2026-10-07T06:00:00Z",
+     "health": 0.932,
+     "anomaly_score": 0.028,
+     "rul_p50": 96.0
+    },
+    {
+     "cycle": 786,
+     "ts": "2026-10-07T12:00:00Z",
+     "health": 0.927,
+     "anomaly_score": 0.045,
+     "rul_p50": 95.0
+    },
+    {
+     "cycle": 787,
+     "ts": "2026-10-07T18:00:00Z",
+     "health": 0.935,
+     "anomaly_score": 0.039,
+     "rul_p50": 94.0
+    },
+    {
+     "cycle": 788,
+     "ts": "2026-10-08T00:00:00Z",
+     "health": 0.938,
+     "anomaly_score": 0.038,
+     "rul_p50": 93.0
+    },
+    {
+     "cycle": 789,
+     "ts": "2026-10-08T06:00:00Z",
+     "health": 0.921,
+     "anomaly_score": 0.029,
+     "rul_p50": 92.0
+    },
+    {
+     "cycle": 790,
+     "ts": "2026-10-08T12:00:00Z",
+     "health": 0.936,
+     "anomaly_score": 0.035,
+     "rul_p50": 91.0
+    },
+    {
+     "cycle": 791,
+     "ts": "2026-10-08T18:00:00Z",
+     "health": 0.939,
+     "anomaly_score": 0.047,
+     "rul_p50": 90.0
+    },
+    {
+     "cycle": 792,
+     "ts": "2026-10-09T00:00:00Z",
+     "health": 0.928,
+     "anomaly_score": 0.044,
+     "rul_p50": 89.0
+    },
+    {
+     "cycle": 793,
+     "ts": "2026-10-09T06:00:00Z",
+     "health": 0.921,
+     "anomaly_score": 0.045,
+     "rul_p50": 88.0
+    },
+    {
+     "cycle": 794,
+     "ts": "2026-10-09T12:00:00Z",
+     "health": 0.922,
+     "anomaly_score": 0.042,
+     "rul_p50": 87.0
+    },
+    {
+     "cycle": 795,
+     "ts": "2026-10-09T18:00:00Z",
+     "health": 0.939,
+     "anomaly_score": 0.041,
+     "rul_p50": 86.0
+    },
+    {
+     "cycle": 796,
+     "ts": "2026-10-10T00:00:00Z",
+     "health": 0.934,
+     "anomaly_score": 0.058,
+     "rul_p50": 85.0
+    },
+    {
+     "cycle": 797,
+     "ts": "2026-10-10T06:00:00Z",
+     "health": 0.934,
+     "anomaly_score": 0.065,
+     "rul_p50": 84.0
+    },
+    {
+     "cycle": 798,
+     "ts": "2026-10-10T12:00:00Z",
+     "health": 0.937,
+     "anomaly_score": 0.055,
+     "rul_p50": 83.0
+    },
+    {
+     "cycle": 799,
+     "ts": "2026-10-10T18:00:00Z",
+     "health": 0.927,
+     "anomaly_score": 0.052,
+     "rul_p50": 82.0
+    },
+    {
+     "cycle": 800,
+     "ts": "2026-10-11T00:00:00Z",
+     "health": 0.933,
+     "anomaly_score": 0.056,
+     "rul_p50": 81.0
+    },
+    {
+     "cycle": 801,
+     "ts": "2026-10-11T06:00:00Z",
+     "health": 0.924,
+     "anomaly_score": 0.083,
+     "rul_p50": 80.0
+    },
+    {
+     "cycle": 802,
+     "ts": "2026-10-11T12:00:00Z",
+     "health": 0.932,
+     "anomaly_score": 0.078,
+     "rul_p50": 79.0
+    },
+    {
+     "cycle": 803,
+     "ts": "2026-10-11T18:00:00Z",
+     "health": 0.93,
+     "anomaly_score": 0.064,
+     "rul_p50": 78.0
+    },
+    {
+     "cycle": 804,
+     "ts": "2026-10-12T00:00:00Z",
+     "health": 0.938,
+     "anomaly_score": 0.083,
+     "rul_p50": 77.0
+    },
+    {
+     "cycle": 805,
+     "ts": "2026-10-12T06:00:00Z",
+     "health": 0.921,
+     "anomaly_score": 0.094,
+     "rul_p50": 76.0
+    },
+    {
+     "cycle": 806,
+     "ts": "2026-10-12T12:00:00Z",
+     "health": 0.929,
+     "anomaly_score": 0.088,
+     "rul_p50": 75.0
+    }
+   ],
+   "predicted": [
+    {
+     "cycle": 807,
+     "health_p50": 0.918,
+     "health_lo": 0.914,
+     "health_hi": 0.92
+    },
+    {
+     "cycle": 808,
+     "health_p50": 0.905,
+     "health_lo": 0.899,
+     "health_hi": 0.909
+    },
+    {
+     "cycle": 809,
+     "health_p50": 0.893,
+     "health_lo": 0.883,
+     "health_hi": 0.899
+    },
+    {
+     "cycle": 810,
+     "health_p50": 0.88,
+     "health_lo": 0.868,
+     "health_hi": 0.889
+    },
+    {
+     "cycle": 811,
+     "health_p50": 0.868,
+     "health_lo": 0.853,
+     "health_hi": 0.878
+    },
+    {
+     "cycle": 812,
+     "health_p50": 0.856,
+     "health_lo": 0.837,
+     "health_hi": 0.868
+    },
+    {
+     "cycle": 813,
+     "health_p50": 0.843,
+     "health_lo": 0.822,
+     "health_hi": 0.858
+    },
+    {
+     "cycle": 814,
+     "health_p50": 0.831,
+     "health_lo": 0.806,
+     "health_hi": 0.847
+    },
+    {
+     "cycle": 815,
+     "health_p50": 0.818,
+     "health_lo": 0.79,
+     "health_hi": 0.837
+    },
+    {
+     "cycle": 816,
+     "health_p50": 0.806,
+     "health_lo": 0.775,
+     "health_hi": 0.827
+    },
+    {
+     "cycle": 817,
+     "health_p50": 0.794,
+     "health_lo": 0.76,
+     "health_hi": 0.816
+    },
+    {
+     "cycle": 818,
+     "health_p50": 0.781,
+     "health_lo": 0.744,
+     "health_hi": 0.806
+    },
+    {
+     "cycle": 819,
+     "health_p50": 0.769,
+     "health_lo": 0.729,
+     "health_hi": 0.796
+    },
+    {
+     "cycle": 820,
+     "health_p50": 0.756,
+     "health_lo": 0.713,
+     "health_hi": 0.785
+    },
+    {
+     "cycle": 821,
+     "health_p50": 0.744,
+     "health_lo": 0.698,
+     "health_hi": 0.775
+    },
+    {
+     "cycle": 822,
+     "health_p50": 0.732,
+     "health_lo": 0.682,
+     "health_hi": 0.765
+    },
+    {
+     "cycle": 823,
+     "health_p50": 0.719,
+     "health_lo": 0.667,
+     "health_hi": 0.754
+    },
+    {
+     "cycle": 824,
+     "health_p50": 0.707,
+     "health_lo": 0.651,
+     "health_hi": 0.744
+    },
+    {
+     "cycle": 825,
+     "health_p50": 0.694,
+     "health_lo": 0.636,
+     "health_hi": 0.734
+    },
+    {
+     "cycle": 826,
+     "health_p50": 0.682,
+     "health_lo": 0.62,
+     "health_hi": 0.723
+    },
+    {
+     "cycle": 827,
+     "health_p50": 0.67,
+     "health_lo": 0.605,
+     "health_hi": 0.713
+    },
+    {
+     "cycle": 828,
+     "health_p50": 0.657,
+     "health_lo": 0.589,
+     "health_hi": 0.703
+    },
+    {
+     "cycle": 829,
+     "health_p50": 0.645,
+     "health_lo": 0.574,
+     "health_hi": 0.692
+    },
+    {
+     "cycle": 830,
+     "health_p50": 0.632,
+     "health_lo": 0.558,
+     "health_hi": 0.682
+    },
+    {
+     "cycle": 831,
+     "health_p50": 0.62,
+     "health_lo": 0.542,
+     "health_hi": 0.672
+    },
+    {
+     "cycle": 832,
+     "health_p50": 0.608,
+     "health_lo": 0.527,
+     "health_hi": 0.661
+    },
+    {
+     "cycle": 833,
+     "health_p50": 0.595,
+     "health_lo": 0.512,
+     "health_hi": 0.651
+    },
+    {
+     "cycle": 834,
+     "health_p50": 0.583,
+     "health_lo": 0.496,
+     "health_hi": 0.641
+    },
+    {
+     "cycle": 835,
+     "health_p50": 0.57,
+     "health_lo": 0.48,
+     "health_hi": 0.63
+    },
+    {
+     "cycle": 836,
+     "health_p50": 0.558,
+     "health_lo": 0.465,
+     "health_hi": 0.62
+    },
+    {
+     "cycle": 837,
+     "health_p50": 0.546,
+     "health_lo": 0.449,
+     "health_hi": 0.61
+    },
+    {
+     "cycle": 838,
+     "health_p50": 0.533,
+     "health_lo": 0.434,
+     "health_hi": 0.599
+    },
+    {
+     "cycle": 839,
+     "health_p50": 0.521,
+     "health_lo": 0.418,
+     "health_hi": 0.589
+    },
+    {
+     "cycle": 840,
+     "health_p50": 0.508,
+     "health_lo": 0.403,
+     "health_hi": 0.579
+    },
+    {
+     "cycle": 841,
+     "health_p50": 0.496,
+     "health_lo": 0.388,
+     "health_hi": 0.568
+    },
+    {
+     "cycle": 842,
+     "health_p50": 0.484,
+     "health_lo": 0.372,
+     "health_hi": 0.558
+    },
+    {
+     "cycle": 843,
+     "health_p50": 0.471,
+     "health_lo": 0.356,
+     "health_hi": 0.548
+    },
+    {
+     "cycle": 844,
+     "health_p50": 0.459,
+     "health_lo": 0.341,
+     "health_hi": 0.537
+    },
+    {
+     "cycle": 845,
+     "health_p50": 0.446,
+     "health_lo": 0.326,
+     "health_hi": 0.527
+    },
+    {
+     "cycle": 846,
+     "health_p50": 0.434,
+     "health_lo": 0.31,
+     "health_hi": 0.517
+    }
+   ],
+   "sensors_last": {}
+  },
+  {
+   "synthetic": true,
+   "tail": "SIM-017",
+   "component_id": "SIM-017/avionics",
+   "kind": "avionics",
+   "cycles": 903,
+   "hours": 1598.3,
+   "health": 0.8,
+   "anomaly_score": 0.07,
+   "rul_cycles": {
+    "p10": 60.0,
+    "p50": 75.0,
+    "p90": 90.0
+   },
+   "data_quality": {
+    "status": "ok",
+    "reasons": []
+   },
+   "last_maintenance": null,
+   "status": "ok",
+   "updated": "2026-10-12T12:00:00Z",
+   "history": [
+    {
+     "cycle": 864,
+     "ts": "2026-10-02T18:00:00Z",
+     "health": 0.98,
+     "anomaly_score": 0.012,
+     "rul_p50": 114.0
+    },
+    {
+     "cycle": 865,
+     "ts": "2026-10-03T00:00:00Z",
+     "health": 0.975,
+     "anomaly_score": 0.011,
+     "rul_p50": 113.0
+    },
+    {
+     "cycle": 866,
+     "ts": "2026-10-03T06:00:00Z",
+     "health": 0.971,
+     "anomaly_score": 0.009,
+     "rul_p50": 112.0
+    },
+    {
+     "cycle": 867,
+     "ts": "2026-10-03T12:00:00Z",
+     "health": 0.966,
+     "anomaly_score": 0.027,
+     "rul_p50": 111.0
+    },
+    {
+     "cycle": 868,
+     "ts": "2026-10-03T18:00:00Z",
+     "health": 0.962,
+     "anomaly_score": 0.018,
+     "rul_p50": 110.0
+    },
+    {
+     "cycle": 869,
+     "ts": "2026-10-04T00:00:00Z",
+     "health": 0.957,
+     "anomaly_score": 0.009,
+     "rul_p50": 109.0
+    },
+    {
+     "cycle": 870,
+     "ts": "2026-10-04T06:00:00Z",
+     "health": 0.952,
+     "anomaly_score": 0.018,
+     "rul_p50": 108.0
+    },
+    {
+     "cycle": 871,
+     "ts": "2026-10-04T12:00:00Z",
+     "health": 0.948,
+     "anomaly_score": 0.003,
+     "rul_p50": 107.0
+    },
+    {
+     "cycle": 872,
+     "ts": "2026-10-04T18:00:00Z",
+     "health": 0.943,
+     "anomaly_score": 0.01,
+     "rul_p50": 106.0
+    },
+    {
+     "cycle": 873,
+     "ts": "2026-10-05T00:00:00Z",
+     "health": 0.938,
+     "anomaly_score": 0.021,
+     "rul_p50": 105.0
+    },
+    {
+     "cycle": 874,
+     "ts": "2026-10-05T06:00:00Z",
+     "health": 0.934,
+     "anomaly_score": 0.016,
+     "rul_p50": 104.0
+    },
+    {
+     "cycle": 875,
+     "ts": "2026-10-05T12:00:00Z",
+     "health": 0.929,
+     "anomaly_score": 0.011,
+     "rul_p50": 103.0
+    },
+    {
+     "cycle": 876,
+     "ts": "2026-10-05T18:00:00Z",
+     "health": 0.925,
+     "anomaly_score": 0.015,
+     "rul_p50": 102.0
+    },
+    {
+     "cycle": 877,
+     "ts": "2026-10-06T00:00:00Z",
+     "health": 0.92,
+     "anomaly_score": 0.033,
+     "rul_p50": 101.0
+    },
+    {
+     "cycle": 878,
+     "ts": "2026-10-06T06:00:00Z",
+     "health": 0.915,
+     "anomaly_score": 0.017,
+     "rul_p50": 100.0
+    },
+    {
+     "cycle": 879,
+     "ts": "2026-10-06T12:00:00Z",
+     "health": 0.911,
+     "anomaly_score": 0.031,
+     "rul_p50": 99.0
+    },
+    {
+     "cycle": 880,
+     "ts": "2026-10-06T18:00:00Z",
+     "health": 0.906,
+     "anomaly_score": 0.017,
+     "rul_p50": 98.0
+    },
+    {
+     "cycle": 881,
+     "ts": "2026-10-07T00:00:00Z",
+     "health": 0.902,
+     "anomaly_score": 0.043,
+     "rul_p50": 97.0
+    },
+    {
+     "cycle": 882,
+     "ts": "2026-10-07T06:00:00Z",
+     "health": 0.897,
+     "anomaly_score": 0.02,
+     "rul_p50": 96.0
+    },
+    {
+     "cycle": 883,
+     "ts": "2026-10-07T12:00:00Z",
+     "health": 0.892,
+     "anomaly_score": 0.017,
+     "rul_p50": 95.0
+    },
+    {
+     "cycle": 884,
+     "ts": "2026-10-07T18:00:00Z",
+     "health": 0.888,
+     "anomaly_score": 0.048,
+     "rul_p50": 94.0
+    },
+    {
+     "cycle": 885,
+     "ts": "2026-10-08T00:00:00Z",
+     "health": 0.883,
+     "anomaly_score": 0.041,
+     "rul_p50": 93.0
+    },
+    {
+     "cycle": 886,
+     "ts": "2026-10-08T06:00:00Z",
+     "health": 0.878,
+     "anomaly_score": 0.029,
+     "rul_p50": 92.0
+    },
+    {
+     "cycle": 887,
+     "ts": "2026-10-08T12:00:00Z",
+     "health": 0.874,
+     "anomaly_score": 0.038,
+     "rul_p50": 91.0
+    },
+    {
+     "cycle": 888,
+     "ts": "2026-10-08T18:00:00Z",
+     "health": 0.869,
+     "anomaly_score": 0.052,
+     "rul_p50": 90.0
+    },
+    {
+     "cycle": 889,
+     "ts": "2026-10-09T00:00:00Z",
+     "health": 0.865,
+     "anomaly_score": 0.051,
+     "rul_p50": 89.0
+    },
+    {
+     "cycle": 890,
+     "ts": "2026-10-09T06:00:00Z",
+     "health": 0.86,
+     "anomaly_score": 0.042,
+     "rul_p50": 88.0
+    },
+    {
+     "cycle": 891,
+     "ts": "2026-10-09T12:00:00Z",
+     "health": 0.855,
+     "anomaly_score": 0.056,
+     "rul_p50": 87.0
+    },
+    {
+     "cycle": 892,
+     "ts": "2026-10-09T18:00:00Z",
+     "health": 0.851,
+     "anomaly_score": 0.06,
+     "rul_p50": 86.0
+    },
+    {
+     "cycle": 893,
+     "ts": "2026-10-10T00:00:00Z",
+     "health": 0.846,
+     "anomaly_score": 0.051,
+     "rul_p50": 85.0
+    },
+    {
+     "cycle": 894,
+     "ts": "2026-10-10T06:00:00Z",
+     "health": 0.842,
+     "anomaly_score": 0.056,
+     "rul_p50": 84.0
+    },
+    {
+     "cycle": 895,
+     "ts": "2026-10-10T12:00:00Z",
+     "health": 0.837,
+     "anomaly_score": 0.062,
+     "rul_p50": 83.0
+    },
+    {
+     "cycle": 896,
+     "ts": "2026-10-10T18:00:00Z",
+     "health": 0.832,
+     "anomaly_score": 0.062,
+     "rul_p50": 82.0
+    },
+    {
+     "cycle": 897,
+     "ts": "2026-10-11T00:00:00Z",
+     "health": 0.828,
+     "anomaly_score": 0.065,
+     "rul_p50": 81.0
+    },
+    {
+     "cycle": 898,
+     "ts": "2026-10-11T06:00:00Z",
+     "health": 0.823,
+     "anomaly_score": 0.067,
+     "rul_p50": 80.0
+    },
+    {
+     "cycle": 899,
+     "ts": "2026-10-11T12:00:00Z",
+     "health": 0.818,
+     "anomaly_score": 0.078,
+     "rul_p50": 79.0
+    },
+    {
+     "cycle": 900,
+     "ts": "2026-10-11T18:00:00Z",
+     "health": 0.814,
+     "anomaly_score": 0.082,
+     "rul_p50": 78.0
+    },
+    {
+     "cycle": 901,
+     "ts": "2026-10-12T00:00:00Z",
+     "health": 0.809,
+     "anomaly_score": 0.082,
+     "rul_p50": 77.0
+    },
+    {
+     "cycle": 902,
+     "ts": "2026-10-12T06:00:00Z",
+     "health": 0.805,
+     "anomaly_score": 0.088,
+     "rul_p50": 76.0
+    },
+    {
+     "cycle": 903,
+     "ts": "2026-10-12T12:00:00Z",
+     "health": 0.8,
+     "anomaly_score": 0.086,
+     "rul_p50": 75.0
+    }
+   ],
+   "predicted": [
+    {
+     "cycle": 904,
+     "health_p50": 0.789,
+     "health_lo": 0.787,
+     "health_hi": 0.791
+    },
+    {
+     "cycle": 905,
+     "health_p50": 0.779,
+     "health_lo": 0.773,
+     "health_hi": 0.782
+    },
+    {
+     "cycle": 906,
+     "health_p50": 0.768,
+     "health_lo": 0.76,
+     "health_hi": 0.773
+    },
+    {
+     "cycle": 907,
+     "health_p50": 0.757,
+     "health_lo": 0.747,
+     "health_hi": 0.764
+    },
+    {
+     "cycle": 908,
+     "health_p50": 0.747,
+     "health_lo": 0.733,
+     "health_hi": 0.756
+    },
+    {
+     "cycle": 909,
+     "health_p50": 0.736,
+     "health_lo": 0.72,
+     "health_hi": 0.747
+    },
+    {
+     "cycle": 910,
+     "health_p50": 0.725,
+     "health_lo": 0.707,
+     "health_hi": 0.738
+    },
+    {
+     "cycle": 911,
+     "health_p50": 0.715,
+     "health_lo": 0.693,
+     "health_hi": 0.729
+    },
+    {
+     "cycle": 912,
+     "health_p50": 0.704,
+     "health_lo": 0.68,
+     "health_hi": 0.72
+    },
+    {
+     "cycle": 913,
+     "health_p50": 0.693,
+     "health_lo": 0.667,
+     "health_hi": 0.711
+    },
+    {
+     "cycle": 914,
+     "health_p50": 0.683,
+     "health_lo": 0.653,
+     "health_hi": 0.702
+    },
+    {
+     "cycle": 915,
+     "health_p50": 0.672,
+     "health_lo": 0.64,
+     "health_hi": 0.693
+    },
+    {
+     "cycle": 916,
+     "health_p50": 0.661,
+     "health_lo": 0.627,
+     "health_hi": 0.684
+    },
+    {
+     "cycle": 917,
+     "health_p50": 0.651,
+     "health_lo": 0.613,
+     "health_hi": 0.676
+    },
+    {
+     "cycle": 918,
+     "health_p50": 0.64,
+     "health_lo": 0.6,
+     "health_hi": 0.667
+    },
+    {
+     "cycle": 919,
+     "health_p50": 0.629,
+     "health_lo": 0.587,
+     "health_hi": 0.658
+    },
+    {
+     "cycle": 920,
+     "health_p50": 0.619,
+     "health_lo": 0.573,
+     "health_hi": 0.649
+    },
+    {
+     "cycle": 921,
+     "health_p50": 0.608,
+     "health_lo": 0.56,
+     "health_hi": 0.64
+    },
+    {
+     "cycle": 922,
+     "health_p50": 0.597,
+     "health_lo": 0.547,
+     "health_hi": 0.631
+    },
+    {
+     "cycle": 923,
+     "health_p50": 0.587,
+     "health_lo": 0.533,
+     "health_hi": 0.622
+    },
+    {
+     "cycle": 924,
+     "health_p50": 0.576,
+     "health_lo": 0.52,
+     "health_hi": 0.613
+    },
+    {
+     "cycle": 925,
+     "health_p50": 0.565,
+     "health_lo": 0.507,
+     "health_hi": 0.604
+    },
+    {
+     "cycle": 926,
+     "health_p50": 0.555,
+     "health_lo": 0.493,
+     "health_hi": 0.596
+    },
+    {
+     "cycle": 927,
+     "health_p50": 0.544,
+     "health_lo": 0.48,
+     "health_hi": 0.587
+    },
+    {
+     "cycle": 928,
+     "health_p50": 0.533,
+     "health_lo": 0.467,
+     "health_hi": 0.578
+    },
+    {
+     "cycle": 929,
+     "health_p50": 0.523,
+     "health_lo": 0.453,
+     "health_hi": 0.569
+    },
+    {
+     "cycle": 930,
+     "health_p50": 0.512,
+     "health_lo": 0.44,
+     "health_hi": 0.56
+    },
+    {
+     "cycle": 931,
+     "health_p50": 0.501,
+     "health_lo": 0.427,
+     "health_hi": 0.551
+    },
+    {
+     "cycle": 932,
+     "health_p50": 0.491,
+     "health_lo": 0.413,
+     "health_hi": 0.542
+    },
+    {
+     "cycle": 933,
+     "health_p50": 0.48,
+     "health_lo": 0.4,
+     "health_hi": 0.533
+    },
+    {
+     "cycle": 934,
+     "health_p50": 0.469,
+     "health_lo": 0.387,
+     "health_hi": 0.524
+    },
+    {
+     "cycle": 935,
+     "health_p50": 0.459,
+     "health_lo": 0.373,
+     "health_hi": 0.516
+    },
+    {
+     "cycle": 936,
+     "health_p50": 0.448,
+     "health_lo": 0.36,
+     "health_hi": 0.507
+    },
+    {
+     "cycle": 937,
+     "health_p50": 0.437,
+     "health_lo": 0.347,
+     "health_hi": 0.498
+    },
+    {
+     "cycle": 938,
+     "health_p50": 0.427,
+     "health_lo": 0.333,
+     "health_hi": 0.489
+    },
+    {
+     "cycle": 939,
+     "health_p50": 0.416,
+     "health_lo": 0.32,
+     "health_hi": 0.48
+    },
+    {
+     "cycle": 940,
+     "health_p50": 0.405,
+     "health_lo": 0.307,
+     "health_hi": 0.471
+    },
+    {
+     "cycle": 941,
+     "health_p50": 0.395,
+     "health_lo": 0.293,
+     "health_hi": 0.462
+    },
+    {
+     "cycle": 942,
+     "health_p50": 0.384,
+     "health_lo": 0.28,
+     "health_hi": 0.453
+    },
+    {
+     "cycle": 943,
+     "health_p50": 0.373,
+     "health_lo": 0.267,
+     "health_hi": 0.444
+    }
+   ],
+   "sensors_last": {}
+  }
+ ],
+ "timeline": [
+  {
+   "ts": "2026-10-12T12:00:00Z",
+   "kind": "anomaly",
+   "summary": "engine_2 abnormal T50 trend; RUL p10 18 cycles",
+   "ref": "E-1"
+  },
+  {
+   "ts": "2026-10-11T12:00:00Z",
+   "kind": "maintenance",
+   "summary": "Scheduled brake inspection completed",
+   "ref": "WO-OLD-17"
+  },
+  {
+   "ts": "2026-10-10T09:00:00Z",
+   "kind": "flight",
+   "summary": "DFW to ATL: normal",
+   "ref": null
+  }
+ ]
+}
