@@ -6,6 +6,7 @@ import { fmtZ } from "./lib/format";
 import AccountMenu from "./components/AccountMenu";
 import AskBar from "./components/AskBar";
 import Icon from "./components/Icon";
+import Logo from "./components/Logo";
 import { useAuth } from "./lib/auth";
 import { useUnread } from "./lib/messages";
 import { ROLES, useRole, type RoleId } from "./lib/role";
@@ -52,7 +53,7 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <NavLink to={role.home} className="brand" aria-label="AeroTwin home">
-          <span className="brand-mark">AT</span>
+          <Logo />
           <span className="brand-name">AeroTwin</span>
         </NavLink>
         <nav className="capsule" aria-label={role.label}>

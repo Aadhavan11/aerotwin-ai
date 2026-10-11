@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
+import Logo from "../components/Logo";
 import type { RoleId } from "../lib/role";
 
 declare global {
@@ -94,7 +95,7 @@ export default function Login() {
     <div className="login">
       <div className="login-card">
         <div className="login-brand">
-          <span className="brand-mark">AT</span>
+          <Logo />
           <span className="brand-name">AeroTwin</span>
         </div>
 
