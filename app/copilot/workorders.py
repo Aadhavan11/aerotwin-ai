@@ -283,6 +283,12 @@ def complete_due(now: datetime) -> list[WorkOrder]:
         if comp:
             twin.apply_maintenance(comp[0], comp[1], w.end)
         audit.record("system", "work_order_completed", w.id, f"{w.task_id} finished at {w.station}", w.end)
+        try:  # LLP replacement / MEL rectification tasks close their register entry; ordinary tasks: nothing extra
+            from app.solver import links
+
+            links.on_task_completed(w.task_id, w.end, w.id)
+        except Exception:  # optional ops package absent
+            pass
     return due
 
 

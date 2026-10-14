@@ -193,7 +193,7 @@ class Task(Stamped):
     required_skill: str
     required_part: Optional[str] = None
     part_qty: int = 1
-    source: Literal["rul", "scheduled", "manual"]
+    source: Literal["rul", "scheduled", "manual", "llp", "mel"]   # llp / mel: only with LLP_TASKS / MEL_TASKS (app/solver/links.py)
     basis: str                                  # human-readable why
 
 class Assignment(BaseModel):

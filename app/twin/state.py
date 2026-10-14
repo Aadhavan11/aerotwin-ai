@@ -191,6 +191,11 @@ def ingest_telemetry(row: TelemetryRow, *, backfill: bool = False) -> ComponentS
             _aircraft[row.tail] = _stub_aircraft(row.tail)
             _timeline.setdefault(row.tail, [])
 
+        if comp.window and row.cycle < comp.window[-1].cycle:
+            # The source restarted this component's series (restoration) without apply_maintenance: start a new
+            # scoring window and rebase, so the sim-trained model's ``age`` is cycles since restoration, never negative.
+            comp.window.clear()
+            comp.cycle0 = None
         comp.window.append(row)
         comp.telemetry.append(row)
         comp.sensors_last = {k: float(v) for k, v in row.values.items()}

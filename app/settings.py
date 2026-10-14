@@ -28,6 +28,10 @@ HAS_LLM_KEY: bool = bool(os.environ.get("ANTHROPIC_API_KEY"))  # only the boolea
 # Telemetry engine behind the simulator service: "v1" (app.sim.telemetry, default) or "v2" (app.sim.v2.World).
 SIM_ENGINE: str = os.environ.get("SIM_ENGINE", "v1").strip().lower()
 SIM_START = "2026-10-12T12:00:00Z"  # SimClock origin (UTC)
+# Optional ops-to-solver links (default OFF: the golden plan is unchanged). LLP_TASKS: life-limited parts near their limit become
+# solver tasks (T-LLP-...); MEL_TASKS: open MEL deferrals become rectification tasks (T-MEL-...). See app/solver/links.py.
+LLP_TASKS: bool = _flag("LLP_TASKS")
+MEL_TASKS: bool = _flag("MEL_TASKS")
 VERSION = "0.1.0"
 
 
