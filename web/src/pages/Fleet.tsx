@@ -9,6 +9,19 @@ import StationsTable from "../components/StationsTable";
 import { Answer } from "../components/AskPanel";
 import { looksLikeQuestion } from "../lib/ask";
 import { STATUS_STYLE, STATUS_ORDER } from "../lib/format";
+import { delaysByTail } from "../lib/insights";
+import type { InsightsDisruptions } from "../api/insights";
+
+const COMPONENT_NAMES: Record<string, string> = {
+  apu: "APU",
+  tires: "Tires",
+  ecs: "Air conditioning (ECS)",
+  electrical: "Electrical / battery",
+};
+const compName = (id?: string | null) => {
+  const part = id?.split("/")[1];
+  return part ? (COMPONENT_NAMES[part] ?? part) : undefined;
+};
 
 export default function Fleet() {
   const navigate = useNavigate();
@@ -16,6 +29,9 @@ export default function Fleet() {
   const legs = usePoll<Leg[]>("/legs", 15000);
   const health = usePoll<HealthInfo>("/health", 4000);
   const plan = usePoll<PlanBundle>("/plan", 6000);
+  // Optional: a missing or forbidden endpoint just means no delay chips.
+  const disruptions = usePoll<InsightsDisruptions>("/insights/disruptions", 30000);
+  const delays = delaysByTail(disruptions.data?.by_tail);
   const [query, setQuery] = useState("");
   const [asked, setAsked] = useState<string | null>(null);
   const data = fleet.data;
@@ -183,8 +199,7 @@ export default function Fleet() {
                     </strong>
                   </div>
                   <span className="text-[10px] text-slate-500">
-                    {focus.worst_component?.split("/")[1] ??
-                      "Awaiting telemetry"}
+                    {compName(focus.worst_component) ?? "Awaiting telemetry"}
                   </span>
                 </div>
                 <Link to={`/aircraft/${focus.tail}`} className="fleet-link">
@@ -203,7 +218,7 @@ export default function Fleet() {
                     <Link className="text-blue-600" to={`/aircraft/${shortest.tail}`}>
                       {shortest.tail}
                     </Link>
-                    , {shortest.worst_component?.split("/")[1]?.replace("_", " ")}, {flights(shortest.rul_p10_min)}.
+                    , {compName(shortest.worst_component)?.replace("_", " ")}, {flights(shortest.rul_p10_min)}.
                   </p>
                 )}
               </div>
@@ -281,9 +296,17 @@ export default function Fleet() {
                   <td className="font-mono text-slate-600">{a.location}</td>
                   <td>
                     <StatusPill status={a.status} />
+                    {(delays.get(a.tail) ?? 0) > 0 && (
+                      <span
+                        className="ml-2 inline-block rounded-full border border-amber-400/40 px-2 py-0.5 font-mono text-[10px] text-amber-300"
+                        title="Weather delay on scheduled legs"
+                      >
+                        +{Math.round(delays.get(a.tail)!)} min delay
+                      </span>
+                    )}
                   </td>
                   <td className="font-mono text-[10px] text-slate-500">
-                    {a.worst_component?.split("/")[1] ?? "—"}
+                    {compName(a.worst_component) ?? "—"}
                   </td>
                   <td className="text-right font-mono">
                     {a.rul_p10_min == null ? "—" : Math.round(a.rul_p10_min)}

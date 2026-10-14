@@ -53,6 +53,8 @@ GUARDS: list[tuple[str, re.Pattern[str], set[str], str]] = [
     ("POST", re.compile(r"^/workorders/[^/]+/decision$"), {"ops", "maintenance"}, "approve or reject work orders"),
     ("PATCH", re.compile(r"^/workorders/[^/]+$"), {"ops", "maintenance"}, "edit work orders"),
     ("POST", re.compile(r"^/(sim/step|scenario/.+)$"), {"ops", "admin"}, "change the simulation"),
+    ("POST", re.compile(r"^/insights/weather$"), {"ops", "admin"}, "add weather to the simulation"),
+    ("DELETE", re.compile(r"^/insights/weather/[^/]+$"), {"ops", "admin"}, "remove weather from the simulation"),
 ]
 PUBLIC_PREFIXES = ("/health", "/auth/", "/docs", "/openapi.json", "/redoc")
 
@@ -136,13 +138,20 @@ def check_password(password: str, stored: Optional[str]) -> bool:
 USERNAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{2,23}$")
 
 
+def demo_password() -> str:
+    return _env("AUTH_DEMO_PASSWORD", "aerotwin-demo") or "aerotwin-demo"
+
+
 def seed() -> None:
     """Create the six built-in accounts. The five role accounts share a demo password; the master password comes from a file (never from the repo)."""
-    demo = _env("AUTH_DEMO_PASSWORD", "aerotwin-demo")
+    demo = demo_password()
     c = db()
     with _lock:
         for username, (role, name) in SEEDED.items():
-            row = c.execute("SELECT id FROM users WHERE username=?", (username,)).fetchone()
+            row = c.execute("SELECT id, pw_hash FROM users WHERE username=?", (username,)).fetchone()
+            if row is not None and username != MASTER_USERNAME and not check_password(demo, row["pw_hash"]):
+                # AUTH_DEMO_PASSWORD changed since the account was seeded: re-hash so the env value is the one that works
+                c.execute("UPDATE users SET pw_hash=? WHERE id=?", (hash_password(demo), row["id"]))
             if row is None:
                 pw = None if username == MASTER_USERNAME else hash_password(demo)
                 c.execute(
@@ -266,16 +275,41 @@ def end_session(token: Optional[str]) -> None:
 
 # ---------- sign-in attempts ----------
 _fails: dict[str, list[float]] = {}
+_MAX_FAIL_KEYS = 10_000
 
 
 def too_many_attempts(key: str, limit: int = 8, window: float = 600.0) -> bool:
     t = time.time()
-    _fails[key] = [x for x in _fails.get(key, []) if t - x < window]
-    return len(_fails[key]) >= limit
+    if key in _fails:
+        _fails[key] = [x for x in _fails[key] if t - x < window]
+    return len(_fails.get(key, [])) >= limit
 
 
 def note_failure(key: str) -> None:
+    if key not in _fails and len(_fails) >= _MAX_FAIL_KEYS:
+        for old in list(_fails)[: _MAX_FAIL_KEYS // 10 or 1]:  # dicts keep insertion order: evict the oldest keys
+            _fails.pop(old, None)
     _fails.setdefault(key, []).append(time.time())
+
+
+def trusted_proxy_hops() -> int:
+    try:
+        return max(0, int(_env("TRUSTED_PROXY_HOPS", "0") or 0))
+    except ValueError:
+        return 0
+
+
+def client_ip(peer: Optional[str], forwarded_for: str = "", cf_ip: str = "") -> str:
+    """The caller's address. With TRUSTED_PROXY_HOPS=0 (default) forwarding headers are ignored and the socket peer is used.
+    With N>0 the X-Forwarded-For entry N hops from the right is used (the one our own proxy appended), else the peer."""
+    hops = trusted_proxy_hops()
+    if hops > 0:
+        parts = [p.strip() for p in forwarded_for.split(",") if p.strip()]
+        if len(parts) >= hops:
+            return parts[-hops]
+        if parts:
+            return parts[0]
+    return peer or "unknown"
 
 
 # ---------- Google ----------
@@ -317,7 +351,11 @@ class AuthGate:
         self.inner = inner
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] != "http" or not enabled() or scope["method"] == "OPTIONS" or scope["path"].startswith(PUBLIC_PREFIXES):
+        path = scope.get("path", "")
+        root = scope.get("root_path", "") or ""
+        if root and (path == root or path.startswith(root + "/")):
+            path = path[len(root):] or "/"  # inside a mount (app.serve puts the API at /api) the path still carries the prefix
+        if scope["type"] != "http" or not enabled() or scope["method"] == "OPTIONS" or path.startswith(PUBLIC_PREFIXES):
             return await self.inner(scope, receive, send)
         cookies = parse_cookie(dict(scope["headers"]).get(b"cookie", b""))
         found = session_user(cookies.get(COOKIE))
@@ -326,7 +364,7 @@ class AuthGate:
         row, view_role = found
         user = public_user(row, view_role)
         for method, pattern, roles, what in GUARDS:
-            if scope["method"] == method and pattern.match(scope["path"]) and user["role"] not in roles:
+            if scope["method"] == method and pattern.match(path) and user["role"] not in roles:
                 label = ROLES.get(user["role"], (user["role"],))[0]
                 return await _json(send, 403, {"error": "forbidden", "detail": f"The {label} role cannot {what}."})
         scope = {**scope, "state": {**scope.get("state", {}), "auth_name": user["name"], "auth_role": user["role"], "auth_username": user["username"]}}

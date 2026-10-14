@@ -34,6 +34,7 @@ const N = {
   crew: { to: "/crew", label: "Crew roster", icon: "agents" },
   release: { to: "/release", label: "Flight release", icon: "shield" },
   messages: { to: "/messages", label: "Messages", icon: "search" },
+  insights: { to: "/insights", label: "Insights", icon: "search" },
   copilot: { to: "/copilot", label: "Copilot", icon: "agents" },
 } satisfies Record<string, NavItem>;
 
@@ -44,7 +45,7 @@ export const ROLES: Role[] = [
     blurb: "Fleet health, decisions waiting, the plan, and the risk of waiting.",
     home: "/",
     canDecide: true,
-    nav: [N.fleet, N.control, N.twin, N.plan, N.copilot, N.lab],
+    nav: [N.fleet, N.control, N.twin, N.plan, N.insights, N.copilot, N.lab],
   },
   {
     id: "maintenance",
@@ -52,7 +53,7 @@ export const ROLES: Role[] = [
     blurb: "Work orders to approve, technicians, parts and hangar slots, and the jobs planned at each station.",
     home: "/workorders",
     canDecide: true,
-    nav: [N.workorders, N.plan, N.twin, N.control, N.copilot],
+    nav: [N.workorders, N.plan, N.twin, N.control, N.insights, N.copilot],
   },
   {
     id: "pilot",
@@ -76,7 +77,7 @@ export const ROLES: Role[] = [
     blurb: "Service health, data and model quality, the full audit trail, and scenario controls.",
     home: "/admin",
     canDecide: false,
-    nav: [N.admin, N.lab, N.fleet, N.copilot],
+    nav: [N.admin, N.lab, N.fleet, N.insights, N.copilot],
   },
 ];
 

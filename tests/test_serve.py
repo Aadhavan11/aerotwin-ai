@@ -75,7 +75,8 @@ def test_missing_dist_is_503(tmp_path: Path) -> None:
     assert c.get("/api/health").status_code == 200
 
 
-def test_llm_rate_limit_per_ip(site: Path) -> None:
+def test_llm_rate_limit_per_ip(site: Path, monkeypatch) -> None:
+    monkeypatch.setenv("TRUSTED_PROXY_HOPS", "1")
     c = _client(site, llm_rate_per_min=6)
     codes = [c.post("/api/copilot/chat", json={}).status_code for _ in range(7)]
     assert all(code != 429 for code in codes[:6]) and codes[6] == 429
@@ -87,3 +88,37 @@ def test_llm_daily_cap(site: Path) -> None:
     c = _client(site, llm_rate_per_min=100, llm_daily_cap=2)
     codes = [c.post("/api/agents/run", json={}, headers={"X-Forwarded-For": f"1.1.1.{i}"}).status_code for i in range(3)]
     assert codes[2] == 429 and 429 not in codes[:2]
+
+
+# ---- app auth mounted under /api -------------------------------------------------------------------------------
+@pytest.fixture()
+def app_auth(tmp_path: Path, monkeypatch, site: Path):
+    from app.auth import core
+    monkeypatch.setattr(core, "DB_FILE", tmp_path / "auth.sqlite")
+    monkeypatch.setattr(core, "_conn", None)
+    monkeypatch.setattr(core, "_fails", {})
+    monkeypatch.setattr(core, "_master_mtime", 0.0)
+    monkeypatch.setenv("AUTH_REQUIRED", "1")
+    monkeypatch.setenv("AUTH_DEMO_PASSWORD", "demo-pass-1")
+    core.seed()
+    yield _client(site, auth_user="u", auth_pass="p")  # the basic gate must stay out of the way
+    monkeypatch.setattr(core, "_conn", None)
+
+
+def _login(c: TestClient, user: str):
+    return c.post("/api/auth/login", json={"username": user, "password": "demo-pass-1"})
+
+
+def test_app_auth_under_api_mount(app_auth: TestClient) -> None:
+    c = app_auth
+    assert c.get("/api/health").status_code == 200
+    assert c.get("/api/fleet").status_code == 401
+    assert _login(c, "crew").status_code == 200
+    assert c.get("/api/fleet").status_code == 200
+    assert c.post("/api/scenario/reset", json={}).status_code == 403
+    assert c.post("/api/insights/weather", json={}).status_code == 403
+    assert c.delete("/api/insights/weather/x").status_code == 403
+    c.post("/api/auth/logout")
+    assert _login(c, "operations").status_code == 200
+    assert c.post("/api/scenario/reset", json={}).status_code != 403
+    assert c.post("/api/insights/weather", json={}).status_code != 403

@@ -1,13 +1,42 @@
 """Estimated plan cost (app/solver/costs.py): simulated price list, adds up, and the baseline pays for what it cannot do in time."""
 from __future__ import annotations
 
+from datetime import timedelta
 
 import pytest
 
+from app.contracts.models import Assignment, RulEstimate
+from app.sim.fleet import generate_fleet
 from app.solver import costs, derive_tasks, solve
 from app.solver.golden import golden_state
 from app.solver.plan_metrics import compute_metrics
 from tests.solver_helpers import engine_task, mini_state, simple_station
+
+
+def test_fleet_required_parts_have_nonzero_prices() -> None:
+    for state in (golden_state(), generate_fleet()):
+        station_parts = {part.part for station in state.stations for part in station.parts}
+        required_parts = {task.required_part for task in derive_tasks(state) if task.required_part}
+        assert station_parts
+        for part in station_parts | required_parts:
+            assert costs.PART_PRICE_USD.get(part, 0.0) > 0, part
+
+
+@pytest.mark.parametrize("kind", ["apu", "tires", "ecs", "electrical"])
+def test_new_kind_task_has_nonzero_cost(kind: str) -> None:
+    state = golden_state()
+    component = next(c for c in state.components if c.kind == kind)
+    component.rul_cycles = RulEstimate(p10=18, p50=22, p90=25)
+    task = next(t for t in derive_tasks(state) if t.component_id == component.component_id)
+    assignment = Assignment(
+        task_id=task.id, tail=task.tail, station=state.aircraft[0].location,
+        start=state.now, end=state.now + timedelta(hours=task.duration_h),
+        technician_id=None, window_hours=task.duration_h, reason="test",
+    )
+    cost = costs.job_cost(task, assignment)
+    assert cost["parts"] > 0
+    assert cost["parts"] == costs.PART_PRICE_USD[task.required_part] * task.part_qty
+    assert cost["total"] > 0
 
 
 def test_job_cost_follows_the_price_list():

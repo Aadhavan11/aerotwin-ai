@@ -444,14 +444,16 @@ class Toolbox:
                  s({}), self.compare_plans, "operations"),
             Tool("draft_work_orders", "Draft work orders (always pending human approval) from the current plan, optionally for some aircraft.",
                  s({"tails": {"type": "array", "items": {"type": "string"}}}), self.draft_work_orders, "coordinator"),
-            Tool("list_requests", "List maintenance requests (work orders) with their ids, status, aircraft, station and times; optionally only one status (pending_approval, approved, rejected) or one aircraft. "
+            Tool("list_requests", "List maintenance requests (work orders) with their ids, status, aircraft, station and times; "
+                 "optionally only one status (pending_approval, approved, rejected) or one aircraft. "
                  "Use it to find the id before proposing a change.",
                  s({"status": {"type": "string"}, "tail": {"type": "string"}}), self.list_requests, "coordinator"),
             Tool("propose_request_edit", "Propose a change to a maintenance request that is waiting for a decision (name, work, part, quantity, whether the part must be ordered, "
                  "start and end as ISO UTC times). This does NOT change anything: the person is shown the proposal and must allow it. Use the work order id, for example WO-1.",
                  s({"work_order_id": {"type": "string"}, "title": {"type": "string"}, "work": {"type": "string"}, "part": {"type": "string"}, "part_qty": {"type": "integer"},
                     "order_part": {"type": "boolean"}, "start": {"type": "string"}, "end": {"type": "string"}}, ["work_order_id"]), self.propose_request_edit, "coordinator"),
-            Tool("propose_new_request", "Propose a NEW maintenance request for an aircraft (station, start and end as ISO UTC times when the aircraft is on the ground there, name, work, reason, part). "
+            Tool("propose_new_request", "Propose a NEW maintenance request for an aircraft (station, start and end as ISO UTC times "
+                 "when the aircraft is on the ground there, name, work, reason, part). "
                  "This does NOT create anything: the person is shown the proposal and must allow it. Use find_windows first if you need a time when the aircraft is on the ground.",
                  s({"tail": {"type": "string"}, "station": {"type": "string"}, "start": {"type": "string"}, "end": {"type": "string"}, "title": {"type": "string"}, "work": {"type": "string"},
                     "why": {"type": "string"}, "part": {"type": "string"}, "part_qty": {"type": "integer"}, "order_part": {"type": "boolean"}},

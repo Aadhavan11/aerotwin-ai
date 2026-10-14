@@ -172,7 +172,8 @@ def parse_scripted(message: str, screen_text: str = "") -> Optional[tuple[str, l
                 delta = timedelta(hours=sign * float(h.group(1)))
                 fields["start"], fields["end"] = cur.start + delta, cur.end + delta
             elif (c := _clock(message)):
-                day = _date_on(message, cur.start.astimezone(timezone.utc)) if (_DATE.search(message) or "tomorrow" in low) else cur.start.astimezone(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+                day = (_date_on(message, cur.start.astimezone(timezone.utc)) if (_DATE.search(message) or "tomorrow" in low)
+                       else cur.start.astimezone(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0))
                 ns = day.replace(hour=c[0], minute=c[1])
                 fields["start"], fields["end"] = ns, ns + (cur.end - cur.start)
         if fields:
@@ -184,7 +185,8 @@ def parse_scripted(message: str, screen_text: str = "") -> Optional[tuple[str, l
 
     # ---- new request
     tail_m = _TAIL.search(message)
-    if tail_m and re.search(r"\b(create|add|make|open|raise|new|log|submit|schedule|request|book)\b", low) and re.search(r"\b(request|work order|inspection|check|replace|replacement|maintenance|repair|service)\b", low):
+    if (tail_m and re.search(r"\b(create|add|make|open|raise|new|log|submit|schedule|request|book)\b", low)
+            and re.search(r"\b(request|work order|inspection|check|replace|replacement|maintenance|repair|service)\b", low)):
         tail = f"SIM-{tail_m.group(1)}"
         title, part, work = "Maintenance check", None, ""
         for rx, t, prt, wk in _KINDS:

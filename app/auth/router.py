@@ -41,21 +41,39 @@ def _err(status: int, detail: str) -> JSONResponse:
 
 
 def _ip(request: Request) -> str:
-    h = request.headers
-    return h.get("cf-connecting-ip") or (h.get("x-forwarded-for") or "").split(",")[0].strip() or (request.client.host if request.client else "?")
+    return core.client_ip(request.client.host if request.client else None, request.headers.get("x-forwarded-for", ""))
 
 
-def _start(response: Response, row: sqlite3.Row) -> dict:
+def _secure_cookie(request: Request) -> bool:
+    """AUTH_COOKIE_SECURE=1/0 forces it. Unset: on under AUTH_REQUIRED when the request is https (or a trusted proxy says so)."""
+    raw = core._env("AUTH_COOKIE_SECURE")
+    if raw:
+        return raw.lower() in ("1", "true", "yes", "on")
+    if not core.enabled():
+        return False
+    if request.url.scheme == "https":
+        return True
+    return core.trusted_proxy_hops() > 0 and request.headers.get("x-forwarded-proto", "").split(",")[-1].strip().lower() == "https"
+
+
+def _start(request: Request, response: Response, row: sqlite3.Row) -> dict:
     token = core.new_session(row["id"])
     response.set_cookie(
         core.COOKIE, token, max_age=core.SESSION_DAYS * 86400, httponly=True, samesite="lax",
-        secure=settings._flag("AUTH_COOKIE_SECURE"), path=core._env("AUTH_COOKIE_PATH", "/") or "/",
+        secure=_secure_cookie(request), path=core._env("AUTH_COOKIE_PATH", "/") or "/",
     )
     return {"user": core.public_user(row)}
 
 
 def _current(request: Request) -> Optional[tuple[sqlite3.Row, Optional[str]]]:
     return core.session_user(request.cookies.get(core.COOKIE))
+
+
+def _signup_allowed() -> bool:
+    return settings._flag("AUTH_ALLOW_SIGNUP", "0")
+
+
+_NO_SELF_ROLES = {"admin", "ops"}  # never self-selectable: administrator and operations control are granted, not chosen
 
 
 @router.get("/config")
@@ -67,7 +85,8 @@ def config():
         "google_client_id": core.google_client_id() or None,
         "roles": [{"id": k, "label": v[0], "blurb": v[1]} for k, v in core.ROLES.items()],
         "demo_accounts": [{"username": u, "role": r, "label": n} for u, (r, n) in core.SEEDED.items() if u != core.MASTER_USERNAME] if show else [],
-        "demo_password": core._env("AUTH_DEMO_PASSWORD", "aerotwin-demo") if show else None,
+        "demo_password": core.demo_password() if show else None,
+        "signup_enabled": _signup_allowed(),
     }
 
 
@@ -87,11 +106,13 @@ def login(body: Login, request: Request, response: Response):
         core.note_failure(key)
         core.note_failure(_ip(request))
         return _err(401, "That username and password do not match.")
-    return _start(response, row)
+    return _start(request, response, row)
 
 
 @router.post("/signup")
 def signup(body: Signup, request: Request, response: Response):
+    if not _signup_allowed():
+        return _err(403, "New accounts are turned off on this server.")
     username = body.username.strip().lower()
     if not core.USERNAME_RE.match(username):
         return _err(422, "Username: 3 to 24 letters, numbers, dots, dashes or underscores.")
@@ -99,6 +120,8 @@ def signup(body: Signup, request: Request, response: Response):
         return _err(422, "Password: at least 8 characters.")
     if body.role not in core.ROLES:
         return _err(422, "Choose your position.")
+    if body.role in _NO_SELF_ROLES:
+        return _err(403, "That position cannot be chosen at sign-up.")
     if core.user_by_login(username):
         return _err(409, "That username is taken.")
     if core.too_many_attempts("signup|" + _ip(request), 10, 3600):
@@ -106,7 +129,7 @@ def signup(body: Signup, request: Request, response: Response):
     core.note_failure("signup|" + _ip(request))
     name = (body.name or "").strip()[:60] or username
     row = core.create_user(username, name, body.role, password=body.password)
-    return _start(response, row)
+    return _start(request, response, row)
 
 
 @router.post("/google")
@@ -125,6 +148,10 @@ def google(body: GoogleIn, request: Request, response: Response):
     row = c.execute("SELECT * FROM users WHERE google_sub=? OR email=?", (sub, email)).fetchone()
     if row is None:
         is_master = email in core.master_emails()
+        if not is_master and not _signup_allowed():
+            return _err(403, "New accounts are turned off on this server.")
+        if not is_master and body.role in _NO_SELF_ROLES:
+            return _err(403, "That position cannot be chosen at sign-up.")
         if not is_master and body.role not in core.ROLES:
             return {"needs_role": True, "email": email, "name": name, "picture": picture}
         base = re.sub(r"[^a-z0-9._-]", "", email.split("@")[0].lower()) or "user"
@@ -141,7 +168,7 @@ def google(body: GoogleIn, request: Request, response: Response):
                 c.execute("UPDATE users SET master=1 WHERE id=?", (row["id"],))
             c.commit()
         row = c.execute("SELECT * FROM users WHERE id=?", (row["id"],)).fetchone()
-    return _start(response, row)
+    return _start(request, response, row)
 
 
 @router.post("/logout")

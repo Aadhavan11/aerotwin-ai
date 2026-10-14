@@ -54,7 +54,8 @@ def test_roles_are_enforced_on_the_server(on):
     assert on.post("/workorders/WO-999/decision", json={"decision": "approve", "user": "x", "note": ""}).status_code != 403
 
 
-def test_signup_validation_and_position(on):
+def test_signup_validation_and_position(on, monkeypatch):
+    monkeypatch.setenv("AUTH_ALLOW_SIGNUP", "1")
     base = {"username": "new.user", "password": "longenough1", "name": "New User", "role": "dispatch"}
     assert on.post("/auth/signup", json={**base, "password": "short"}).status_code == 422
     assert on.post("/auth/signup", json={**base, "role": "king"}).status_code == 422
@@ -86,6 +87,7 @@ def test_only_master_may_switch(on):
 
 
 def test_google_flow(on, monkeypatch):
+    monkeypatch.setenv("AUTH_ALLOW_SIGNUP", "1")
     info = {"sub": "123", "email": "Pat@Example.com", "name": "Pat Lee", "picture": None}
     monkeypatch.setattr(core, "verify_google", lambda cred: info)
     r = on.post("/auth/google", json={"credential": "x"})
@@ -131,3 +133,46 @@ def test_messages_reach_the_people_addressed_and_read_state_is_per_person(on):
 def test_messages_need_a_session(on):
     assert on.get("/messages").status_code == 401
     assert on.post("/messages", json={"to_kind": "role", "to_value": "ops", "subject": "a", "body": "b"}).status_code == 401
+
+
+# ---- public-hosting safety --------------------------------------------------------------------------------------
+def test_signup_off_by_default_and_never_grants_admin(on, monkeypatch):
+    base = {"username": "new.user", "password": "longenough1", "role": "dispatch"}
+    assert on.post("/auth/signup", json=base).status_code == 403
+    monkeypatch.setenv("AUTH_ALLOW_SIGNUP", "1")
+    assert on.post("/auth/signup", json={**base, "role": "admin"}).status_code == 403
+    assert on.post("/auth/signup", json=base).status_code == 200
+
+
+def test_demo_password_hidden(on, monkeypatch):
+    assert on.get("/auth/config").json()["demo_password"] == "demo-pass-1"
+    monkeypatch.setenv("AUTH_SHOW_DEMO", "0")
+    cfg = on.get("/auth/config").json()
+    assert cfg["demo_password"] is None and cfg["demo_accounts"] == []
+
+
+def test_changed_demo_password_rehashes_seeded_accounts(on, monkeypatch):
+    monkeypatch.setenv("AUTH_DEMO_PASSWORD", "rotated-pass-2")
+    core.seed()
+    assert login(on, "operations").status_code == 401
+    assert login(on, "operations", "rotated-pass-2").status_code == 200
+
+
+def test_forwarded_for_is_ignored_unless_proxy_trusted(on, monkeypatch):
+    for i in range(8):
+        r = on.post("/auth/login", json={"username": "operations", "password": "bad"}, headers={"X-Forwarded-For": f"9.9.9.{i}"})
+        assert r.status_code == 401
+    # same socket peer, different spoofed addresses: still one key, so the ninth try is limited
+    r = on.post("/auth/login", json={"username": "operations", "password": "bad"}, headers={"X-Forwarded-For": "1.2.3.4"})
+    assert r.status_code == 429
+    assert core.client_ip("10.0.0.1", "1.1.1.1, 2.2.2.2") == "10.0.0.1"
+    monkeypatch.setenv("TRUSTED_PROXY_HOPS", "1")
+    assert core.client_ip("10.0.0.1", "6.6.6.6, 2.2.2.2") == "2.2.2.2"
+
+
+def test_failure_table_is_bounded(monkeypatch):
+    monkeypatch.setattr(core, "_fails", {})
+    monkeypatch.setattr(core, "_MAX_FAIL_KEYS", 50)
+    for i in range(500):
+        core.note_failure(f"k{i}")
+    assert len(core._fails) <= 50 and "k499" in core._fails

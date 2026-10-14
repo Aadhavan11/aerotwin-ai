@@ -28,7 +28,13 @@ const labels: Record<string, string> = {
   landing_gear: "Landing gear",
   hydraulics: "Hydraulics",
   avionics: "Avionics",
+  apu: "Auxiliary power unit (APU)",
+  tires: "Tires",
+  ecs: "Air conditioning (ECS)",
+  electrical: "Electrical / battery",
 };
+/** Short names for tight spots; falls back to the full label. */
+export const shortLabels: Record<string, string> = { apu: "APU", tires: "Tires", ecs: "ECS", electrical: "Electrical" };
 const units: Record<string, string> = {
   T24: "°R",
   T30: "°R",
@@ -45,6 +51,14 @@ const units: Record<string, string> = {
   fluid_temp_c: "°C",
   box_temp_c: "°C",
   shock_load_g: "g",
+  apu_egt_margin_c: "°C",
+  apu_rpm_pct: "%",
+  tread_depth_mm: "mm",
+  tire_pressure_psi: "psi",
+  pack_outlet_temp_c: "°C",
+  pack_flow_kgs: "kg/s",
+  battery_capacity_pct: "%",
+  bus_voltage_v: "V",
 };
 const short = (c: TwinComponent) =>
   c.component_id.split("/").pop() ?? c.component_id;
@@ -57,6 +71,11 @@ const zone: Record<string, { x: number; y: number; w: number; h: number }> = {
   hydraulics: { x: 181, y: 166, w: 38, h: 62 },
   landing_gear: { x: 182, y: 246, w: 36, h: 40 },
   brakes: { x: 174, y: 300, w: 52, h: 24 },
+  // New kinds have no mesh in the 3D model; they are selectable here and in the list.
+  apu: { x: 190, y: 360, w: 20, h: 22 },
+  tires: { x: 150, y: 258, w: 22, h: 26 },
+  ecs: { x: 228, y: 150, w: 24, h: 22 },
+  electrical: { x: 148, y: 150, w: 24, h: 22 },
 };
 
 function Airframe({

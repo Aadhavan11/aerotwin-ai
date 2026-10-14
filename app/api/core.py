@@ -44,7 +44,8 @@ def _ml_data() -> str:
 @router.get("/health")
 def health():
     return {"ok": True, "mock": settings.MOCK, "version": settings.VERSION, "sim_now": (STATE.now if not _use_db() else db.sim_now()),
-            "data_source": "database" if _use_db() else "fixture", "modules": registry.MODULES, "errors": registry.ERRORS, "llm_key_present": settings.HAS_LLM_KEY, "llm_model": settings.LLM_MODEL, "ml_data": _ml_data()}
+            "data_source": "database" if _use_db() else "fixture", "modules": registry.MODULES, "errors": registry.ERRORS,
+            "llm_key_present": settings.HAS_LLM_KEY, "llm_model": settings.LLM_MODEL, "ml_data": _ml_data()}
 
 
 def fleet_from_db() -> FleetOverview:
@@ -59,7 +60,8 @@ def fleet_from_db() -> FleetOverview:
     tasks = db.all_("tasks", Task)
     now = db.sim_now()
     summaries = [AircraftSummary(tail=a.tail, type=a.type, home=a.home, location=a.location, status=a.status,
-                                 worst_component=worst[a.tail].component_id if a.tail in worst else None, rul_p10_min=worst[a.tail].rul_cycles.p10 if a.tail in worst and worst[a.tail].rul_cycles else None) for a in aircraft]
+                                 worst_component=worst[a.tail].component_id if a.tail in worst else None,
+                                 rul_p10_min=worst[a.tail].rul_cycles.p10 if a.tail in worst and worst[a.tail].rul_cycles else None) for a in aircraft]
     kpis = FleetKpis(aircraft=len(aircraft), needing_attention=sum(1 for a in aircraft if a.status in ("watch", "alert")),
                      predicted_maintenance_72h=sum(1 for t in tasks if t.deadline <= now + timedelta(hours=72)),
                      in_maintenance=sum(1 for a in aircraft if a.status == "in_maintenance"),

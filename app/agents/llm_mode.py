@@ -97,7 +97,8 @@ def _restate(client: Any, system: str, user: str, text: str, bad: list[str]) -> 
         resp = client.messages.create(
             model=llm.model_name(), max_tokens=1024, system=system,
             messages=[{"role": "user", "content": user}, {"role": "assistant", "content": text},
-                      {"role": "user", "content": f"That summary quotes figures that no tool returned ({', '.join(bad)}). Rewrite it without them, keeping every figure a tool did return. Reply with the corrected summary only."}],
+                      {"role": "user", "content": (f"That summary quotes figures that no tool returned ({', '.join(bad)}). "
+                                                  "Rewrite it without them, keeping every figure a tool did return. Reply with the corrected summary only.")}],
         )
         return "\n".join(b.text.strip() for b in resp.content if getattr(b, "type", "") == "text" and b.text.strip())
     except Exception:  # noqa: BLE001  fall back to the scripted workflow, as before

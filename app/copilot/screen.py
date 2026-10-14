@@ -53,9 +53,9 @@ def brief_for(tail: str, legs_ahead: int = 6) -> str:
                     part = "part on hand" if not j.part_source or j.part_source == j.station else f"part shipped from {j.part_source}"
                     lines.append(f"Planned maintenance: at {j.station} from {j.start:%Y-%m-%d %H:%MZ} to {j.end:%Y-%m-%d %H:%MZ}, {part}.")
         state, _src = get_state()
-        ahead = sorted((l for l in state.legs if l.tail == tail and l.sched_dep >= state.now), key=lambda l: l.sched_dep)[:legs_ahead]
+        ahead = sorted((leg for leg in state.legs if leg.tail == tail and leg.sched_dep >= state.now), key=lambda leg: leg.sched_dep)[:legs_ahead]
         if ahead:
-            lines.append("Next legs: " + "; ".join(f"{l.dep} to {l.arr} departs {l.sched_dep:%Y-%m-%d %H:%MZ}" for l in ahead))
+            lines.append("Next legs: " + "; ".join(f"{leg.dep} to {leg.arr} departs {leg.sched_dep:%Y-%m-%d %H:%MZ}" for leg in ahead))
     except Exception:  # noqa: BLE001
         pass
     return "\n".join(lines)

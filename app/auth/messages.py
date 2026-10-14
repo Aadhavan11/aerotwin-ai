@@ -174,7 +174,8 @@ def send(body: Out, request: Request):
     c = _db()
     with core._lock:
         cur = c.execute("INSERT INTO messages(sender,sender_name,sender_role,to_kind,to_value,subject,body,created) VALUES(?,?,?,?,?,?,?,?)",
-                        (me["username"], me["name"], me["home_role"] if me["master"] else me["role"], body.to_kind, body.to_value if body.to_kind != "all" else "", subject, text, core.iso(core.now())))
+                        (me["username"], me["name"], me["home_role"] if me["master"] else me["role"], body.to_kind,
+                         body.to_value if body.to_kind != "all" else "", subject, text, core.iso(core.now())))
         c.commit()
     r = c.execute("SELECT * FROM messages WHERE id=?", (cur.lastrowid,)).fetchone()
     return _view(r, me, True)

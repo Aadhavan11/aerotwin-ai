@@ -20,7 +20,16 @@ from typing import Optional
 
 from app.contracts.models import Assignment, Task
 
-PART_PRICE_USD = {"HYD-PUMP": 38_000.0, "BRAKE-ASSY": 14_500.0, "AVIONICS-LRU": 27_000.0, "BORESCOPE-KIT": 2_400.0}  # borescope: tool-crib charge per use
+PART_PRICE_USD = {  # synthetic prices, illustrative only
+    "HYD-PUMP": 38_000.0,
+    "BRAKE-ASSY": 14_500.0,
+    "AVIONICS-LRU": 27_000.0,
+    "BORESCOPE-KIT": 2_400.0,  # borescope: tool-crib charge per use
+    "APU-STARTER": 16_000.0,
+    "TIRE-ASSY": 1_800.0,
+    "ECS-PACK-VALVE": 9_500.0,
+    "BATTERY-PACK": 4_200.0,
+}
 LABOR_RATE_USD_H = 145.0
 CREW_SIZE = 2
 BAY_RATE_USD_H = 650.0
