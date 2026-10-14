@@ -26,8 +26,8 @@ def hard_violations(state: FleetState, tasks: list[Task], plan: Plan, max_ext_h:
     tech = {t.id: (t, s.iata) for s in state.stations for t in s.technicians}
     slots = {s.iata: s.hangar_slots for s in state.stations}
     legs = defaultdict(list)
-    for l in state.legs:
-        legs[l.tail].append(l)
+    for leg in state.legs:
+        legs[leg.tail].append(leg)
     stock = {(s.iata, p.part): p.qty for s in state.stations for p in s.parts}
 
     for a in plan.assignments:
@@ -43,7 +43,7 @@ def hard_violations(state: FleetState, tasks: list[Task], plan: Plan, max_ext_h:
             out.append(f"{a.task_id} outside the technician's shift")
         if slots[a.station] <= 0:
             out.append(f"{a.task_id} in a closed hangar")
-        seq = sorted(legs[a.tail], key=lambda l: l.sched_dep)
+        seq = sorted(legs[a.tail], key=lambda leg: leg.sched_dep)
         ok = False
         for prev, nxt in zip(seq, seq[1:]):
             if prev.arr == nxt.dep == a.station and prev.sched_arr <= a.start < nxt.sched_dep + hrs(max_ext_h):

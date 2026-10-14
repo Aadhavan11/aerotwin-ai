@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
-ComponentKind = Literal["engine", "brakes", "landing_gear", "hydraulics", "avionics"]
+ComponentKind = Literal["engine", "brakes", "landing_gear", "hydraulics", "avionics", "apu", "tires", "ecs", "electrical"]
 AircraftStatus = Literal["ok", "watch", "alert", "in_maintenance", "aog"]
 EventType = Literal["anomaly", "accelerated_degradation", "part_delay", "tech_unavailable", "facility_closed"]
 SolveMode = Literal["cpsat", "greedy", "static_baseline"]

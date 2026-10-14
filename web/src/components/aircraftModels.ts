@@ -770,7 +770,7 @@ export function buildAircraft(type: string) {
     }
     add(loft(rings, true, false, true), tailPaint, vtpPart);
   }
-  const apu = part("apu", "Tail cone and APU exhaust", "Airframe", "Auxiliary power unit in the tail cone; exhaust at the tip.");
+  const apu = part("apu", "Tail cone and APU exhaust", "Airframe", "Auxiliary power unit in the tail cone; exhaust at the tip.", "apu");
   {
     const g = new T.CylinderGeometry(0.16, 0.18, 0.12, 24, 1, true);
     g.rotateZ(Math.PI / 2);
@@ -785,6 +785,7 @@ export function buildAircraft(type: string) {
   const gearPart = part("landing_gear", "Landing gear", "Landing gear", "Nose gear and two main gears with shock struts, braces and wheels.", "landing_gear");
   const noseGear = part("nose_gear", "Nose landing gear", "Landing gear", "Steerable twin-wheel nose gear.", "landing_gear");
   const brakesPart = part("brakes", "Wheel brakes", "Landing gear", "Multi-disc brakes on the four main wheels.", "brakes");
+  const tiresPart = part("tires", "Main-gear tyres", "Landing gear", "Tyres on the four main wheels; tread depth is the wear measure.", "tires");
   const tyre = (radius: number, width: number) => {
     const g = new T.TorusGeometry(radius - width * 0.42, width * 0.46, 14, 36);
     g.scale(1, 1, 1.15);
@@ -793,7 +794,7 @@ export function buildAircraft(type: string) {
   const wheel = (cx: number, cz: number, radius: number, width: number, item: Part, brake: boolean) => {
     const t = tyre(radius, width);
     t.translate(cx, groundY + radius, cz);
-    add(t, rubber, item);
+    add(t, rubber, brake ? tiresPart : item);
     const h = new T.CylinderGeometry(radius * 0.5, radius * 0.5, width * 0.86, 24);
     h.rotateX(Math.PI / 2);
     h.translate(cx, groundY + radius, cz);
@@ -865,6 +866,21 @@ export function buildAircraft(type: string) {
     add(g, equipment, hydr);
   });
   void hydr;
+  const ecs = part("ecs_packs", "Air conditioning packs (ECS)", "Systems",
+    "Two air-conditioning packs under the wing-root fairing: bleed air cooled to cabin supply temperature.", "ecs", true);
+  for (const s of [-1, 1]) {
+    const g = new T.CylinderGeometry(0.22, 0.22, 0.9, 18);
+    g.rotateZ(Math.PI / 2);
+    g.translate(X(Wg.apexD + Wg.rootChord * 0.5), -H * 0.66, s * 0.85);
+    add(g, equipment, ecs);
+  }
+  const elec = part("battery_bay", "Electrical and battery bay", "Systems",
+    "Main and APU batteries with chargers in the forward electronics bay.", "electrical", true);
+  for (const s of [-1, 1]) {
+    const g = new T.BoxGeometry(0.4, 0.3, 0.35);
+    g.translate(X(P.nose.len * 0.62 + 0.25), -H * 0.72, s * 0.3);
+    add(g, equipment, elec);
+  }
 
   // Ground reference, so the scene can sit the aircraft on a floor.
   root.userData.groundY = groundY;

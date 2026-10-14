@@ -21,7 +21,9 @@ def main():
     simulator.inject(event)
     result=replan_and_store(event,already_applied=True)
     assert result.diff.moved or result.diff.added or result.diff.dropped,'No plan change after the disruption'
-    report={'synthetic':True,'telemetry_source':simulator.source.source,'model_available':health.model_available(),'ingested':stepped['ingested'],'component_status':component.status,'rul_cycles':component.rul_cycles.model_dump() if component.rul_cycles else None,'agent_status':run.status,'pending_work_orders':len(run.work_orders),'plan_feasible':result.before.feasible,'replan_feasible':result.after.feasible,'diff':result.diff.model_dump(),'approval':'Pending human decision; no work orders automatically approved'}
+    report={'synthetic':True,'telemetry_source':simulator.source.source,'model_available':health.model_available(),'ingested':stepped['ingested'],'component_status':component.status,
+        'rul_cycles':component.rul_cycles.model_dump() if component.rul_cycles else None,'agent_status':run.status,'pending_work_orders':len(run.work_orders),'plan_feasible':result.before.feasible,
+        'replan_feasible':result.after.feasible,'diff':result.diff.model_dump(),'approval':'Pending human decision; no work orders automatically approved'}
     print(json.dumps(report,indent=2,default=str))
 
 if __name__=='__main__':

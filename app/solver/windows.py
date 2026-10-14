@@ -31,7 +31,7 @@ def ground_windows_checked(
     windows: list[GroundWindow] = []
     issues: list[str] = []
     for tail in sorted(by_tail):
-        seq = sorted(by_tail[tail], key=lambda l: (aware(l.sched_dep), l.id))
+        seq = sorted(by_tail[tail], key=lambda leg: (aware(leg.sched_dep), leg.id))
         for a, b in zip(seq, seq[1:]):
             if a.arr != b.dep:
                 issues.append(f"{tail}: leg {a.id} arrives {a.arr} but next leg {b.id} departs {b.dep}; no ground window")
@@ -47,7 +47,7 @@ def ground_windows_checked(
                 windows.append(GroundWindow(tail=tail, station=a.arr, start=start, end=end, before_leg=b.id))
 
         # the window the aircraft has right now, before its first leg that has not yet arrived
-        upcoming = [l for l in seq if aware(l.sched_arr) > now]
+        upcoming = [leg for leg in seq if aware(leg.sched_arr) > now]
         if upcoming and tail in location:
             first = upcoming[0]
             already = any(w.tail == tail and w.before_leg == first.id for w in windows)

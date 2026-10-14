@@ -9,7 +9,17 @@ from typing import Optional
 from fastapi import APIRouter, Query, Response
 
 from .. import db, fixtures, registry, settings
-from ..contracts.models import *  # noqa: F401,F403
+from ..contracts.models import (
+    Aircraft,
+    AircraftSummary,
+    ComponentState,
+    FleetKpis,
+    FleetOverview,
+    Leg,
+    MetricsBundle,
+    Station,
+    Task,
+)
 from .mockstate import STATE
 
 router = APIRouter(tags=["core"])

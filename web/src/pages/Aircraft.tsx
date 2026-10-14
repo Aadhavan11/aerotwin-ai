@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { usePoll } from "../api/client";
 import type { Leg, TwinComponent, TwinView } from "../api/types";
-import { Card, ErrorBox, Loading, StatusPill } from "../components/ui";
+import type { InsightsDisruptions } from "../api/insights";
+import { Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
+import { delaysByTail } from "../lib/insights";
 import EngineSection, { deviation, deviationClass, unitLabel, type GenericSpec, type SensorCatalog } from "../components/EngineSection";
 import { profileFor, type Profile } from "../components/aircraftModels";
 import { fmtZ } from "../lib/format";
@@ -19,6 +21,10 @@ const NAMES: Record<string, string> = {
   landing_gear: "Landing gear",
   hydraulics: "Hydraulic systems",
   avionics: "Avionics",
+  apu: "Auxiliary power unit (APU)",
+  tires: "Tires",
+  ecs: "Air conditioning (ECS)",
+  electrical: "Electrical / battery",
 };
 const SHORT: Record<string, string> = {
   engine_1: "Engine 1",
@@ -27,6 +33,10 @@ const SHORT: Record<string, string> = {
   landing_gear: "Landing gear",
   hydraulics: "Hydraulics",
   avionics: "Avionics",
+  apu: "APU",
+  tires: "Tires",
+  ecs: "ECS",
+  electrical: "Electrical",
 };
 const short = (c: TwinComponent) => c.component_id.split("/").pop() ?? c.component_id;
 const nameOf = (c: TwinComponent) => NAMES[short(c)] ?? short(c);
@@ -477,6 +487,8 @@ function NextFlights({ tail, now }: { tail: string; now?: string }) {
 
 export default function Aircraft() {
   const { tail = "" } = useParams();
+  const disruptions = usePoll<InsightsDisruptions>("/insights/disruptions", 0);
+  const delay = delaysByTail(disruptions.data?.by_tail).get(tail) ?? 0;
   const { data, error, reload } = usePoll<TwinView>(`/aircraft/${encodeURIComponent(tail)}`, 3000);
   const catalog = usePoll<SensorCatalog>("/ml/sensors", 600_000).data;
   const health = usePoll<{ sim_now: string }>("/health", 5000);
@@ -519,6 +531,7 @@ export default function Aircraft() {
           ← Fleet
         </Link>
         <h1>{a.tail}</h1>
+        {delay > 0 && <Chip tone="amber">Delay {delay} min</Chip>}
         <span style={{ fontSize: 15 }}>{profile?.label ?? a.type}</span>
         <StatusPill status={a.status} />
         <div className="seg" role="tablist" aria-label="Section" style={{ marginLeft: "auto" }}>

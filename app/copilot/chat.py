@@ -112,7 +112,7 @@ def scripted(message: str, box: Toolbox) -> tuple[str, list[dict], list]:
         top = comps[:3]
         lines = "; ".join(f"{c['component_id']} ({c['status']}, {_fmt_rul(c)})" for c in top)
         sched = out["scheduled_within_72h"]
-        tail = (f" Scheduled in the next 72 hours: " + "; ".join(f"{s['task_id']} at {s['station']} from {s['start']}" for s in sched[:3]) + "."
+        tail = (" Scheduled in the next 72 hours: " + "; ".join(f"{s['task_id']} at {s['station']} from {s['start']}" for s in sched[:3]) + "."
                 if sched else " Nothing is scheduled to start in the next 72 hours.")
         return f"Highest risk first: {lines}.{tail} RUL is counted in flights.", ev, calls
 

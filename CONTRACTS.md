@@ -21,13 +21,27 @@ message to the group chat.
 
 ## 2. Models (copy to `app/contracts/models.py`)
 
+Each tail has ten SIMULATED components: two engines, brakes, landing gear, hydraulics,
+avionics, APU (`apu`), tires (`tires`), environmental control (`ecs`), and electrical
+(`electrical`). The fleet has 240 components across 24 tails. The four added kinds use
+synthetic generic scoring and the existing technician skills:
+
+| Kind | Wear signal | Healthy -> limit | Extra telemetry | Typical life (cycles) | Skill | Part |
+|---|---|---|---|---|---|---|
+| `apu` | `apu_egt_margin_c` (degC margin, down) | 90 -> 20 | `apu_rpm_pct` | 2500 | engine | APU-STARTER |
+| `tires` | `tread_depth_mm` (mm, down) | 9.0 -> 1.6 | `tire_pressure_psi` | 800 | gear | TIRE-ASSY |
+| `ecs` | `pack_outlet_temp_c` (degC, up from setpoint) | 15 -> 45 | `pack_flow_kgs` | 2500 | hydraulics | ECS-PACK-VALVE |
+| `electrical` | `battery_capacity_pct` (%, down) | 100 -> 70 | `bus_voltage_v` | 2000 | avionics | BATTERY-PACK |
+
+All values above are SIMULATED, invented demo limits, not maintenance specifications.
+
 ```python
 from __future__ import annotations
 from datetime import datetime
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
-ComponentKind = Literal["engine", "brakes", "landing_gear", "hydraulics", "avionics"]
+ComponentKind = Literal["engine", "brakes", "landing_gear", "hydraulics", "avionics", "apu", "tires", "ecs", "electrical"]
 AircraftStatus = Literal["ok", "watch", "alert", "in_maintenance", "aog"]
 EventType = Literal["anomaly", "accelerated_degradation", "part_delay", "tech_unavailable", "facility_closed"]
 SolveMode = Literal["cpsat", "greedy", "static_baseline"]
@@ -398,6 +412,21 @@ TypeScript types with `npx openapi-typescript http://localhost:8000/openapi.json
 | `POST /workorders/{id}/decision` | `{decision: "approve"|"reject", user, note}` | `WorkOrder` | Shamit |
 | `GET /audit` | | `AuditEntry[]` | Shamit |
 | `GET /metrics` | | `MetricsBundle` | Aashirth (ml) + Pardhu (plan); Shamit merges |
+
+### 4b. Insights (SIMULATED, advisory; `app/insights/`, group `insights`)
+
+Read-only overlays on the twin (or the seeded simulated fleet when the twin is empty). Never mutate FleetState; no certification claim. Every body has `"simulated": true`.
+
+| Endpoint | Response |
+|---|---|
+| `GET /insights/data-quality` | `{simulated, as_of, counts:{ok,degraded,bad}, items:[{tail, component_id, kind, status: ok\|degraded\|bad, reasons:[str], faults:[{key, mode}]}]}` (counts sum to the number of components) |
+| `GET /insights/reliability` | `{simulated, as_of, kinds:[{kind, components, samples, beta, eta_cycles, mtbur_cycles, b10_cycles, basis}]}`; right-censored Weibull MLE per kind, basis `"fit to simulated life model + fleet counters"` |
+| `POST /insights/weather` `{station, start, duration_h (0..72], severity 0..1}` | `{simulated, id, station, start, duration_h, severity}`; 422 for unknown station or out-of-range values |
+| `GET /insights/disruptions` | `{simulated, as_of, events:[{id, station, start, duration_h, severity}], delayed_legs:[{leg_id, tail, dep, arr, sched_dep, est_dep, sched_arr, est_arr, delay_min, cause}], by_tail:[{tail, legs_affected, total_delay_min}]}` |
+| `DELETE /insights/weather/{id}` | `{simulated, deleted}`; 404 `{error, detail}` if unknown |
+| `GET /insights/legs/{leg_id}/profile` | the `FlightProfile` (`phases` as `[name, minutes]` pairs, OAT, elevations, runway, payload, cruise_fl, brake energy, sink rate, density altitude) + `simulated`, `leg_id`, `tail`, `dep`, `arr`; 404 `{error, detail}` for an unknown leg |
+
+Delay model: departures from / arrivals to the station inside the event window slip by `severity * duration_h`; delay rolls along a tail's rotation and is absorbed by the gap between `sched_arr` and the next `sched_dep` minus a 35 min minimum turn. Disruptions are stored in `kv` (key `insights_disruptions`) and cleared by `POST /scenario/reset`.
 
 ### Example payloads (these are also the files in `fixtures/`)
 

@@ -12,7 +12,41 @@ import random
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from app.contracts.models import *  # noqa: F401,F403
+from app.contracts.models import (
+    AgentRun,
+    AgentStep,
+    Aircraft,
+    AircraftSummary,
+    Assignment,
+    AuditEntry,
+    BaseModel,
+    ChatResponse,
+    DataQuality,
+    EvidenceRef,
+    FleetKpis,
+    FleetOverview,
+    GroundWindow,
+    HealthScore,
+    HistoryPoint,
+    Leg,
+    MetricsBundle,
+    ObjectiveWeights,
+    PartStock,
+    Plan,
+    PlanDiff,
+    PlanMetrics,
+    PredictedPoint,
+    ReplanResult,
+    RulEstimate,
+    ScenarioEvent,
+    Station,
+    Task,
+    Technician,
+    TwinComponent,
+    TwinEvent,
+    TwinView,
+    WorkOrder,
+)
 
 UTC = timezone.utc
 T0 = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)  # SimClock origin
@@ -129,7 +163,7 @@ TASKS = [
 ]
 DESIGNATED = {"SIM-017": "DFW", "SIM-004": "DEN", "SIM-011": "LAX", "SIM-020": "SEA", "SIM-008": "MIA"}  # where the aircraft sleeps
 LEGS = make_legs()
-WINS = {t: windows(l) for t, l in LEGS.items()}
+WINS = {t: windows(leg) for t, leg in LEGS.items()}
 
 
 def part_ready(stations: list[Station], iata: str, part: str | None):
@@ -209,15 +243,20 @@ SENSOR_START = {"T24": 641.9, "T30": 1586.0, "T50": 1402.0, "P30": 554.4, "Nf": 
                 "NRc": 8138.0, "BPR": 8.42, "htBleed": 391.0, "W31": 39.1, "W32": 23.4}
 SENSOR_END = {"T24": 643.6, "T30": 1604.0, "T50": 1431.0, "P30": 551.5, "Nf": 2388.3, "Nc": 9061.0, "Ps30": 47.0, "phi": 519.9, "NRf": 2388.2,
               "NRc": 8155.0, "BPR": 8.47, "htBleed": 396.0, "W31": 38.5, "W32": 23.0}
-COMP_KINDS = [("engine_1", "engine"), ("engine_2", "engine"), ("brakes", "brakes"), ("landing_gear", "landing_gear"), ("hydraulics", "hydraulics"), ("avionics", "avionics")]
+COMP_KINDS = [("engine_1", "engine"), ("engine_2", "engine"), ("brakes", "brakes"), ("landing_gear", "landing_gear"),
+              ("hydraulics", "hydraulics"), ("avionics", "avionics"), ("apu", "apu"), ("tires", "tires"),
+              ("ecs", "ecs"), ("electrical", "electrical")]
 
 
-def make_component(tail: str, cid: str, kind: str, health: float, anomaly: float, rul: tuple | None, status: str, base_cycle: int, n_hist=40, sensors=None, last_maint=None) -> TwinComponent:
+def make_component(tail: str, cid: str, kind: str, health: float, anomaly: float, rul: tuple | None,
+                   status: str, base_cycle: int, n_hist=40, sensors=None, last_maint=None,
+                   component_rng: random.Random | None = None) -> TwinComponent:
+    component_rng = component_rng or rng
     hist = []
     for i in range(n_hist):
         f = i / (n_hist - 1)
-        h = min(1.0, health + (1 - f) * min(0.45, 1 - health) * 0.9) if health < 0.9 else health + rng.uniform(-0.01, 0.01)
-        a = max(0.0, anomaly * f * f + rng.uniform(0, 0.03))
+        h = min(1.0, health + (1 - f) * min(0.45, 1 - health) * 0.9) if health < 0.9 else health + component_rng.uniform(-0.01, 0.01)
+        a = max(0.0, anomaly * f * f + component_rng.uniform(0, 0.03))
         hist.append(HistoryPoint(cycle=base_cycle - (n_hist - 1 - i), ts=T0 - timedelta(hours=6 * (n_hist - 1 - i)), health=round(max(0, min(1, h)), 3),
                                  anomaly_score=round(min(1, a), 3), rul_p50=round(rul[1] + (n_hist - 1 - i) * 1.0, 1) if rul else None))
     pred = []
@@ -234,12 +273,16 @@ def make_component(tail: str, cid: str, kind: str, health: float, anomaly: float
 def make_twin(tail: str, alert: bool) -> TwinView:
     home, partner = ROUTES[tail]
     comps = []
+    ops_v2 = random.Random(f'1234:{tail}:ops:v2')
     for cid, kind in COMP_KINDS:
         if tail == "SIM-017" and cid == "engine_2":
             if alert:
                 comps.append(make_component(tail, cid, kind, 0.18, 0.91, (18, 22, 25), "alert", 231, sensors=SENSOR_END))
             else:
                 comps.append(make_component(tail, cid, kind, 0.74, 0.12, (55, 62, 70), "ok", 231, sensors={k: round(v + (SENSOR_END[k] - v) * 0.1, 2) for k, v in SENSOR_START.items()}))
+        elif kind in ("apu", "tires", "ecs", "electrical"):
+            comps.append(make_component(tail, cid, kind, round(1 - ops_v2.uniform(.05, .35), 3), .02,
+                                        (150, 180, 210), "ok", 700 + ops_v2.randint(0, 300), component_rng=ops_v2))
         elif kind == "engine":
             comps.append(make_component(tail, cid, kind, 0.8, 0.08, (88, 96, 108), "ok", 231 if cid == "engine_1" else 229, sensors=SENSOR_START))
         else:
@@ -312,7 +355,8 @@ def main() -> None:
     for i, a in enumerate(opt, 1):
         tk = next(t for t in TASKS if t.id == a.task_id)
         wos.append(WorkOrder(id=f"WO-{i}", tail=a.tail, task_id=a.task_id, station=a.station, start=a.start, end=a.end, description=f"{tk.title} ({a.tail}) at {a.station}",
-                             plan_id="P-2", evidence=[EvidenceRef(kind="plan", ref="P-2", note=a.reason[:80]), EvidenceRef(kind="kb", ref="TC-ENG-001" if "engine" in tk.component_id else "TC-GEN-001", note="synthetic task card")]))
+                             plan_id="P-2", evidence=[EvidenceRef(kind="plan", ref="P-2", note=a.reason[:80]), EvidenceRef(kind="kb",
+                                 ref="TC-ENG-001" if "engine" in tk.component_id else "TC-GEN-001", note="synthetic task card")]))
     dump("workorders", wos)
 
     # agent run (golden)
@@ -352,7 +396,8 @@ def main() -> None:
     step("coordinator", "tool_call", tool="draft_work_orders", inp={"plan_id": "P-2"})
     step("coordinator", "tool_result", tool="draft_work_orders", out={"work_orders": [w.id for w in wos], "status": "pending_approval"})
     expl = (f"Recommend engine 2 borescope inspection on SIM-017 at DFW, {e.start:%b %d %H:%MZ} to {e.end:%H:%MZ}: the first window with an engine technician and the kit on hand, "
-            f"{e.window_hours:g} h ground time, no flight delay. Waiting for the static home-base policy would delay {p_base.metrics.flights_affected} flights and cost ${p_base.metrics.logistics_cost_usd:.0f} in shipping. "
+            f"{e.window_hours:g} h ground time, no flight delay. Waiting for the static home-base policy would delay "
+            f"{p_base.metrics.flights_affected} flights and cost ${p_base.metrics.logistics_cost_usd:.0f} in shipping. "
             "Work orders are drafted for human approval.")
     step("coordinator", "summary", expl)
     dump("agent_run_golden", AgentRun(id="R-1", goal="Plan maintenance for the aircraft that need attention", mode="scripted", status="done", steps=steps, plan=p_opt, work_orders=wos,
@@ -361,18 +406,25 @@ def main() -> None:
     # chat examples
     ev1 = [EvidenceRef(kind="health", ref="SIM-017/engine_2", note="RUL p10 18"), EvidenceRef(kind="plan", ref="P-2")]
     chats = [
-        {"match": ["72", "likely", "next"], "response": ChatResponse(answer="In the next 72 hours the components closest to their deadlines are SIM-017 engine 2 (RUL p10 18 cycles) and SIM-004 brakes (12 cycles).", evidence=ev1)},
-        {"match": ["why", "prioritized", "priority"], "response": ChatResponse(answer="SIM-017 engine 2 ranks first: anomaly score 0.91 and RUL p10 of 18 cycles, versus 12 cycles for SIM-004 brakes but a cheaper, shorter job.", evidence=ev1)},
-        {"match": ["window", "tomorrow"], "response": ChatResponse(answer=f"Best feasible window for SIM-017: {e.station} {iso(e.start)} to {iso(e.end)}.", evidence=ev1, proposed_work_orders=[wos[0]])},
-        {"match": ["parts", "technician"], "response": ChatResponse(answer="Engine job needs 1 engine technician (DFW-T2) and 1 BORESCOPE-KIT (2 arriving at DFW in 8 h).", evidence=[EvidenceRef(kind="tool_call", ref="TC-15")])},
-        {"match": ["unavailable", "closed", "facility"], "response": ChatResponse(answer="If DFW's hangar closes, the engine job moves to the next window with a free hangar; see the Simulation Lab for the exact plan.", evidence=ev1,
+        {"match": ["72", "likely", "next"], "response": ChatResponse(
+            answer="In the next 72 hours the components closest to their deadlines are SIM-017 engine 2 (RUL p10 18 cycles) and SIM-004 brakes (12 cycles).", evidence=ev1)},
+        {"match": ["why", "prioritized", "priority"], "response": ChatResponse(
+            answer="SIM-017 engine 2 ranks first: anomaly score 0.91 and RUL p10 of 18 cycles, versus 12 cycles for SIM-004 brakes but a cheaper, shorter job.", evidence=ev1)},
+        {"match": ["window", "tomorrow"], "response": ChatResponse(answer=f"Best feasible window for SIM-017: {e.station} {iso(e.start)} to {iso(e.end)}.", evidence=ev1,
+            proposed_work_orders=[wos[0]])},
+        {"match": ["parts", "technician"], "response": ChatResponse(answer="Engine job needs 1 engine technician (DFW-T2) and 1 BORESCOPE-KIT (2 arriving at DFW in 8 h).", evidence=[EvidenceRef(
+            kind="tool_call", ref="TC-15")])},
+        {"match": ["unavailable", "closed", "facility"], "response": ChatResponse(
+            answer="If DFW's hangar closes, the engine job moves to the next window with a free hangar; see the Simulation Lab for the exact plan.", evidence=ev1,
                                                                                   missing_info=["No alternative hangar slot data beyond the 5-day horizon."])},
-        {"match": ["compare", "optimized", "schedule"], "response": ChatResponse(answer=f"Optimized vs static baseline: downtime {p_opt.metrics.downtime_h} h vs {p_base.metrics.downtime_h} h, flights affected {p_opt.metrics.flights_affected} vs {p_base.metrics.flights_affected}.", evidence=ev1)},
+        {"match": ["compare", "optimized", "schedule"], "response": ChatResponse(answer=f"Optimized vs static baseline: downtime {p_opt.metrics.downtime_h} h vs {p_base.metrics.downtime_h} h, "
+            f"flights affected {p_opt.metrics.flights_affected} vs {p_base.metrics.flights_affected}.", evidence=ev1)},
     ]
     dump("chat_examples", chats)
 
     dump("audit", [AuditEntry(ts=T0, actor="system", action="scenario_reset", ref="golden", detail="fixtures loaded")])
-    dump("metrics", MetricsBundle(ml={"status": "MOCK: not computed", "data_source": "fixture", "rul_mae": None, "rul_rmse": None, "anomaly_precision": None, "anomaly_recall": None, "anomaly_fpr": None},
+    dump("metrics", MetricsBundle(ml={"status": "MOCK: not computed", "data_source": "fixture", "rul_mae": None, "rul_rmse": None, "anomaly_precision": None, "anomaly_recall": None,
+        "anomaly_fpr": None},
                                   plan={"baseline": p_base.metrics, "optimized": p_opt.metrics, "replan_seconds": 1.1, "note": "fixture numbers, not results"}))
     print(f"fixtures written to {OUT}")
     print(f"  optimized: downtime {p_opt.metrics.downtime_h} h, flights {p_opt.metrics.flights_affected}, cost ${p_opt.metrics.logistics_cost_usd:.0f}")

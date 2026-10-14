@@ -1,0 +1,14 @@
+# Runtime-only deps for the Render Docker image (no pytest; no xgboost: nothing in app/ or scripts/ imports it).
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+pydantic>=2.6,<3
+python-dotenv>=1.0       # app imports dotenv
+pyyaml>=6,<7             # copilot KB and task cards
+numpy>=2,<3
+pandas>=2,<4
+scipy>=1.11              # required by scikit-learn / ortools stacks, pinned explicitly
+scikit-learn==1.9.1      # ML health models
+joblib>=1.4,<2           # model persistence
+ortools>=9.15,<10        # solver
+simpy>=4,<5              # simulator and what-if
+anthropic>=0.40          # LLM mode (scripted mode works without a key)

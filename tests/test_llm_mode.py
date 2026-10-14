@@ -13,7 +13,7 @@ from app import copilot
 from app.agents import llm_mode, runner
 from app.agents.runs import RUNS
 from app.agents.tools import TOOLS
-from app.copilot import audit, llm, persist, workorders
+from app.copilot import llm, persist, workorders
 from app.copilot.router import router as copilot_router
 from app.solver.store import STORE
 

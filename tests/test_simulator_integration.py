@@ -1,5 +1,6 @@
 """Integration tests use deterministic scoring so no local dataset is required."""
 import pytest
+from app import db, settings
 from app.contracts.models import DataQuality, HealthScore, RulEstimate, ScenarioEvent
 from app.sim.integration import IntegratedSimulator
 from app.twin import state as twin
@@ -15,7 +16,10 @@ def clean_twin(monkeypatch):
     RUNS.reset()
     def score(kind,tail,cid,rows):
         fault=rows[-1].values.get('T50',0)>1100
-        return HealthScore(tail=tail,component_id=cid,health=.3 if fault else .95,anomaly_score=.9 if fault else .02,is_anomaly=fault,rul_cycles=RulEstimate(p10=22 if fault else 120,p50=25 if fault else 150,p90=30 if fault else 180),data_quality=DataQuality(status='ok'),model_version='integration-test',top_signals=['T50'] if kind=='engine' else [])
+        return HealthScore(
+            tail=tail,component_id=cid,health=.3 if fault else .95,anomaly_score=.9 if fault else .02,is_anomaly=fault,
+            rul_cycles=RulEstimate(p10=22 if fault else 120,p50=25 if fault else 150,p90=30 if fault else 180),
+            data_quality=DataQuality(status='ok'),model_version='integration-test',top_signals=['T50'] if kind=='engine' else [])
     monkeypatch.setattr('app.ml.health.score_component',score)
     yield
     twin.reset()
@@ -34,7 +38,7 @@ def test_live_snapshot_reset_and_restart(tmp_path):
     sim=IntegratedSimulator(path,trajectories=replay())
     assert len(twin.snapshot().aircraft)==24
     assert len(twin.snapshot().legs)==480
-    assert sim.step(24)['ingested']==576
+    assert sim.step(24)['ingested']==960
     sim.inject(ScenarioEvent(type='anomaly',at=sim.state.now,tail='SIM-017',component_id='SIM-017/engine_2'))
     view=twin.get_twin('SIM-017')
     assert view.aircraft.status=='alert'
@@ -81,13 +85,11 @@ def test_integration_server_mounts_team_routes(monkeypatch):
         assert client.get('/health').json()['twin_connected'] is True
         assert client.get('/fleet').json()['kpis']['aircraft']==24
         assert len(client.get('/legs?tail=SIM-017').json())==20
-        assert len(client.get('/aircraft/SIM-017').json()['components'])==6
+        assert len(client.get('/aircraft/SIM-017').json()['components'])==10
         assert client.get('/aircraft/unknown').status_code==404
         assert client.post('/scenario/reset',json={'name':'golden'}).status_code==200
         paths=client.get('/openapi.json').json()['paths']
         assert all(p in paths for p in ('/sim/step','/scenario/inject','/plan','/plan/replan','/agents/run'))
-
-import pytest
 
 
 @pytest.fixture(autouse=True)
@@ -97,7 +99,6 @@ def _live_world(monkeypatch):
 
 
 def test_platform_sqlite_schema(monkeypatch,tmp_path):
-    from app import db,settings
     path=tmp_path/'platform.db'
     monkeypatch.setattr(settings,'DB_PATH',path)
     db.init_db()
@@ -105,6 +106,6 @@ def test_platform_sqlite_schema(monkeypatch,tmp_path):
     sim.step(2)
     sim.inject(ScenarioEvent(type='anomaly',at=sim.state.now,tail='SIM-017',component_id='SIM-017/engine_2'))
     with db.conn() as conn:
-        assert conn.execute('SELECT COUNT(*) FROM telemetry').fetchone()[0]==152
+        assert conn.execute('SELECT COUNT(*) FROM telemetry').fetchone()[0]==248
         assert isinstance(conn.execute('SELECT id FROM audit').fetchone()[0],int)
         assert conn.execute('SELECT COUNT(*) FROM aircraft').fetchone()[0]==24

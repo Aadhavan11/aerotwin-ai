@@ -29,7 +29,7 @@ def exposure(state: FleetState, tasks: list[Task], plan: Plan) -> list[dict]:
             row.update({
                 "station": a.station,
                 "hours_to_fix": round(minutes_between(a.end, now) / 60.0, 1),
-                "flights_before_fix": sum(1 for l in state.legs if l.tail == t.tail and now <= aware(l.sched_dep) < start),
+                "flights_before_fix": sum(1 for leg in state.legs if leg.tail == t.tail and now <= aware(leg.sched_dep) < start),
                 "slack_to_deadline_h": round(minutes_between(t.deadline, a.end) / 60.0, 1),
             })
         rows.append(row)

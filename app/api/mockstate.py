@@ -8,11 +8,35 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from .. import fixtures
-from ..contracts.models import *  # noqa: F401,F403
+from ..contracts.models import (
+    AgentRun,
+    Aircraft,
+    AircraftSummary,
+    AuditEntry,
+    ChatResponse,
+    Comparison,
+    DataQuality,
+    FleetKpis,
+    FleetOverview,
+    HistoryPoint,
+    Plan,
+    PredictedPoint,
+    ReplanResult,
+    RulEstimate,
+    Scenario,
+    ScenarioEvent,
+    Task,
+    TwinComponent,
+    TwinEvent,
+    TwinView,
+    WorkOrder,
+)
 
 UTC = timezone.utc
 T0 = datetime(2026, 10, 12, 12, 0, tzinfo=UTC)
-KINDS = [("engine_1", "engine"), ("engine_2", "engine"), ("brakes", "brakes"), ("landing_gear", "landing_gear"), ("hydraulics", "hydraulics"), ("avionics", "avionics")]
+KINDS = [("engine_1", "engine"), ("engine_2", "engine"), ("brakes", "brakes"), ("landing_gear", "landing_gear"),
+         ("hydraulics", "hydraulics"), ("avionics", "avionics"), ("apu", "apu"), ("tires", "tires"),
+         ("ecs", "ecs"), ("electrical", "electrical")]
 
 
 def generic_twin(summary: AircraftSummary) -> TwinView:
@@ -24,7 +48,8 @@ def generic_twin(summary: AircraftSummary) -> TwinView:
         health = round(r.uniform(0.3, 0.45), 2) if worst else round(r.uniform(0.72, 0.95), 2)
         rul = RulEstimate(p10=summary.rul_p10_min or 80, p50=(summary.rul_p10_min or 80) + 8, p90=(summary.rul_p10_min or 80) + 18) if worst else RulEstimate(p10=70, p50=85, p90=100)
         cyc = 230 + r.randint(0, 400)
-        hist = [HistoryPoint(cycle=cyc - 29 + i, ts=T0 - timedelta(hours=6 * (29 - i)), health=round(min(1, health + (29 - i) * 0.004), 3), anomaly_score=0.05, rul_p50=rul.p50 + (29 - i)) for i in range(30)]
+        hist = [HistoryPoint(cycle=cyc - 29 + i, ts=T0 - timedelta(hours=6 * (29 - i)), health=round(min(1, health + (29 - i) * 0.004), 3), anomaly_score=0.05,
+                              rul_p50=rul.p50 + (29 - i)) for i in range(30)]
         pred = [PredictedPoint(cycle=cyc + j, health_p50=round(max(0, health * (1 - j / rul.p50)), 3), health_lo=round(max(0, health * (1 - j / rul.p10)), 3),
                                health_hi=round(max(0, health * (1 - j / rul.p90)), 3)) for j in range(1, 21)]
         comps.append(TwinComponent(tail=summary.tail, component_id=f"{summary.tail}/{cid}", kind=kind, cycles=cyc, hours=round(cyc * 1.77, 1), health=health, anomaly_score=0.1 if worst else 0.05,

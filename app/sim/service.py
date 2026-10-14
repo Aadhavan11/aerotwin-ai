@@ -15,14 +15,16 @@ from app.sim.clock import SimClock
 from app.sim.fleet import generate_fleet
 from app.sim.telemetry import TelemetrySource
 
+SOURCE_ATTRS = ('positions', 'origins', 'units', 'wear', 'faults', 'damage', 'modes', 'sensor_faults')
+
 class Simulator:
-    def __init__(self, db_path='data/aerotwin.db', seed=1234, ingest=None, trajectories=None):
+    def __init__(self, db_path='data/aerotwin.db', seed=1234, ingest=None, trajectories=None, stochastic=False):
         if db_path != ':memory:':
             Path(db_path).parent.mkdir(parents=True,exist_ok=True)
         self.connection = sqlite3.connect(db_path, check_same_thread=False)
         self.lock = RLock()
         self.seed, self.ingest = seed, ingest
-        self.source = TelemetrySource(seed,trajectories)
+        self.source = TelemetrySource(seed,trajectories,stochastic)
         self.connection.executescript('''
         CREATE TABLE IF NOT EXISTS aircraft (tail TEXT PRIMARY KEY,type TEXT,home TEXT,location TEXT,status TEXT,cycles INTEGER,hours REAL,json TEXT);
         CREATE TABLE IF NOT EXISTS components (tail TEXT,component_id TEXT,kind TEXT,state_json TEXT,PRIMARY KEY(tail,component_id));
@@ -38,7 +40,7 @@ class Simulator:
         if saved:
             self.state = FleetState.model_validate_json(saved[0])
             checkpoint = json.loads(self.connection.execute("SELECT value FROM kv WHERE key='sim_source'").fetchone()[0])
-            for attr in ('positions','origins','units','wear','faults'):
+            for attr in SOURCE_ATTRS:
                 setattr(self.source,attr,checkpoint.get(attr, {}))
         else:
             self.reset()
@@ -48,7 +50,7 @@ class Simulator:
     def _atomic(self):
         with self.lock:
             state = self.state.model_copy(deep=True)
-            source = deepcopy({attr:getattr(self.source,attr) for attr in ('positions','origins','units','wear','faults','now')})
+            source = deepcopy({attr:getattr(self.source,attr) for attr in (*SOURCE_ATTRS,'now')})
             try:
                 yield
             except Exception:
@@ -61,7 +63,8 @@ class Simulator:
     def _save(self):
         db = self.connection
         for aircraft in self.state.aircraft:
-            db.execute('INSERT OR REPLACE INTO aircraft VALUES (?,?,?,?,?,?,?,?)',(aircraft.tail,aircraft.type,aircraft.home,aircraft.location,aircraft.status,aircraft.cycles,aircraft.hours,aircraft.model_dump_json()))
+            db.execute('INSERT OR REPLACE INTO aircraft VALUES (?,?,?,?,?,?,?,?)',(
+                aircraft.tail,aircraft.type,aircraft.home,aircraft.location,aircraft.status,aircraft.cycles,aircraft.hours,aircraft.model_dump_json()))
         for c in self.state.components:
             db.execute('INSERT OR REPLACE INTO components VALUES (?,?,?,?)',(c.tail,c.component_id,c.kind,c.model_dump_json()))
         for leg in self.state.legs:
@@ -69,7 +72,7 @@ class Simulator:
         for station in self.state.stations:
             db.execute('INSERT OR REPLACE INTO stations VALUES (?,?)',(station.iata,station.model_dump_json()))
         db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_snapshot',?)",(self.state.model_dump_json(),))
-        db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_source',?)",(json.dumps({attr:getattr(self.source,attr) for attr in ('positions','origins','units','wear','faults')}),))
+        db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_source',?)",(json.dumps({attr:getattr(self.source,attr) for attr in SOURCE_ATTRS}),))
         db.execute("INSERT OR REPLACE INTO kv VALUES ('sim_now',?)",(self.state.now.isoformat(),))
         db.commit()
 
@@ -84,7 +87,7 @@ class Simulator:
                     self.connection.execute(f'DELETE FROM {table}')
             self.state = generate_fleet(self.seed)
             self.source.now = self.state.now
-            for attr in ('positions','origins','units','wear','faults'):
+            for attr in SOURCE_ATTRS:
                 getattr(self.source,attr).clear()
             self.source.positions.update({c.component_id:c.cycles for c in self.state.components})
             self.source.origins.update(self.source.positions)
@@ -112,22 +115,23 @@ class Simulator:
         with self._atomic():
             old = self.state.now
             end = old+timedelta(hours=hours)
-            completed = sorted([l for l in self.state.legs if old<l.sched_arr<=end],key=lambda l:(l.sched_arr,l.id))
+            completed = sorted([lg for lg in self.state.legs if old<lg.sched_arr<=end],key=lambda lg:(lg.sched_arr,lg.id))
             ingested = 0
             for leg in completed:
                 self.source.now = leg.sched_arr
-                for component in [c for c in self.state.components if c.tail==leg.tail]:
-                    for row in self.source.advance(leg.tail,component.component_id,1):
-                        self._ingest(row)
-                        ingested += 1
+                components = [c for c in self.state.components if c.tail==leg.tail]
+                for row in self.source.advance_leg(leg,[c.component_id for c in components]):
+                    self._ingest(row)
+                    ingested += 1
+                for component in components:
                     component.hours += (leg.sched_arr-leg.sched_dep).total_seconds()/3600
                 aircraft = next(a for a in self.state.aircraft if a.tail==leg.tail)
                 aircraft.cycles += 1
                 aircraft.hours += (leg.sched_arr-leg.sched_dep).total_seconds()/3600
             for aircraft in self.state.aircraft:
-                past = [l for l in self.state.legs if l.tail==aircraft.tail and l.sched_arr<=end]
-                aircraft.location = max(past,key=lambda l:l.sched_arr).arr if past else aircraft.home
-                if any(l.tail==aircraft.tail and l.sched_dep<=end<l.sched_arr for l in self.state.legs):
+                past = [lg for lg in self.state.legs if lg.tail==aircraft.tail and lg.sched_arr<=end]
+                aircraft.location = max(past,key=lambda lg:lg.sched_arr).arr if past else aircraft.home
+                if any(lg.tail==aircraft.tail and lg.sched_dep<=end<lg.sched_arr for lg in self.state.legs):
                     aircraft.location='AIR'
             self.state.now=end
             self.source.now=end

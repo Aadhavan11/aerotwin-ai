@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: aerotwin
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    autoDeploy: true
+    domains:
+      - aerotwin.agprojects.us
+    envVars:
+      - key: AUTH_USER
+        sync: false
+      - key: AUTH_PASS
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: ""
+      - key: LLM_RATE_PER_MIN
+        value: "6"
+      - key: LLM_DAILY_CAP
+        value: "200"

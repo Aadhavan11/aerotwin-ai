@@ -11,7 +11,15 @@ import json
 
 from app import db, fixtures, settings
 from app.api.mockstate import generic_twin
-from app.contracts.models import *  # noqa: F401,F403
+from app.contracts.models import (
+    ComponentState,
+    FleetOverview,
+    Leg,
+    Plan,
+    Station,
+    Task,
+    TwinView,
+)
 
 
 def seed_from_fixtures() -> dict:

@@ -76,20 +76,20 @@ def affected_legs(plan: Plan, state: FleetState) -> list[Leg]:
     out: dict[str, Leg] = {}
     for a in plan.assignments:
         if a.extension_h > 1e-9:
-            leg = _leg_for(a, [l for l in state.legs if l.tail == a.tail])
+            leg = _leg_for(a, [leg for leg in state.legs if leg.tail == a.tail])
             if leg is not None:
                 out[leg.id] = leg
-    return sorted(out.values(), key=lambda l: (aware(l.sched_dep), l.id))
+    return sorted(out.values(), key=lambda leg: (aware(leg.sched_dep), leg.id))
 
 
 def _leg_for(a: Assignment, legs: list[Leg]) -> Optional[Leg]:
     """The leg that departs from the assignment's station right after the job's ground window."""
     s = aware(a.start)
-    at_station = sorted((l for l in legs if l.dep == a.station), key=lambda l: aware(l.sched_dep))
-    later = [l for l in at_station if aware(l.sched_dep) >= s - timedelta(seconds=1)]
+    at_station = sorted((leg for leg in legs if leg.dep == a.station), key=lambda leg: aware(leg.sched_dep))
+    later = [leg for leg in at_station if aware(leg.sched_dep) >= s - timedelta(seconds=1)]
     if later:
         return later[0]
-    near = [l for l in at_station if aware(l.sched_dep) >= s - timedelta(hours=6)]   # job started after the planned departure
+    near = [leg for leg in at_station if aware(leg.sched_dep) >= s - timedelta(hours=6)]   # job started after the planned departure
     return near[-1] if near else None
 
 
@@ -104,9 +104,9 @@ def simulate_detailed(plan: Plan, state: FleetState, runs: int = 20, seed: int =
     hrs = lambda dt: minutes_between(dt, now) / 60.0  # noqa: E731
 
     legs_by_tail: dict[str, list[Leg]] = {}
-    for l in sorted(state.legs, key=lambda l: (aware(l.sched_dep), l.id)):
-        if aware(l.sched_arr) > now:
-            legs_by_tail.setdefault(l.tail, []).append(l)
+    for leg in sorted(state.legs, key=lambda leg: (aware(leg.sched_dep), leg.id)):
+        if aware(leg.sched_arr) > now:
+            legs_by_tail.setdefault(leg.tail, []).append(leg)
     jobs_by_leg: dict[str, list[Assignment]] = {}
     unmapped = 0
     for a in plan.assignments:

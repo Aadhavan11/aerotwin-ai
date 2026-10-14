@@ -14,7 +14,14 @@ import time
 import urllib.error
 import urllib.request
 
-from app.contracts.models import *  # noqa: F401,F403
+from app.contracts.models import (
+    AgentRun,
+    FleetOverview,
+    MetricsBundle,
+    Plan,
+    ReplanResult,
+    TwinView,
+)
 
 
 class Http:
@@ -117,7 +124,9 @@ def run(h, poll_timeout: float = 90.0, verbose: bool = True) -> list[tuple[str, 
     if s == 200:
         cur, base = Plan.model_validate(pl["current"]).metrics, Plan.model_validate(pl["baseline"]).metrics
         check("Optimized is no worse than the baseline (downtime, flights affected)", cur.downtime_h <= base.downtime_h and cur.flights_affected <= base.flights_affected,
-              f"downtime {cur.downtime_h:g} vs {base.downtime_h:g} h; flights affected {cur.flights_affected} vs {base.flights_affected}; logistics ${cur.logistics_cost_usd:.0f} vs ${base.logistics_cost_usd:.0f}")
+              f"downtime {cur.downtime_h:g} vs {base.downtime_h:g} h; "
+              f"flights affected {cur.flights_affected} vs {base.flights_affected}; "
+              f"logistics ${cur.logistics_cost_usd:.0f} vs ${base.logistics_cost_usd:.0f}")
     else:
         check("GET /plan", False, str(pl)[:100])
 

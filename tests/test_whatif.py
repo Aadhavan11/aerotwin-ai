@@ -307,7 +307,7 @@ def test_simulate_l2_jitter_can_push_a_job_past_its_deadline():
 def test_affected_legs_lists_the_delayed_departures():
     st = mini_state(windows={"SIM-001": [("AAA", 1.0, 4.0)]}, stations=[simple_station("AAA")])
     plan = solve(st, [engine_task("T1", "SIM-001", 30, duration_h=4.0)], mode="cpsat")
-    assert [l.id for l in affected_legs(plan, st)] == ["L-SIM-001-out"]
+    assert [leg.id for leg in affected_legs(plan, st)] == ["L-SIM-001-out"]
 
 
 # ------------------------------------------------------------------ HTTP
