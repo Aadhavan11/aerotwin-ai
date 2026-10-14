@@ -5,6 +5,8 @@ import type { InsightsDataQuality, InsightsDisruptions, InsightsReliability } fr
 import type { FleetOverview } from "../api/types";
 import { Btn, Card, Chip, Loading } from "../components/ui";
 import { weibullCurve } from "../lib/insights";
+import { useRole } from "../lib/role";
+import { ApiError } from "../api/client";
 
 /** Each section loads independently and ignores responses after cleanup. */
 function useAvailable<T>(path: string, revision = 0) {
@@ -31,6 +33,8 @@ function Simulated({ simulated }: { simulated?: boolean }) {
 }
 
 export default function Insights() {
+  const { role } = useRole();
+  const canEdit = role.id === "ops" || role.id === "admin";
   const quality = useAvailable<InsightsDataQuality>("/insights/data-quality");
   const reliability = useAvailable<InsightsReliability>("/insights/reliability");
   const [revision, setRevision] = useState(0);
@@ -54,8 +58,10 @@ export default function Insights() {
     try {
       await action();
       setRevision((value) => value + 1);
-    } catch {
-      setMessage("Weather changes are not available. Please try again.");
+    } catch (e) {
+      setMessage(e instanceof ApiError && e.status === 403
+        ? "Your role may not change weather events. Ask operations control."
+        : "Weather changes are not available. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -118,12 +124,12 @@ export default function Insights() {
                 const curve = weibullCurve(kind.eta_cycles, kind.beta, kind.b10_cycles);
                 if (!curve) return null;
                 return (
-                  <figure key={`${kind.kind}-${index}`} style={{ margin: 0 }}>
+                  <figure key={`${kind.kind}-${index}`} className="weibull" style={{ margin: 0 }}>
                     <figcaption>{kind.kind} · Weibull CDF</figcaption>
                     <svg width={240} height={140} viewBox="0 0 240 140" role="img" aria-label={`${kind.kind} Weibull cumulative failure probability`}>
                       <title>{kind.kind} Weibull CDF</title>
-                      <path d="M 30 15 L 30 110 L 230 110" fill="none" stroke="currentColor" />
-                      <path d={curve.path} fill="none" stroke="var(--watch, #b45309)" strokeWidth={2} />
+                      <path d="M 30 15 L 30 110 L 230 110" fill="none" stroke="currentColor" strokeOpacity={0.6} />
+                      <path d={curve.path} fill="none" stroke="var(--warn)" strokeWidth={2} />
                       <text x={10} y={20} fontSize={10}>1</text><text x={10} y={113} fontSize={10}>0</text>
                       <text x={30} y={128} fontSize={10}>0</text><text x={230} y={128} fontSize={10} textAnchor="end">{curve.extent.toFixed(0)} cycles</text>
                     </svg>
@@ -139,18 +145,18 @@ export default function Insights() {
           <p className="muted">Disruptions are not available.</p>
         ) : (
           <>
-            <h3>Weather events</h3>
+            <h3 className="insights-h3">Weather events</h3>
             {events.length === 0 ? <p className="muted">No weather events.</p> : (
               <div className="overflow-auto"><table className="data-table">
                 <thead><tr><th>id</th><th>Station</th><th>Start</th><th>duration_h</th><th>Severity</th><th>Action</th></tr></thead>
                 <tbody>{events.map((event) => (
                   <tr key={event.id}><td>{event.id}</td><td>{event.station}</td><td>{event.start}</td><td>{event.duration_h}</td><td>{event.severity}</td>
-                    <td><Btn disabled={busy} onClick={() => { void mutate(() => del<unknown>(`/insights/weather/${encodeURIComponent(event.id)}`)); }}>Delete</Btn></td>
+                    <td>{canEdit ? <Btn disabled={busy} onClick={() => { void mutate(() => del<unknown>(`/insights/weather/${encodeURIComponent(event.id)}`)); }}>Delete</Btn> : <span className="muted">-</span>}</td>
                   </tr>
                 ))}</tbody>
               </table></div>
             )}
-            <h3>Delayed legs</h3>
+            <h3 className="insights-h3">Delayed legs</h3>
             {legs.length === 0 ? <p className="muted">No delayed legs.</p> : (
               <div className="overflow-auto"><table className="data-table">
                 <thead><tr><th>leg_id</th><th>Tail</th><th>sched_dep</th><th>est_dep</th><th>sched_arr</th><th>est_arr</th><th>delay_min</th><th>Cause</th></tr></thead>
@@ -161,11 +167,11 @@ export default function Insights() {
             )}
           </>
         )}
-        <h3>Add weather event</h3>
-        {fleet.loading ? <Loading what="fleet stations" /> : fleet.error || !fleet.data ? (
+        <h3 className="insights-h3">Add weather event</h3>
+        {!canEdit ? <p className="muted">Only operations control and administrators can add or remove weather events.</p> : fleet.loading ? <Loading what="fleet stations" /> : fleet.error || !fleet.data ? (
           <p className="muted">Fleet stations are not available.</p>
         ) : stations.length === 0 ? <p className="muted">No fleet stations available.</p> : (
-          <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => { event.preventDefault(); void addWeather(); }}>
+          <form className="insights-form flex flex-wrap items-end gap-2" onSubmit={(event) => { event.preventDefault(); void addWeather(); }}>
             <label>Station<select className="select" required value={station} onChange={(event) => setStation(event.target.value)}>
               <option value="">Choose station</option>
               {stations.map((s) => <option key={s.iata} value={s.iata}>{s.iata}</option>)}

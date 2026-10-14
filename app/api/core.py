@@ -31,10 +31,21 @@ def _use_db() -> bool:
     return (not settings.MOCK) and registry.MODULES.get("sim") == "real" and db.is_seeded()
 
 
+def _ml_data() -> str:
+    """Which engine data the health model replays: 'nasa-cmapss-fd001', or the synthetic stand-in when the files are missing."""
+    try:
+        from app.ml import cmapss
+
+        return cmapss.data_source()
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
 @router.get("/health")
 def health():
     return {"ok": True, "mock": settings.MOCK, "version": settings.VERSION, "sim_now": (STATE.now if not _use_db() else db.sim_now()),
-            "data_source": "database" if _use_db() else "fixture", "modules": registry.MODULES, "errors": registry.ERRORS, "llm_key_present": settings.HAS_LLM_KEY, "llm_model": settings.LLM_MODEL}
+            "data_source": "database" if _use_db() else "fixture", "modules": registry.MODULES, "errors": registry.ERRORS,
+            "llm_key_present": settings.HAS_LLM_KEY, "llm_model": settings.LLM_MODEL, "ml_data": _ml_data()}
 
 
 def fleet_from_db() -> FleetOverview:
@@ -42,12 +53,15 @@ def fleet_from_db() -> FleetOverview:
     comps = [ComponentState.model_validate_json(r["state_json"]) for r in _rows("SELECT state_json FROM components")]
     worst: dict[str, ComponentState] = {}
     for c in comps:
-        if c.rul_cycles and (c.tail not in worst or c.rul_cycles.p10 < worst[c.tail].rul_cycles.p10):
+        sev = {"aog": 0, "alert": 1, "watch": 2, "in_maintenance": 3, "ok": 4}
+        key = lambda x: (sev.get(x.status, 9), x.rul_cycles.p10 if x.rul_cycles else float("inf"))  # noqa: E731  worst status first, then shortest life
+        if c.tail not in worst or key(c) < key(worst[c.tail]):
             worst[c.tail] = c
     tasks = db.all_("tasks", Task)
     now = db.sim_now()
     summaries = [AircraftSummary(tail=a.tail, type=a.type, home=a.home, location=a.location, status=a.status,
-                                 worst_component=worst[a.tail].component_id if a.tail in worst else None, rul_p10_min=worst[a.tail].rul_cycles.p10 if a.tail in worst else None) for a in aircraft]
+                                 worst_component=worst[a.tail].component_id if a.tail in worst else None,
+                                 rul_p10_min=worst[a.tail].rul_cycles.p10 if a.tail in worst and worst[a.tail].rul_cycles else None) for a in aircraft]
     kpis = FleetKpis(aircraft=len(aircraft), needing_attention=sum(1 for a in aircraft if a.status in ("watch", "alert")),
                      predicted_maintenance_72h=sum(1 for t in tasks if t.deadline <= now + timedelta(hours=72)),
                      in_maintenance=sum(1 for a in aircraft if a.status == "in_maintenance"),

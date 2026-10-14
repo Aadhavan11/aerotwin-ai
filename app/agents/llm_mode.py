@@ -87,8 +87,22 @@ def _summary_of(res: dict) -> str:
 
 
 def _cache_key(goal: str, scope: dict, state) -> str:
-    scope_part = json.dumps({k: v for k, v in scope.items() if k != "replay"}, sort_keys=True, default=str)
+    scope_part = json.dumps({k: v for k, v in scope.items() if k not in ("replay", "screen")}, sort_keys=True, default=str)  # the screen must not break a rehearsed replay
     return llm.RunCache.key(f"{goal}|{scope_part}", llm.state_hash(state))
+
+
+def _restate(client: Any, system: str, user: str, text: str, bad: list[str]) -> str:
+    """One follow-up without tools: the same summary minus the figures nobody returned. Empty string if that did not work."""
+    try:
+        resp = client.messages.create(
+            model=llm.model_name(), max_tokens=1024, system=system,
+            messages=[{"role": "user", "content": user}, {"role": "assistant", "content": text},
+                      {"role": "user", "content": (f"That summary quotes figures that no tool returned ({', '.join(bad)}). "
+                                                  "Rewrite it without them, keeping every figure a tool did return. Reply with the corrected summary only.")}],
+        )
+        return "\n".join(b.text.strip() for b in resp.content if getattr(b, "type", "") == "text" and b.text.strip())
+    except Exception:  # noqa: BLE001  fall back to the scripted workflow, as before
+        return ""
 
 
 def run_llm(run_id: str, goal: str, scope: Optional[dict] = None, store: RunStore = RUNS, client: Any = None,
@@ -144,7 +158,12 @@ def run_llm(run_id: str, goal: str, scope: Optional[dict] = None, store: RunStor
                                  agent="coordinator"))
         bad = llm.unsupported_numbers(loop.text, loop.sources([user]))
         if bad:
-            raise LlmModeError(f"{role}: numbers not returned by any tool: {bad}")
+            # The model quoted a figure no tool returned. Ask once for a corrected summary rather than throw the whole run away.
+            fixed = _restate(client, system, user, loop.text, bad)
+            if fixed and not llm.unsupported_numbers(fixed, loop.sources([user])):
+                loop.text = fixed
+            else:
+                raise LlmModeError(f"{role}: numbers not returned by any tool: {bad}")
         summaries[role] = loop.text
         step(role, "summary", loop.text)
 

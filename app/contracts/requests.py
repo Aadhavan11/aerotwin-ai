@@ -5,7 +5,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from .models import ObjectiveWeights, Scenario, ScenarioEvent, SolveMode
+from .models import ObjectiveWeights, ScreenContext, Scenario, ScenarioEvent, SolveMode
 
 
 class SolveRequest(BaseModel):
@@ -33,6 +33,7 @@ class AgentRunRequest(BaseModel):
     goal: str = "Plan maintenance for the aircraft that need attention"
     scope: dict = {}
     mode: Literal["llm", "scripted"] = "scripted"
+    screen: Optional[ScreenContext] = None      # what the person is looking at; reaches the LLM agents through scope["screen"]
 
 
 class DecisionRequest(BaseModel):

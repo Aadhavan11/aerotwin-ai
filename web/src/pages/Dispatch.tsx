@@ -5,6 +5,7 @@ import type { FleetOverview, HealthInfo, Leg, PlanBundle } from "../api/types";
 import { Card, Chip, ErrorBox, Kpi, Loading, StatusPill } from "../components/ui";
 import { hoursText, legsOf, ms, overlaps } from "../lib/derive";
 import { fmtZ } from "../lib/format";
+import AskPanel from "../components/AskPanel";
 
 const HORIZONS = [12, 24, 48, 72];
 const PAGE = 60;
@@ -51,6 +52,7 @@ export default function Dispatch() {
         </div>
       </div>
       <ErrorBox error={legs.error ?? fleet.error ?? plan.error} />
+      <AskPanel placeholder="Ask about departures, windows or aircraft that need attention…" suggestions={["Which departures touch a maintenance window?", "Which aircraft need attention before they fly?", "Where are the free hangar bays tonight?"]} />
 
       <div className="facts">
         <Kpi label={`Departures, next ${hours} h`} value={window.length} hint={station === "ALL" ? "All stations" : `From ${station}`} />
@@ -127,7 +129,7 @@ export default function Dispatch() {
                         </td>
                         <td className="py-1.5 tabular-nums text-slate-600">{fmtZ(l.sched_arr)}</td>
                         <td className="py-1.5">
-                          <Link className="font-medium text-slate-900 underline hover:underline" to={`/aircraft/${l.tail}`}>
+                          <Link className="font-medium text-blue-600 hover:underline" to={`/aircraft/${l.tail}`}>
                             {l.tail}
                           </Link>
                         </td>
@@ -151,7 +153,7 @@ export default function Dispatch() {
               </table>
             </div>
             {window.length > PAGE && (
-              <button onClick={() => setAll(!all)} className="mt-3 text-xs text-slate-900 underline hover:underline">
+              <button onClick={() => setAll(!all)} className="mt-3 text-xs text-blue-600 hover:underline">
                 {all ? "Show fewer" : `Show all ${window.length} departures`}
               </button>
             )}
@@ -159,7 +161,7 @@ export default function Dispatch() {
         )}
       </Card>
 
-      <Card title="Maintenance windows against rotations" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/planning">Open the plan</Link>}>
+      <Card title="Maintenance windows against rotations" right={<Link className="text-xs text-blue-600 hover:underline" to="/planning">Open the plan</Link>}>
         {jobs.length === 0 ? (
           <p className="text-sm text-slate-500">No maintenance windows are planned, so no rotation is affected.</p>
         ) : (
@@ -172,7 +174,7 @@ export default function Dispatch() {
                 <li key={a.task_id} className="rounded-lg border border-slate-200 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span>
-                      <Link className="font-semibold text-slate-900 underline hover:underline" to={`/aircraft/${a.tail}`}>
+                      <Link className="font-semibold text-blue-600 hover:underline" to={`/aircraft/${a.tail}`}>
                         {a.tail}
                       </Link>{" "}
                       <span className="text-slate-600">at {a.station}</span>

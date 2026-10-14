@@ -21,3 +21,23 @@ The existing screens (Fleet overview, Aircraft twin, Maintenance plan, Simulatio
 
 ## Where the code is
 `web/src/lib/role.tsx` (roles, navigation, permissions), `web/src/pages/{Control,Maintenance,FlightBrief,Dispatch,Admin}.tsx`, `web/src/components/WorkOrderCard.tsx`, the switcher in `web/src/App.tsx`.
+
+
+## Crew and dispatch pages: what runs on live data and what is a preview
+
+Added 2026-10-11. Pages marked **preview** show sample data, say so on the page, and are not connected to the planner.
+
+| Position | Page | Status |
+|---|---|---|
+| Pilot / flight crew | Readiness brief | live (twin, plan, legs) |
+| Pilot / flight crew | My trips | **live**: the legs of the chosen aircraft from the simulation clock |
+| Pilot / flight crew | Duty & rest | preview (sample crew member) |
+| Pilot / flight crew | Weather | preview (sample weather and NOTAMs) |
+| Pilot / flight crew | Report a defect | preview (the form does not send anything) |
+| Crew & dispatch | Departures | live |
+| Crew & dispatch | Flight release | **live aircraft status and maintenance windows**; crew, weather and fuel columns are sample; "Release" only marks the row in the browser |
+| Crew & dispatch | Crew roster | preview (sample roster) |
+| Crew & dispatch | Weather | preview |
+| Crew & dispatch | Messages | preview (sample inbox) |
+
+The Devpost and pitch text should call these previews, not features.

@@ -1,0 +1,11 @@
+Model Information:
+* title:	B737-800 Model
+* source:	https://sketchfab.com/3d-models/b737-800-model-6cbe380405794ea69d6b0a3d144dd1af
+* author:	hikami3150 (https://sketchfab.com/hikami3150)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "B737-800 Model" (https://sketchfab.com/3d-models/b737-800-model-6cbe380405794ea69d6b0a3d144dd1af) by hikami3150 (https://sketchfab.com/hikami3150) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -9,10 +9,20 @@ services:
     domains:
       - aerotwin.agprojects.us
     envVars:
-      - key: AUTH_USER
+      - key: AUTH_REQUIRED
+        value: "1"
+      - key: AUTH_COOKIE_SECURE
+        value: "1"
+      - key: AUTH_SHOW_DEMO
+        value: "0"
+      - key: AUTH_DEMO_PASSWORD
         sync: false
-      - key: AUTH_PASS
-        sync: false
+      - key: AUTH_ALLOW_SIGNUP
+        value: "0"
+      - key: AUTH_MASTER_PASSWORD_FILE
+        value: /etc/secrets/master_password
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: CORS_ORIGINS

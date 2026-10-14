@@ -18,12 +18,32 @@ Go to https://render.com and sign up (GitHub login is easiest). The free plan do
 2. Connect your GitHub account and pick `Aadhavan11/aerotwin-ai`.
 3. Render reads `render.yaml` and shows one service called `aerotwin`.
 4. It asks for the secret values:
-   - `AUTH_USER`: a username for the site login, for example `aerotwin`.
-   - `AUTH_PASS`: a strong password (a long random phrase; use a password manager). Everyone who opens the site needs this login.
+   - `AUTH_DEMO_PASSWORD`: the shared password for the five position accounts (see "Sign-in accounts" below). Choose a long, new password; it replaces the old default `aerotwin-demo`. The sign-in screen does not show it on this site, so give it to people yourself. Use a password manager.
    - `ANTHROPIC_API_KEY`: leave it empty for the first deploy. The app then runs in scripted mode (no AI calls, no cost).
 5. Click **Apply**. The first build takes several minutes (it builds the website and the Python image).
+6. Add the master password file. In the Render dashboard open your service > **Environment** > **Secret Files** > **Add Secret File**:
+   - Filename: `master_password` (exactly this name; Render stores it at `/etc/secrets/master_password`).
+   - Contents: a long random password for the `admin` account. Use a password manager.
+   - Save. Render redeploys.
 
-Check it works at `https://<service>.onrender.com` (the address Render shows). You should get a browser login prompt.
+Check it works at `https://<service>.onrender.com` (the address Render shows). You should see the AeroTwin sign-in screen.
+
+### Sign-in accounts
+
+Sign-in is required on the public site. Nobody can create an account; sign-up is turned off.
+
+| Username | Position | Password |
+|---|---|---|
+| `operations` | Operations control | `AUTH_DEMO_PASSWORD` |
+| `maintenance` | Maintenance planner | `AUTH_DEMO_PASSWORD` |
+| `crew` | Pilot / flight crew | `AUTH_DEMO_PASSWORD` |
+| `dispatch` | Crew & dispatch | `AUTH_DEMO_PASSWORD` |
+| `administrator` | Administrator | `AUTH_DEMO_PASSWORD` |
+| `admin` | Master (can view the app as any of the five positions) | the master password in the Secret File |
+
+To sign in, type the username and password on the sign-in screen. To check another position, a master user opens the account menu (top right) and picks it.
+
+Accounts and sign-in sessions are stored on the service's disk. The free plan has no permanent disk, so this is erased on every deploy: everyone is signed out and any changes made on the site are lost. The passwords are the ones in `AUTH_DEMO_PASSWORD` and the Secret File, so they do not change on a deploy.
 
 ## 4. Add the AI key later (optional)
 
@@ -57,6 +77,6 @@ Then Porkbun (DNS for agprojects.us):
     cd web && npm ci && npm run build && cd ..
     pip install -r requirements-prod.txt
     python -m scripts.reset_db --scenario golden
-    AUTH_USER=demo AUTH_PASS=demo-pass uvicorn app.serve:app --port 10000
+    AUTH_REQUIRED=1 AUTH_DEMO_PASSWORD=demo-pass uvicorn app.serve:app --port 10000
 
-Open http://localhost:10000 . The API docs are at http://localhost:10000/api/docs. Leave `AUTH_USER` / `AUTH_PASS` unset to run without a login.
+Open http://localhost:10000 . The API docs are at http://localhost:10000/api/docs. Leave `AUTH_REQUIRED` unset to run without a login. See `docs/AUTH.md` for the other sign-in settings.

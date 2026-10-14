@@ -64,7 +64,8 @@ test("weather API helpers use JSON POST, DELETE and handle empty 204 responses a
   // Isolate the request helpers from React and Vite's build-time environment.
   const clientSource = (await readFile(new URL("../api/client.ts", import.meta.url), "utf8"))
     .replace(/^import .* from "react";\n/m, "")
-    .replace("import.meta.env.VITE_API", "undefined");
+    .replace("import.meta.env.VITE_API", "undefined")
+    .replace("import.meta.env.BASE_URL", '"/"');
   const compiled = ts.transpileModule(clientSource, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
   }).outputText;

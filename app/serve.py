@@ -1,7 +1,7 @@
 """Production wrapper: API under /api, built web UI at /, optional basic auth and LLM rate limits.
 
 Run:  uvicorn app.serve:app --host 0.0.0.0 --port 10000
-Env:  DIST_DIR, AUTH_USER, AUTH_PASS, LLM_RATE_PER_MIN, LLM_DAILY_CAP.
+Env:  DIST_DIR, AUTH_USER, AUTH_PASS (basic gate; off when AUTH_REQUIRED=1), LLM_RATE_PER_MIN, LLM_DAILY_CAP, TRUSTED_PROXY_HOPS.
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
+from .auth import core as auth_core
 from .main import app as api_app
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,11 +58,8 @@ class _Guard:
 
     @staticmethod
     def _client_ip(scope, headers: dict[bytes, bytes]) -> str:
-        fwd = headers.get(b"x-forwarded-for", b"").decode("latin-1").split(",")[0].strip()
-        if fwd:
-            return fwd
         client = scope.get("client")
-        return client[0] if client else "unknown"
+        return auth_core.client_ip(client[0] if client else None, headers.get(b"x-forwarded-for", b"").decode("latin-1"))
 
     def _allow_llm(self, ip: str) -> bool:
         now = time.time()
@@ -83,7 +81,7 @@ class _Guard:
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
-            if scope["type"] == "websocket" and self.creds is not None:
+            if scope["type"] == "websocket" and self.creds is not None and not auth_core.enabled():
                 await send({"type": "websocket.close", "code": 1008})
                 return
             await self.app(scope, receive, send)
@@ -91,7 +89,7 @@ class _Guard:
         method, path = scope["method"], scope["path"]
         headers = dict(scope.get("headers") or [])
         exempt = method in ("GET", "HEAD") and path == "/api/health"
-        if self.creds is not None and not exempt and not self._authorized(headers):
+        if self.creds is not None and not auth_core.enabled() and not exempt and not self._authorized(headers):
             await self._send(send, 401, b"Authentication required", b"text/plain; charset=utf-8",
                              [(b"www-authenticate", b'Basic realm="AeroTwin"')])
             return

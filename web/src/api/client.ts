@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const BASE = (import.meta.env.VITE_API as string | undefined) ?? "/api";
+const BASE = (import.meta.env.VITE_API as string | undefined) ?? `${import.meta.env.BASE_URL}api`;
 
 export class ApiError extends Error {
   constructor(
@@ -17,6 +17,7 @@ async function request<T>(
 ): Promise<{ data: T; source: string }> {
   const r = await fetch(BASE + path, init);
   const text = await r.text();
+  if (r.status === 401) window.dispatchEvent(new Event("aerotwin:auth-lost")); // the session ended: back to the sign-in screen
   if (!r.ok)
     throw new ApiError(r.status, `${r.status} ${path}: ${text.slice(0, 200)}`);
   return {
@@ -26,13 +27,13 @@ async function request<T>(
 }
 
 export const get = <T>(path: string) => request<T>(path);
-export const del = <T>(path: string) => request<T>(path, { method: "DELETE" });
-export const post = <T>(path: string, body?: unknown) =>
+export const post = <T>(path: string, body?: unknown, method: "POST" | "PATCH" = "POST") =>
   request<T>(path, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body ?? {}),
   });
+export const del = <T>(path: string) => request<T>(path, { method: "DELETE" });
 
 /** Fetch `path` now and then every `ms` milliseconds (0 = once). Keeps the last good data if a refresh fails. */
 export function usePoll<T>(path: string | null, ms: number) {
@@ -75,14 +76,10 @@ export function usePoll<T>(path: string | null, ms: number) {
   useEffect(() => {
     active.current.alive = true;
     reload();
-    // Slow down (not stop) when the page reports itself hidden: embedded views and some screen
-    // recorders report hidden while visible, and a frozen dashboard is worse than a few extra polls.
-    let tick = 0;
     const id =
       ms > 0
         ? setInterval(() => {
-            tick++;
-            if (!document.hidden || tick % 4 === 0) reload();
+            if (!document.hidden) reload();
           }, ms)
         : undefined;
     return () => {

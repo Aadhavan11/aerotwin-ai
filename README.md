@@ -9,6 +9,8 @@ order. Built in 36 hours at Hacklanta 2026 by Shamit, Aashirth, Pardhu and Aadha
 **Everything about aircraft health is simulated and labeled SIMULATED. The system is advisory only; it certifies nothing.**
 Devpost text: [`docs/DEVPOST.md`](docs/DEVPOST.md). Event rules and checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md). Demo script: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md).
 
+**Live demo:** https://shamitbasu.com/hacklanta (a shared public instance on simulated data: every visitor shares one simulation, so reset it under System if it looks different). It asks you to sign in: pick a demo account on the sign-in screen (one per position), create an account and choose your position, or use Google. Details: [docs/AUTH.md](docs/AUTH.md). Local runs have no sign-in unless `AUTH_REQUIRED=1`.
+
 ## Run it (about 5 minutes, no keys, no internet at demo time)
 
 You need **Python 3.13** (the version we tested; slightly older 3.x should work but is untested) and **Node 20+**. Internet is needed once, to download the NASA data. We tested on Linux (Raspberry Pi); Windows and macOS are untested.
@@ -25,11 +27,17 @@ make web          # cd web && npm run dev                          (second termi
 Check that it works: `GET http://localhost:8000/health` should list all six module groups as `real`, and `make demo-check` (third terminal) walks the whole story and should print `16/16 passed`.
 `make test` runs the automated tests (about 3 minutes). Without `make data` the app still starts but falls back to synthetic engine data and the numbers differ.
 
+**If `make demo-check` shows 14/16, or the fault shows a remaining life near 0 and the plan says "not feasible":** the NASA data is missing (the app then uses a synthetic stand-in, and the app shows a red banner). Run `python -m app.ml.cmapss --download` (2 seconds, needs internet), restart the API, and try again. `make reset` now fetches the data automatically when it can.
+
 **Optional LLM mode:** copy `.env.example` to `.env` and put your own `ANTHROPIC_API_KEY` in it (never commit `.env`, never paste it in chat), restart the API, then `make check-llm` asks one copilot question and runs the agents once in LLM mode and says whether each used the model or fell back to scripted (and why). The Copilot drawer shows which mode is active. The demo and all numbers use the scripted path and need no key.
 
 ## What you will see
 Role views for operations control, maintenance planners, pilots, crew and dispatch, and administrators ([`docs/ROLE-VIEWS.md`](docs/ROLE-VIEWS.md)); fleet map and health of 24 aircraft with stations, technician shifts and parts stock; a 3D aircraft twin (737-800 and A320 geometry) with component and part health and remaining-life bands; a Maintenance section per aircraft (next planned job, where and when, parts and technicians, suggestions, work-order approval, history); a planning timeline with the optimized plan against a static baseline and the
 risk of waiting; a scenario lab (fault, part delay, hangar closed, technician out) with explained re-plans; agent and copilot workspace; human approval and an audit log.
+
+## Credits
+
+3D aircraft model: "B737-800 Model" by [hikami3150](https://sketchfab.com/hikami3150), licensed [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/) ([source](https://sketchfab.com/3d-models/b737-800-model-6cbe380405794ea69d6b0a3d144dd1af); changes listed in [`docs/ASSETS.md`](docs/ASSETS.md)). NASA C-MAPSS engine data. Geist fonts (OFL).
 
 ## Team docs
 
