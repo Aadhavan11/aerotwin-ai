@@ -24,6 +24,10 @@ const allowed = new Set([
   "landing_gear",
   "hydraulics",
   "avionics",
+  "apu",
+  "tires",
+  "ecs",
+  "electrical",
 ]);
 for (const type of ["A320-class", "B738-class", "Unknown"]) {
   const model = buildAircraft(type);
@@ -31,7 +35,7 @@ for (const type of ["A320-class", "B738-class", "Unknown"]) {
   for (const p of model.parts)
     assert.ok(!p.component || allowed.has(p.component));
   assert.equal(
-    model.parts.find((p) => p.id === "nose-gear").component,
+    model.parts.find((p) => p.id === "nose_gear").component,
     "landing_gear",
   );
   for (const mesh of model.meshes) {
