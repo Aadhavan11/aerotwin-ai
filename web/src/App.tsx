@@ -23,6 +23,9 @@ const Admin = lazy(() => import("./pages/Admin"));
 const Copilot = lazy(() => import("./pages/Copilot"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Insights = lazy(() => import("./pages/Insights"));
+const Reliability = lazy(() => import("./pages/Reliability"));
+const ReliabilityAta = lazy(() => import("./pages/ReliabilityAta"));
+const Runs = lazy(() => import("./pages/Runs"));
 const Extra = {
   Trips: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Trips }))),
   Duty: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Duty }))),
@@ -167,6 +170,9 @@ export default function App() {
               <Route path="/release" element={<Extra.Release />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/insights" element={<Insights />} />
+              <Route path="/reliability" element={<Reliability />} />
+              <Route path="/reliability/ata" element={<ReliabilityAta />} />
+              <Route path="/runs" element={<Runs />} />
             </Routes>
           </div>
         </Suspense>

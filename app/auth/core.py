@@ -57,6 +57,9 @@ GUARDS: list[tuple[str, re.Pattern[str], set[str], str]] = [
     ("GET", re.compile(r"^/sim/runs(/.+)?$"), {"ops", "admin"}, "view or export background simulation runs"),
     ("POST", re.compile(r"^/insights/weather$"), {"ops", "admin"}, "add weather to the simulation"),
     ("DELETE", re.compile(r"^/insights/weather/[^/]+$"), {"ops", "admin"}, "remove weather from the simulation"),
+    ("POST", re.compile(r"^/ops/montecarlo$"), {"ops", "maintenance", "admin"}, "run Monte-Carlo risk evaluations"),
+    ("POST", re.compile(r"^/ops/mel$"), {"ops", "maintenance", "admin"}, "create MEL deferrals"),
+    ("POST", re.compile(r"^/ops/mel/[^/]+/(close|extend)$"), {"ops", "maintenance", "admin"}, "close or extend MEL deferrals"),
 ]
 PUBLIC_PREFIXES = ("/health", "/auth/", "/docs", "/openapi.json", "/redoc")
 

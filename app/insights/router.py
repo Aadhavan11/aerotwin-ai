@@ -94,3 +94,24 @@ def ata_table():
     from app.taxonomy import ata
 
     return ata.table()
+
+
+def _mount_ops() -> None:
+    """Mount optional app/ops/*_api.py routers (llp_api, mel_api, mc_api, ...). A missing module is skipped; a broken one is logged and skipped."""
+    import importlib
+    import logging
+
+    for name in ("llp_api", "mel_api", "mc_api"):
+        try:
+            module = importlib.import_module(f"app.ops.{name}")
+        except ModuleNotFoundError as exc:
+            if exc.name != f"app.ops.{name}":
+                logging.getLogger(__name__).warning("ops module %s failed to import: %s", name, exc)
+            continue
+        except Exception as exc:  # noqa: BLE001 - a broken optional module must not take the group down
+            logging.getLogger(__name__).warning("ops module %s failed to import: %s", name, exc)
+            continue
+        router.include_router(module.router)
+
+
+_mount_ops()

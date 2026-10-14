@@ -8,6 +8,9 @@ def reset_all() -> None:
     audit.reset()
     workorders.reset()
     chat.reset()
+    from app.ops import mel
+
+    mel.reset()
     try:
         from app.insights import disruptions
 
