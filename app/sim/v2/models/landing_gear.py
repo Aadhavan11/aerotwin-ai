@@ -13,6 +13,7 @@ import numpy as np
 
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_add, fault_rate
 
 # All values: literature prior, unverified.
 PARAMS: dict[str, float] = {
@@ -66,7 +67,7 @@ def _sample(n: int, rng: np.random.Generator) -> dict[str, np.ndarray]:
 def _hi(state: State, idx: np.ndarray | slice) -> np.ndarray:
     p = PARAMS
     h_leak = (p["P_NOM_KPA"] - state["leak_kpa"][idx] - state["limit_kpa"][idx]) / (p["P_NOM_KPA"] - state["limit_kpa"][idx])
-    h_fat = 1.0 - state["fatigue"][idx]
+    h_fat = 1.0 - state["fatigue"][idx] - fault_add(state, "hard_landing_damage", idx)
     h_crack = 1.0 - state["crack_mm"][idx] / p["CRACK_A_CRIT_MM"]
     return np.clip(np.minimum(np.minimum(h_leak, h_fat), h_crack), 0.0, 1.0)
 
@@ -98,7 +99,7 @@ class LandingGearModel:
         # Strut-seal leak: gamma process, faster when cold and with seal age.
         age_f = 1.0 + p["AGE_COEF"] * state["age_virtual"] / p["AGE_REF_CYCLES"]
         cold_f = 1.0 + p["LEAK_COLD_COEF"] * np.maximum(0.0, 15.0 - ctx.oat_c)
-        state["leak_kpa"] += gam * state["leak_scale"] * age_f * cold_f * state["stress_ext"] + np.where(hard, p["HARD_LEAK_KPA"], 0.0)
+        state["leak_kpa"] += gam * state["leak_scale"] * age_f * cold_f * state["stress_ext"] * fault_rate(state, "strut_seal_leak") + np.where(hard, p["HARD_LEAK_KPA"], 0.0)
         # Miner damage from the load spectrum (S-N power law).
         state["fatigue"] += (g / p["G_REF"]) ** p["S_N_EXPONENT"] / (p["N_REF"] * state["fat_strength"]) * state["stress_ext"]
         # Paris-law growth (m = PARIS_M) with load-dependent stress range.

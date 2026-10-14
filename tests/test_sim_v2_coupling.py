@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from app.sim.v2.coupling import CouplingGraph, Edge
 from app.sim.v2.core import Fleet, Registry
@@ -28,7 +29,7 @@ def _reg():
     @reg.register("hydraulics")
     class H(Base):
         def init(self, n, rng):
-            return {"hi": np.ones(n), "pump_efficiency": np.array([1.0, 0.8, 0.0, 0.5][:n])}
+            return {"hi": np.ones(n), "eta_loss": np.array([0.0, 0.2, 1.0, 0.5][:n]), "leak": np.zeros(n), "precharge_loss": np.zeros(n)}
 
     @reg.register("brakes")
     class B(Base):
@@ -64,21 +65,26 @@ def test_missing_key_skipped_and_disable():
     f = Fleet(1, {"electrical": 2, "avionics": 2, "hydraulics": 2, "brakes": 2}, registry=reg)
     g = CouplingGraph()
     out = g.apply(f)
-    assert "avionics" not in out and "stress_ext" not in f.state["avionics"]  # no bus voltage key
-    f.state["electrical"]["bus_voltage_v"] = np.array([28.0, 25.2])
+    assert "avionics" not in out and np.all(f.state["avionics"]["stress_ext"] == 1.0)  # no bus voltage key: skipped, visibly
+    rep = g.report()["electrical>avionics"]
+    assert rep["applied_count"] == 0 and "bus_voltage_v" in rep["skipped_reason"]
+    with pytest.raises(KeyError):
+        CouplingGraph(strict=True).apply(f)
+    f.state["electrical"]["bus_voltage_v"] = np.array([27.5, 24.7])
     np.testing.assert_allclose(g.apply(f)["avionics"], [1.0, 1.4])
+    assert g.report()["electrical>avionics"]["applied_count"] == 1
     g.set_enabled("electrical>avionics", False)
     assert "avionics" not in g.apply(f)
-    assert len(g._warned) >= 1
+    assert g.report()["electrical>avionics"]["skipped_reason"] == "disabled"
 
 
 def test_additive_edges_and_total_clamp():
     reg = _reg()
     f = Fleet(1, {"hydraulics": 4, "brakes": 4, "tires": 4}, registry=reg)
-    f.state["brakes"]["disc_temp_c"] = np.array([200.0, 500.0, 700.0, 900.0])
+    f.state["brakes"]["temp_c"] = np.array([200.0, 500.0, 700.0, 900.0])
     g = CouplingGraph(edges=[
-        Edge("a", "hydraulics", "tires", lambda s, c: s["pump_efficiency"] * 0 + 1.0, gain=1.0, clamp=0.9),
-        Edge("b", "brakes", "tires", lambda s, c: s["disc_temp_c"] / 1000.0, gain=1.0, clamp=2.0),
+        Edge("a", "hydraulics", "tires", lambda s, c: s["eta_loss"] * 0 + 1.0, gain=1.0, clamp=0.9),
+        Edge("b", "brakes", "tires", lambda s, c: s["temp_c"] / 1000.0, gain=1.0, clamp=2.0),
     ], max_total=2.5)
     out = g.apply(f)["tires"]
     np.testing.assert_allclose(out, [2.1, 2.4, 2.5, 2.5])
@@ -95,5 +101,5 @@ def test_unaligned_units_skipped_and_tail_mapping():
 def test_default_brake_heat_to_tires():
     reg = _reg()
     f = Fleet(1, {"brakes": 2, "tires": 2}, registry=reg)
-    f.state["brakes"]["disc_temp_c"] = np.array([250.0, 500.0])
+    f.state["brakes"]["temp_c"] = np.array([250.0, 500.0])
     np.testing.assert_allclose(CouplingGraph().apply(f)["tires"], [1.0, 1.25])

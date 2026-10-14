@@ -13,6 +13,7 @@ import numpy as np
 
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_add
 
 # All values: literature prior, unverified.
 PARAMS: dict[str, float] = {
@@ -87,6 +88,8 @@ class BrakesModel:
         peak = temp0 + p["LANDING_ENERGY_FRAC"] * ctx.brake_energy_mj / (p["N_BRAKES"] * p["HEAT_CAP_MJ_K"])
         rto = u_rto < p["RTO_RATE"]
         peak = np.where(rto, np.maximum(peak, p["RTO_PEAK_C"] + 100.0 * u_sev), peak)
+        # Component faults (hidden truth, written by FaultInjector): stuck brake drag / RTO overheat raise the peak temperature.
+        peak = peak + fault_add(state, "stuck_brake") + fault_add(state, "rejected_takeoff_overheat")
         # Mechanical wear per application.
         wet = np.where(ctx.wet_runway, p["WET_FACTOR"], 1.0)
         age_f = 1.0 + p["AGE_COEF"] * state["age_virtual"] / p["AGE_REF_CYCLES"]

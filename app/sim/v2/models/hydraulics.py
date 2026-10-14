@@ -10,6 +10,7 @@ import numpy as np
 
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_rate
 
 PARAMS: dict[str, float] = {
     "pressure_healthy": 20700.0,  # literature prior, unverified: GENERIC healthy pressure, kPa.
@@ -80,10 +81,10 @@ class HydraulicsModel:
         temperature_k = np.maximum(self._temperature(state, ctx) + PARAMS["kelvin_offset"], 1.0)
         acceleration = np.exp(PARAMS["activation_k"] * (1.0 / (PARAMS["temp_ref_c"] + PARAMS["kelvin_offset"]) - 1.0 / temperature_k))
         pressure_cycles = (1.0 + np.maximum(ctx.payload_frac, 0.0)) * (1.0 - np.clip(ctx.thrust_derate, 0.0, 1.0)) / PARAMS["pressure_factor_ref"]
-        driver = acceleration * pressure_cycles * np.maximum(state["stress_ext"], 0.0) * (1.0 + PARAMS["acid_wear"] * state["acid_number"])
+        driver = acceleration * pressure_cycles * np.maximum(state["stress_ext"], 0.0) * (1.0 + PARAMS["acid_wear"] * state["acid_number"]) * fault_rate(state, "pump_cavitation")
         # Clipping Wiener increments at zero keeps the efficiency latent monotone.
         state["eta_loss"] += np.maximum(0.0, state["p_drift"] + PARAMS["eta_sigma"] * rng.standard_normal(ctx.n)) * driver
-        state["leak"] += rng.gamma(PARAMS["leak_shape"], state["p_leak_scale"], ctx.n)
+        state["leak"] += rng.gamma(PARAMS["leak_shape"], state["p_leak_scale"], ctx.n) * fault_rate(state, "line_leak")
         state["acid_number"] += state["p_acid_rate"] * acceleration * (1.0 + PARAMS["acid_dust"] * np.maximum(ctx.dust_index, 0.0))
         state["filter_dp_kpa"] += state["p_filter_rate"] * (np.maximum(ctx.dust_index, 0.0) + state["acid_number"])
         state["precharge_loss"] += state["p_precharge_rate"]

@@ -10,6 +10,7 @@ import numpy as np
 
 from app.sim.v2.core import ACTIONS, State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_add, fault_mult
 
 PARAMS = {
     "healthy_margin_c": 90.0,  # literature prior, unverified
@@ -45,7 +46,7 @@ PARAMS = {
 
 def margin_current(state: State) -> np.ndarray:
     """Noise-free margin, retaining both progressive and shock loss."""
-    return PARAMS["healthy_margin_c"] - state["loss"] - state["shock_loss"]
+    return PARAMS["healthy_margin_c"] - state["loss"] - state["shock_loss"] - fault_add(state, "egt_overtemp")
 
 
 def update_health(state: State) -> None:
@@ -63,7 +64,7 @@ def update_latent(state: State, ctx: OperatingContext) -> None:
     altitude = np.maximum(0.0, 1.0 + PARAMS["altitude_coefficient"] * ctx.density_alt_ft / PARAMS["altitude_scale_ft"])
     stress = np.maximum(0.0, state["stress_ext"])
     state["loss"] += (PARAMS["start_loss_c"] * starts * hot * altitude + PARAMS["hour_loss_c"] * hours) * stress * state["unit_factor"]
-    state["starter_wear"] += state["starter_rate"] * starts * stress
+    state["starter_wear"] += state["starter_rate"] * starts * stress * fault_mult(state, "starter_failure")
     old_hours = state["age_hours"].copy()
     new_hours = old_hours + ctx.flight_hours
     scale = PARAMS["oil_growth_hours"]
@@ -110,7 +111,7 @@ class ApuModel:
 
     def emit(self, state: State, ctx: OperatingContext, rng: np.random.Generator) -> dict[str, np.ndarray]:
         margin = margin_current(state)
-        start = PARAMS["start_time_s"] + state["starter_wear"] + PARAMS["cold_s_per_c"] * np.maximum(0.0, PARAMS["reference_oat_c"] - ctx.oat_c)
+        start = (PARAMS["start_time_s"] + state["starter_wear"] + PARAMS["cold_s_per_c"] * np.maximum(0.0, PARAMS["reference_oat_c"] - ctx.oat_c)) * fault_mult(state, "starter_failure")
         return {
             "apu_egt_margin_c": margin + rng.normal(0.0, PARAMS["margin_noise_c"], ctx.n),
             "apu_rpm_pct": PARAMS["rpm_nominal_pct"] - PARAMS["rpm_droop_pct"] * (1.0 - state["hi"]) + rng.normal(0.0, PARAMS["rpm_noise_pct"], ctx.n),
@@ -129,8 +130,8 @@ class ApuModel:
             return
         if action == "replace":
             fresh = self.init(idx.size, rng)
-            for key in state:
-                state[key][idx] = fresh[key]
+            for key, value in fresh.items():
+                state[key][idx] = value
             return
         factor = float(np.clip(q, 0.0, 1.0)) if action == "repair" else 0.0
         for key in ("loss", "shock_loss", "starter_wear", "oil_loss", "age_virtual"):

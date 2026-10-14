@@ -13,6 +13,7 @@ import numpy as np
 
 from app.sim.v2.core import ACTIONS, State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_mult, fault_rate
 
 PARAMS = {
     "fouling_inf": 0.8,  # literature prior, unverified
@@ -52,9 +53,14 @@ PARAMS = {
 }
 
 
+def valve_effective(state: State) -> np.ndarray:
+    """Valve degradation including the injected valve_stuck fault (level effect, reversible when the fault is cleared)."""
+    return np.minimum(state["valve_degradation"] + (1.0 - fault_mult(state, "valve_stuck")), 1.0)
+
+
 def flow_fraction(state: State) -> np.ndarray:
     """Noise-free flow fraction after valve and exchanger losses."""
-    return np.maximum(0.0, 1.0 - PARAMS["flow_valve_gain"] * state["valve_degradation"] - PARAMS["flow_fouling_gain"] * state["fouling"] / PARAMS["fouling_limit"])
+    return np.maximum(0.0, 1.0 - PARAMS["flow_valve_gain"] * valve_effective(state) - PARAMS["flow_fouling_gain"] * state["fouling"] / PARAMS["fouling_limit"])
 
 
 def outlet_temperature(state: State) -> np.ndarray:
@@ -67,7 +73,7 @@ def update_health(state: State) -> None:
     """Update bearing vibration and worst-fraction health; latch hard limits."""
     state["bearing_wear"][:] = (state["bearing_hours"] / state["bearing_life_h"]) ** PARAMS["bearing_exponent"]
     state["vibration_index"][:] = state["bearing_wear"]
-    damage = np.maximum(np.maximum(state["fouling"] / PARAMS["fouling_limit"], state["vibration_index"]), state["valve_degradation"])
+    damage = np.maximum(np.maximum(state["fouling"] / PARAMS["fouling_limit"], state["vibration_index"]), valve_effective(state))
     state["hi"][:] = np.clip(1.0 - damage, 0.0, 1.0)
     state["failed"] |= (state["hi"] <= 0.0) | (outlet_temperature(state) >= PARAMS["outlet_limit_c"])
 
@@ -78,7 +84,7 @@ def update_latent(state: State, ctx: OperatingContext) -> None:
     old = state["fouling_hours"] / PARAMS["fouling_tau_h"]
     humidity = np.maximum(PARAMS["humidity_min_factor"], 1.0 + (ctx.humidity_pct - PARAMS["humidity_reference_pct"]) / PARAMS["humidity_scale_pct"])
     environment = (PARAMS["dust_baseline"] + np.maximum(0.0, ctx.dust_index)) * humidity
-    state["fouling"] += PARAMS["fouling_inf"] * state["fouling_factor"] * environment * np.exp(-old) * (-np.expm1(-hours / PARAMS["fouling_tau_h"]))
+    state["fouling"] += fault_rate(state, "hx_fouling") * PARAMS["fouling_inf"] * state["fouling_factor"] * environment * np.exp(-old) * (-np.expm1(-hours / PARAMS["fouling_tau_h"]))
     state["fouling_hours"] += hours
     state["bearing_hours"] += hours
     state["thermal_load"][:] = PARAMS["outlet_hot_gain"] * np.maximum(0.0, ctx.oat_c - PARAMS["oat_reference_c"])
@@ -124,7 +130,7 @@ class EcsModel:
         outlet = outlet_temperature(state) - state["thermal_load"] + PARAMS["outlet_hot_gain"] * np.maximum(0.0, ctx.oat_c - PARAMS["oat_reference_c"])
         speed = PARAMS["acm_nominal_rpm"] * np.maximum(0.0, 1.0 - PARAMS["acm_wear_gain"] * state["bearing_wear"])
         compressor = outlet + PARAMS["compressor_offset_c"] + PARAMS["compressor_wear_gain_c"] * state["bearing_wear"]
-        door = PARAMS["door_nominal_pct"] - PARAMS["door_valve_gain_pct"] * state["valve_degradation"]
+        door = PARAMS["door_nominal_pct"] - PARAMS["door_valve_gain_pct"] * valve_effective(state)
         return {
             "pack_outlet_temp_c": outlet + rng.normal(0.0, PARAMS["outlet_noise_c"], ctx.n),
             "pack_flow_kgs": np.maximum(0.0, PARAMS["flow_nominal_kgs"] * flow_fraction(state) + rng.normal(0.0, PARAMS["flow_noise_kgs"], ctx.n)),
@@ -143,8 +149,8 @@ class EcsModel:
             return
         if action == "replace":
             fresh = self.init(idx.size, rng)
-            for key in state:
-                state[key][idx] = fresh[key]
+            for key, value in fresh.items():
+                state[key][idx] = value
             return
         factor = float(np.clip(q, 0.0, 1.0)) if action == "repair" else 0.0
         for key in ("fouling", "fouling_hours", "valve_degradation", "age_virtual"):

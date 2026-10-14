@@ -41,7 +41,7 @@ class FaultMode:
     ramp_cycles: int = 100          # cycles from onset to full severity
     shape: str = "linear"           # linear | exponential
     detect_channels: tuple[str, ...] = ()
-    effect_key: str = ""            # model state key the effect targets
+    effect_key: str = ""            # latent/state key the model applies the effect to (engine modes: engine model's own keys)
     effect_mult: float = 1.0        # target multiplier at full severity
     effect_shift: float = 0.0       # additive shift at full severity
 
@@ -90,46 +90,84 @@ def _m(id: str, kind: str, ata: str, h: float, **kw: Any) -> FaultMode:
 
 LIBRARY: dict[str, FaultMode] = {m.id: m for m in (
     _m("hpt_blade_erosion", "engine", "72", 4e-4, age_ref_cycles=6000, driver="dust_index", driver_gain=2.0, ramp_cycles=1500,
-       detect_channels=("egt_c", "n2_pct"), effect_key="egt_margin_c", effect_mult=0.6),
+       detect_channels=("egt_margin_c", "T50"), effect_key="egt_margin_c", effect_mult=0.6),
     _m("compressor_fouling", "engine", "72", 8e-4, driver="humidity_pct", driver_gain=0.01, ramp_cycles=800, shape="exponential",
-       detect_channels=("egt_c", "fuel_flow_kgh"), effect_key="efficiency", effect_mult=0.93),
+       detect_channels=("hpc_eff_pct", "T30"), effect_key="hpc_eff_pct", effect_mult=0.93),
     _m("stuck_brake", "brakes", "32", 1.5e-4, age_ref_cycles=3000, ramp_cycles=15, shape="exponential",
-       detect_channels=("brake_temp_c", "brake_wear_mm"), effect_key="disc_temp_c", effect_shift=250.0),
+       detect_channels=("disc_temp_c", "pad_wear_mm"), effect_key="temp_c", effect_shift=250.0),
     _m("rejected_takeoff_overheat", "brakes", "32", 5e-5, driver="brake_energy_mj", driver_gain=0.05, ramp_cycles=5,
-       detect_channels=("brake_temp_c",), effect_key="disc_temp_c", effect_shift=400.0),
+       detect_channels=("disc_temp_c",), effect_key="temp_c", effect_shift=400.0),
     _m("slow_leak", "tires", "32", 6e-4, age_ref_cycles=400, ramp_cycles=60,
-       detect_channels=("tire_pressure_psi",), effect_key="pressure_psi", effect_mult=0.8),
+       detect_channels=("tire_pressure_psi",), effect_key="p_cold", effect_mult=0.8),
     _m("fod_cut", "tires", "32", 2e-4, driver="dust_index", driver_gain=1.0, ramp_cycles=10, shape="exponential",
-       detect_channels=("tire_pressure_psi", "tread_mm"), effect_key="wear", effect_mult=2.0),
+       detect_channels=("tire_pressure_psi", "tread_depth_mm"), effect_key="tread_loss_mm", effect_mult=2.0),
     _m("strut_seal_leak", "landing_gear", "32", 3e-4, age_ref_cycles=8000, ramp_cycles=400,
-       detect_channels=("strut_pressure_psi", "strut_stroke_mm"), effect_key="strut_pressure_psi", effect_mult=0.75),
+       detect_channels=("strut_pressure_kpa", "strut_extension_mm"), effect_key="leak_kpa", effect_mult=0.75),
     _m("hard_landing_damage", "landing_gear", "32", 1e-4, driver="sink_rate_fps", driver_gain=0.3, ramp_cycles=3,
-       detect_channels=("strut_stroke_mm",), effect_key="damage", effect_shift=0.2),
+       detect_channels=("shock_load_g", "strut_extension_mm"), effect_key="fatigue", effect_shift=0.2),
     _m("pump_cavitation", "hydraulics", "29", 3e-4, age_ref_cycles=5000, ramp_cycles=250, shape="exponential",
-       detect_channels=("pump_pressure_psi", "pump_temp_c"), effect_key="pump_efficiency", effect_mult=0.7),
+       detect_channels=("pump_pressure_kpa", "fluid_temp_c"), effect_key="eta_loss", effect_mult=0.7),
     _m("line_leak", "hydraulics", "29", 4e-4, age_ref_cycles=7000, ramp_cycles=300,
-       detect_channels=("reservoir_level_pct",), effect_key="fluid_level", effect_mult=0.6),
+       detect_channels=("fluid_qty_pct", "case_drain_flow_lpm"), effect_key="leak", effect_mult=0.6),
     _m("cell_short", "electrical", "24", 1.5e-4, age_ref_cycles=4000, ramp_cycles=120, shape="exponential",
-       detect_channels=("battery_voltage_v", "battery_temp_c"), effect_key="capacity", effect_mult=0.5),
+       detect_channels=("battery_capacity_pct", "bus_voltage_v"), effect_key="fade_pct", effect_mult=0.5),
     _m("idg_bearing", "electrical", "24", 3e-4, age_ref_cycles=9000, ramp_cycles=600,
-       detect_channels=("idg_temp_c", "idg_vibration"), effect_key="idg_temp_c", effect_shift=35.0),
+       detect_channels=("idg_oil_temp_c", "bus_frequency_hz"), effect_key="idg_oil_temp_c", effect_shift=35.0),
     _m("intermittent_connector", "avionics", "34", 6e-4, driver="humidity_pct", driver_gain=0.01, ramp_cycles=200,
-       detect_channels=("bit_fault_count",), effect_key="bit_rate", effect_mult=5.0),
+       detect_channels=("bite_fault_count", "error_rate_per_khr"), effect_key="bite_rate", effect_mult=5.0),
     _m("overheating", "avionics", "34", 3e-4, age_ref_cycles=10000, driver="oat_c", driver_gain=0.01, ramp_cycles=150,
-       detect_channels=("unit_temp_c",), effect_key="unit_temp_c", effect_shift=20.0),
+       detect_channels=("box_temp_c",), effect_key="box_temperature", effect_shift=20.0),
     _m("starter_failure", "apu", "49", 2.5e-4, driver="apu_starts", driver_gain=0.2, ramp_cycles=80, shape="exponential",
-       detect_channels=("apu_start_time_s",), effect_key="start_time_s", effect_mult=1.8),
+       detect_channels=("apu_start_time_s",), effect_key="starter_wear", effect_mult=1.8),
     _m("egt_overtemp", "apu", "49", 3e-4, age_ref_cycles=6000, ramp_cycles=200,
-       detect_channels=("apu_egt_c",), effect_key="egt_c", effect_shift=60.0),
+       detect_channels=("apu_peak_start_egt_c", "apu_egt_margin_c"), effect_key="margin_c", effect_shift=60.0),
     _m("valve_stuck", "ecs", "21", 3e-4, age_ref_cycles=8000, ramp_cycles=20, shape="exponential",
-       detect_channels=("pack_flow", "pack_temp_c"), effect_key="valve_position", effect_mult=0.5),
+       detect_channels=("pack_flow_kgs", "ram_door_pos_pct"), effect_key="valve_degradation", effect_mult=0.5),
     _m("hx_fouling", "ecs", "21", 5e-4, driver="dust_index", driver_gain=1.5, ramp_cycles=700,
-       detect_channels=("pack_outlet_temp_c", "hx_dp"), effect_key="hx_effectiveness", effect_mult=0.7),
+       detect_channels=("pack_outlet_temp_c", "pack_flow_kgs"), effect_key="fouling", effect_mult=0.7),
 )}
 
 
 def modes_for(kind: str) -> list[FaultMode]:
     return [m for m in LIBRARY.values() if m.kind == kind]
+
+
+# ---- helpers concrete models call to consume ``state['fault_<mode>']`` (all return neutral values when absent) ----
+RATE_EXPONENT = 3.0  # literature prior, unverified: an effect_mult m<1 on a *measured* quantity boosts degradation rate by (1/m)**3
+
+
+def fault_level(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:
+    """Severity 0..1 of ``mode_id`` (0.0 when no injector has written the key)."""
+    sev = state.get(f"fault_{mode_id}")
+    if sev is None:
+        return 0.0
+    return sev if idx is None else sev[idx]
+
+
+def fault_mult(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:
+    """``LIBRARY[mode].effect_multiplier(severity)``; 1.0 when absent."""
+    sev = fault_level(state, mode_id, idx)
+    return 1.0 if isinstance(sev, float) else LIBRARY[mode_id].effect_multiplier(sev)
+
+
+def fault_add(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:
+    """``LIBRARY[mode].effect_additive(severity)``; 0.0 when absent."""
+    sev = fault_level(state, mode_id, idx)
+    return 0.0 if isinstance(sev, float) else LIBRARY[mode_id].effect_additive(sev)
+
+
+def fault_rate(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:
+    """Degradation-rate multiplier: ``m`` if effect_mult>=1 else ``(1/m)**RATE_EXPONENT``; 1.0 when absent."""
+    m = fault_mult(state, mode_id, idx)
+    if isinstance(m, float):
+        return 1.0
+    return m if LIBRARY[mode_id].effect_mult >= 1.0 else np.power(1.0 / np.maximum(m, 1e-6), RATE_EXPONENT)
+
+
+def fault_log_loss(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:
+    """``-ln(effect_mult) * severity``: exponential decay rate implied by a multiplier<1 at full severity (0.0 when absent)."""
+    sev = fault_level(state, mode_id, idx)
+    return 0.0 if isinstance(sev, float) else -math.log(LIBRARY[mode_id].effect_mult) * np.asarray(sev, dtype=float)
 
 
 class FaultInjector:
@@ -222,4 +260,5 @@ class FaultInjector:
         return h.hexdigest()
 
 
-__all__ = ["FaultInjector", "FaultMode", "GroundTruthFault", "LIBRARY", "modes_for", "sensor_fault_layer"]
+__all__ = ["FaultInjector", "FaultMode", "GroundTruthFault", "LIBRARY", "fault_add", "fault_level", "fault_log_loss", "fault_mult",
+           "fault_rate", "modes_for", "sensor_fault_layer"]

@@ -10,6 +10,7 @@ import numpy as np
 
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_add, fault_level, fault_rate
 
 PARAMS: dict[str, float] = {
     "capacity_healthy": 100.0,  # literature prior, unverified: GENERIC healthy capacity, percent.
@@ -66,12 +67,19 @@ class ElectricalModel:
         state = self._params(n, rng)
         for key in (*self.latent_keys, "cal_days_prev", "age_cycles", "age_hours", "age_virtual", "n_inspections"):
             state[key] = np.zeros(n)
-        state.update(hi=np.ones(n), failed=np.zeros(n, dtype=bool), stress_ext=np.ones(n))
+        state.update(hi=np.ones(n), failed=np.zeros(n, dtype=bool), stress_ext=np.ones(n), bus_voltage_v=np.full(n, PARAMS["voltage_nom"]))
         return state
 
     def _hi(self, state: State) -> np.ndarray:
         span = PARAMS["capacity_healthy"] - PARAMS["capacity_limit"]
         return 1.0 - np.clip(state["fade_pct"] / span, 0.0, 1.0)
+
+    def _bus_voltage(self, state: State, ctx: OperatingContext) -> np.ndarray:
+        capacity = np.clip(PARAMS["capacity_healthy"] - state["fade_pct"], 0.0, PARAMS["capacity_healthy"])
+        load = PARAMS["load_a"] * (1.0 + PARAMS["load_payload"] * ctx.payload_frac)
+        # Loaded DC voltage = V_nom * (.85 + .15 * cap/100) - I_load * R_mohm/1000.
+        voltage = PARAMS["voltage_nom"] * (PARAMS["voltage_floor"] + PARAMS["voltage_capacity"] * capacity / PARAMS["capacity_healthy"])
+        return voltage - load * self._resistance(state) / PARAMS["mohm_per_ohm"]
 
     def _resistance(self, state: State) -> np.ndarray:
         return state["p_r0"] * (1.0 + PARAMS["resistance_fade"] * state["fade_pct"]) + state["resistance_growth"]
@@ -85,30 +93,29 @@ class ElectricalModel:
         cycles = state["p_cycle_fade"] * (1.0 + np.maximum(ctx.apu_starts, 0.0))
         events = rng.poisson(PARAMS["lam_thermal"], ctx.n)
         stress = np.maximum(state["stress_ext"], 0.0)
-        state["fade_pct"] += ((calendar + cycles) * acceleration + events * PARAMS["thermal_fade"]) * stress
+        fade_rate = fault_rate(state, "cell_short")
+        state["fade_pct"] += ((calendar + cycles) * acceleration + events * PARAMS["thermal_fade"]) * stress * fade_rate
         state["resistance_growth"] += state["p_resistance_rate"] * acceleration + events * PARAMS["thermal_resistance"]
-        state["generator_wear"] += state["p_generator_rate"] * np.maximum(ctx.flight_hours, 0.0) * stress
+        state["generator_wear"] += state["p_generator_rate"] * np.maximum(ctx.flight_hours, 0.0) * stress * (1.0 + fault_level(state, "idg_bearing"))
         state["cal_days_prev"] = days
         state["age_cycles"] += 1.0
         state["age_virtual"] += 1.0
         state["age_hours"] += ctx.flight_hours
         state["hi"] = self._hi(state)
         state["failed"] |= state["hi"] <= 0.0
+        state["bus_voltage_v"] = self._bus_voltage(state, ctx)  # noise-free bus voltage, read by the coupling graph
 
     def emit(self, state: State, ctx: OperatingContext, rng: np.random.Generator) -> dict[str, np.ndarray]:
         capacity = np.clip(PARAMS["capacity_healthy"] - state["fade_pct"], 0.0, PARAMS["capacity_healthy"])
         resistance = self._resistance(state)
-        load = PARAMS["load_a"] * (1.0 + PARAMS["load_payload"] * ctx.payload_frac)
-        # Loaded DC voltage = V_nom * (.85 + .15 * cap/100) - I_load * R_mohm/1000.
-        voltage = PARAMS["voltage_nom"] * (PARAMS["voltage_floor"] + PARAMS["voltage_capacity"] * capacity / PARAMS["capacity_healthy"])
-        voltage -= load * resistance / PARAMS["mohm_per_ohm"]
+        voltage = self._bus_voltage(state, ctx)
         return {
             "battery_capacity_pct": np.clip(capacity + PARAMS["capacity_noise"] * rng.standard_normal(ctx.n), 0.0, PARAMS["capacity_healthy"]),
             "battery_resistance_mohm": resistance + PARAMS["resistance_noise"] * rng.standard_normal(ctx.n),
             "bus_voltage_v": voltage + PARAMS["voltage_noise"] * rng.standard_normal(ctx.n),
             "bus_frequency_hz": PARAMS["frequency_base"] + PARAMS["frequency_wear"] * state["generator_wear"] + PARAMS["frequency_noise"] * rng.standard_normal(ctx.n),
             "idg_oil_temp_c": (PARAMS["oil_temp_base"] + PARAMS["oil_oat_gain"] * (ctx.oat_c - PARAMS["oat_ref_c"])
-                               + PARAMS["oil_wear_gain"] * state["generator_wear"] + PARAMS["oil_noise"] * rng.standard_normal(ctx.n)),
+                               + PARAMS["oil_wear_gain"] * state["generator_wear"] + fault_add(state, "idg_bearing") + PARAMS["oil_noise"] * rng.standard_normal(ctx.n)),
         }
 
     def health_index(self, state: State) -> np.ndarray:

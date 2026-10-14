@@ -15,6 +15,7 @@ import numpy as np
 
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_log_loss, fault_mult
 
 # All values: literature prior, unverified.
 PARAMS: dict[str, float] = {
@@ -107,14 +108,14 @@ class TiresModel:
         land = state["k_land"] * (ctx.landing_weight_frac / p["W_REF"]) ** p["W_EXP"] * (np.maximum(ctx.sink_rate_fps, 0.1) / p["SINK_REF_FPS"]) ** p["SINK_EXP"]
         underinfl = 1.0 + p["UNDERINFL_WEAR"] * np.maximum(0.0, 1.0 - state["p_cold"] / p["P_SET_PSI"])
         scatter = np.exp(p["NOISE_SIGMA"] * z_wear - 0.5 * p["NOISE_SIGMA"] ** 2)
-        loss = (land * wet + p["K_TAXI_MM_KM"] * ctx.taxi_distance_km) * underinfl * state["stress_ext"] * scatter
+        loss = (land * wet + p["K_TAXI_MM_KM"] * ctx.taxi_distance_km) * underinfl * state["stress_ext"] * scatter * fault_mult(state, "fod_cut")
         state["tread_loss_mm"] += loss + np.where(cut, p["CUT_WEAR_MM"], 0.0)
         # Pressure leak per calendar day.
         dt_days = np.clip(ctx.calendar_days - state["last_cal_days"], 0.0, 30.0)
         state["last_cal_days"] = ctx.calendar_days.astype(float).copy()
         age_f = 1.0 + p["AGE_COEF"] * state["age_virtual"] / p["AGE_REF_CYCLES"]
         temp_f = np.exp(p["LEAK_TEMP_COEF"] * (ctx.oat_c - 15.0))
-        daily = (state["leak_frac"] * temp_f * (1.0 + p["RETREAD_LEAK_GROWTH"] * state["retreads"]) * age_f) + state["cut_leak"]
+        daily = (state["leak_frac"] * temp_f * (1.0 + p["RETREAD_LEAK_GROWTH"] * state["retreads"]) * age_f) + state["cut_leak"] + fault_log_loss(state, "slow_leak") / 30.0
         state["p_cold"] *= np.exp(-daily * dt_days)
         state["tire_temp"] = ctx.oat_c + p["TIRE_HEAT_C"] + p["TIRE_HEAT_ENERGY_C"] * ctx.brake_energy_mj
         state["inspected"] = np.zeros(n, dtype=bool)

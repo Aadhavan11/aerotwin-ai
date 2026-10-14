@@ -11,6 +11,7 @@ import numpy as np
 
 from app.sim.v2.core import ACTIONS, State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_add, fault_mult
 
 PARAMS = {
     "beta": 1.1,  # literature prior, unverified
@@ -48,7 +49,7 @@ def box_temperature(state: State, ctx: OperatingContext) -> np.ndarray:
     """Noise-free ground heat soak plus flight heating, in Celsius."""
     taxi = np.maximum(0.0, ctx.taxi_out_min + ctx.taxi_in_min)
     soak = PARAMS["soak_coefficient"] * np.maximum(0.0, ctx.oat_c) * taxi / PARAMS["soak_minutes"]
-    return state["box_offset_c"] + soak + PARAMS["flight_heat_c_per_h"] * np.maximum(0.0, ctx.flight_hours)
+    return state["box_offset_c"] + soak + PARAMS["flight_heat_c_per_h"] * np.maximum(0.0, ctx.flight_hours) + fault_add(state, "overheating")
 
 
 def temperature_acceleration(state: State, ctx: OperatingContext) -> np.ndarray:
@@ -115,7 +116,7 @@ class AvionicsModel:
 
     def step(self, state: State, ctx: OperatingContext, rng: np.random.Generator) -> None:
         update_latent(state, ctx)
-        lam = PARAMS["bite_rate"] * (1.0 + PARAMS["bite_damage_gain"] * (1.0 - state["hi"])) * temperature_acceleration(state, ctx)
+        lam = PARAMS["bite_rate"] * (1.0 + PARAMS["bite_damage_gain"] * (1.0 - state["hi"])) * temperature_acceleration(state, ctx) * fault_mult(state, "intermittent_connector")
         state["bite_fault_count"] += rng.poisson(lam)
 
     def emit(self, state: State, ctx: OperatingContext, rng: np.random.Generator) -> dict[str, np.ndarray]:
@@ -141,8 +142,8 @@ class AvionicsModel:
             return
         if action == "replace":
             fresh = self.init(idx.size, rng)
-            for key in state:
-                state[key][idx] = fresh[key]
+            for key, value in fresh.items():
+                state[key][idx] = value
             return
         factor = float(np.clip(q, 0.0, 1.0)) if action == "repair" else 0.0
         state["eff_age"][idx] *= factor
