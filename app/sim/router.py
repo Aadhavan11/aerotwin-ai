@@ -3,6 +3,7 @@ The subclass only adds what no one's module did: reset the copilot's work-order/
 from app import settings
 from app.sim.api import create_router
 from app.sim.integration import IntegratedSimulator
+from app.sim.v2.runs_api import router as runs_router
 
 
 class PlatformSimulator(IntegratedSimulator):
@@ -43,3 +44,4 @@ class PlatformSimulator(IntegratedSimulator):
 
 simulator = PlatformSimulator(str(settings.DB_PATH), settings.SEED)
 router = create_router(simulator)
+router.include_router(runs_router)  # POST/GET /sim/runs: v2 background backfill (SIMULATED), see app/sim/v2/runner.py

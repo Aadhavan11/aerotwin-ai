@@ -53,6 +53,8 @@ GUARDS: list[tuple[str, re.Pattern[str], set[str], str]] = [
     ("POST", re.compile(r"^/workorders/[^/]+/decision$"), {"ops", "maintenance"}, "approve or reject work orders"),
     ("PATCH", re.compile(r"^/workorders/[^/]+$"), {"ops", "maintenance"}, "edit work orders"),
     ("POST", re.compile(r"^/(sim/step|scenario/.+)$"), {"ops", "admin"}, "change the simulation"),
+    ("POST", re.compile(r"^/sim/runs(/.+)?$"), {"ops", "admin"}, "start or resume background simulations"),
+    ("GET", re.compile(r"^/sim/runs(/.+)?$"), {"ops", "admin"}, "view or export background simulation runs"),
     ("POST", re.compile(r"^/insights/weather$"), {"ops", "admin"}, "add weather to the simulation"),
     ("DELETE", re.compile(r"^/insights/weather/[^/]+$"), {"ops", "admin"}, "remove weather from the simulation"),
 ]

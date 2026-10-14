@@ -34,7 +34,7 @@ from typing import Optional, Sequence
 
 import numpy as np
 
-from app.contracts.models import DataQuality, HealthScore, RulEstimate, TelemetryRow
+from app.contracts.models import DataQuality, FeatureContribution, HealthScore, RulEstimate, TelemetryRow
 from app.ml.sensors import GENERIC, SENSOR_NAMES, kind_from_component_id
 
 log = logging.getLogger(__name__)
@@ -128,6 +128,12 @@ def _bundle() -> Optional[_Bundle]:
 def reload_artifacts() -> None:
     _bundle.cache_clear()
     _generic_models.cache_clear()
+    try:
+        from app.ml import train_generic
+
+        train_generic.clear_cache()
+    except Exception:  # pragma: no cover - optional module
+        pass
 
 
 def model_available() -> bool:
@@ -396,8 +402,8 @@ def _generic_models(kind: str):
     return iforest, float(np.percentile(raw, 5)), float(np.percentile(raw, 99.5) + 0.25)
 
 
-def score_generic(kind: str, tail: str, component_id: str, window: Sequence[TelemetryRow]) -> HealthScore:
-    """Rule-based demo model for brakes, landing gear, hydraulics and avionics.
+def _score_generic_rule(kind: str, tail: str, component_id: str, window: Sequence[TelemetryRow]) -> HealthScore:
+    """Rule-based demo model for the non-engine kinds (the default; ``HEALTH_MODEL=simtrained`` switches, see ``score_generic``).
 
     health: the wear signal mapped linearly from ``healthy`` (1.0) to ``limit`` (0.0).
     RUL: remaining distance to the limit divided by the least-squares slope of
@@ -471,6 +477,91 @@ def score_generic(kind: str, tail: str, component_id: str, window: Sequence[Tele
         data_quality=DataQuality(status=status, reasons=reasons), model_version=GENERIC_VERSION,
         top_signals=[spec.wear_signal],
     )
+
+
+SIMTRAINED_VERSION = "sim-trained (SIMULATED data)"
+
+
+def _health_model_flag() -> str:
+    import os
+
+    return os.environ.get("HEALTH_MODEL", "rule").strip().lower()
+
+
+def _score_generic_sim(kind: str, tail: str, component_id: str, window: Sequence[TelemetryRow]) -> tuple[Optional[HealthScore], str]:
+    """Sim-trained scorer (``app.ml.train_generic``). Returns (score, "") or (None, reason) when it cannot score the window."""
+    from app.ml import train_generic as tg
+
+    spec = GENERIC.get(kind)
+    if spec is None:
+        return None, f"no sim-trained model for kind {kind!r}"
+    bundle = tg.load(kind)
+    if bundle is None:
+        return None, "sim-trained artifacts unavailable"
+    rows = _last_rows(window)
+    if not rows:
+        return None, "no telemetry rows"
+    chans = bundle["channels"]
+    mat = _matrix(rows, chans)
+    gone = [c for j, c in enumerate(chans) if np.isnan(mat[:, j]).all()]
+    if gone:
+        return None, "channel(s) missing in window: " + ", ".join(gone)
+    reasons: list[str] = []
+    status = "ok"
+    if len(rows) < WINDOW:
+        reasons.append(f"window has {len(rows)} of {WINDOW} rows")
+        status = "degraded"
+    for j, c in enumerate(chans):
+        col = mat[:, j]
+        valid = col[~np.isnan(col)]
+        if len(valid) >= 10 and np.std(valid) == 0 and not np.isnan(col).any():
+            reasons.append(f"sensor {c} flat for {len(valid)} cycles")
+            status = "degraded"
+        else:
+            for _mode, why in series_issues(c, col, check_shape=True):
+                reasons.append(why)
+                status = "degraded"
+        lo, hi = bundle["ranges"][c]
+        m = 0.1 * (hi - lo)
+        last = valid[-1]
+        if last < lo - m or last > hi + m:
+            reasons.append(f"{c} outside the simulated training range")
+            status = "degraded"
+    age = float(rows[-1].cycle)
+    X = tg.with_age(tg.window_features(mat)[-1:], np.array([age]))
+    p = tg.predict(bundle, X, "cqr")
+    p50 = float(p["p50"][0])
+    p10, p90 = min(float(p["p10"][0]), p50), max(float(p["p90"][0]), p50)
+    anomaly = _clip01(float(p["anomaly"][0]))
+    contrib = tg.explain(bundle, X[0], top=3)
+    sensors: list[str] = []
+    expl: list[FeatureContribution] = []
+    for name, delta in contrib:
+        ch = name.split(".")[0] if "." in name else None
+        expl.append(FeatureContribution(feature=name, sensor=ch, effect_cycles=round(delta, 2)))
+        if ch is not None and ch not in sensors:
+            sensors.append(ch)
+    return HealthScore(
+        tail=tail, component_id=component_id, health=round(_clip01(float(p["health"][0])), 4), anomaly_score=round(anomaly, 4),
+        is_anomaly=bool(anomaly >= bundle["anomaly_threshold"]), rul_cycles=RulEstimate(p10=round(p10, 1), p50=round(p50, 1), p90=round(p90, 1)),
+        data_quality=DataQuality(status=status, reasons=reasons), model_version=SIMTRAINED_VERSION,
+        top_signals=sensors or [spec.wear_signal], explanation=expl,
+    ), ""
+
+
+def score_generic(kind: str, tail: str, component_id: str, window: Sequence[TelemetryRow]) -> HealthScore:
+    """Non-engine scorer. Default: the rule-based demo model. ``HEALTH_MODEL=simtrained``: models fitted on simulated v2
+    histories (labelled ``sim-trained (SIMULATED data)``); a window that model cannot score falls back to the rule
+    model and says why in ``data_quality.reasons``."""
+    if _health_model_flag() != "simtrained":
+        return _score_generic_rule(kind, tail, component_id, window)
+    score, why = _score_generic_sim(kind, tail, component_id, window)
+    if score is not None:
+        return score
+    rule = _score_generic_rule(kind, tail, component_id, window)
+    dq = rule.data_quality
+    return rule.model_copy(update={"data_quality": DataQuality(
+        status="bad" if dq.status == "bad" else "degraded", reasons=[*dq.reasons, f"sim-trained model not used ({why}); rule model fallback"])})
 
 
 def score_component(kind: Optional[str], tail: str, component_id: str, window: Sequence[TelemetryRow]) -> HealthScore:
