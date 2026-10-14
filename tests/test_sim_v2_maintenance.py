@@ -38,8 +38,16 @@ def test_replace_removal_record_and_flags():
 def test_nff_and_scheduled_flags():
     f = _fleet(cycles=5)  # healthy
     eng = MaintenanceEngine()
-    nff = eng.apply(f, "_reference", [0], "replace", reason="failure", now=NOW)[0]
-    assert nff.nff and nff.unscheduled
+    before = f.state_hash()
+    serial = eng.registry.on_unit("_reference", 0).serial if eng.registry.on_unit("_reference", 0) else None
+    nff = eng.apply(f, "_reference", [0], "replace", reason="nff", now=NOW)[0]
+    # no-fault-found: unit returned unchanged (state bit-identical, same serial, no new serial), unscheduled, flagged NFF
+    assert nff.nff and nff.unscheduled and nff.action == "nff_return" and nff.new_serial is None
+    assert f.state_hash() == before
+    assert serial is None or eng.registry.on_unit("_reference", 0).serial == serial == nff.serial
+    # an explicit failure removal of a healthy unit is a real replacement, not NFF
+    rep = eng.apply(f, "_reference", [3], "replace", reason="failure", now=NOW)[0]
+    assert rep.unscheduled and not rep.nff and rep.new_serial and rep.new_serial != rep.serial
     sch = eng.apply(f, "_reference", [1], "overhaul", reason="scheduled", now=NOW)[0]
     assert not sch.unscheduled and not sch.nff and sch.cost_class == "overhaul"
     assert eng.apply(f, "_reference", [2], "repair", reason="nff")[0].nff

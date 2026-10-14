@@ -6,7 +6,7 @@ Pressure leaks per calendar day with temperature dependence; FOD/cut shocks are 
 step pressure loss, extra leak and a failure hazard. maintain('inspect') tops up with nitrogen,
 maintain('overhaul') is a retread limited to RETREAD_MAX.
 
-Every constant in PARAMS is a literature prior, unverified: nothing here is calibrated against fleet data.
+Every constant in PARAMS is a assumed (no citation): nothing here is calibrated against fleet data.
 """
 
 from __future__ import annotations
@@ -17,45 +17,45 @@ from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_log_loss, fault_mult
 
-# All values: literature prior, unverified.
+# All values: assumed (no citation).
 PARAMS: dict[str, float] = {
-    "TREAD_NEW_MM": 9.0,        # new tread groove depth, mm (matches v1 healthy); literature prior, unverified
-    "TREAD_LIMIT_MM": 1.6,      # mean minimum groove depth at removal, mm (matches v1 limit); literature prior, unverified
-    "TREAD_LIMIT_SD_MM": 0.1,   # per-unit spread of removal depth, mm; literature prior, unverified
-    "K_LAND_MM": 0.019,         # tread loss per landing at reference weight and sink rate, mm; literature prior, unverified
-    "K_LAND_SIGMA": 0.2,        # lognormal sigma of per-unit wear coefficient (compound/spin-up spread); literature prior, unverified
-    "W_REF": 0.85,              # reference landing weight fraction; literature prior, unverified
-    "W_EXP": 1.5,               # exponent of wear on landing weight; literature prior, unverified
-    "SINK_REF_FPS": 3.0,        # reference sink rate, ft/s; literature prior, unverified
-    "SINK_EXP": 0.8,            # exponent of wear on sink rate (spin-up scrub); literature prior, unverified
-    "WET_FACTOR": 1.2,          # wear multiplier on wet runways (hydroplane spin-up scrub, locked-wheel skids); literature prior, unverified
-    "K_TAXI_MM_KM": 0.0009,     # scrub loss per taxi km, mm; literature prior, unverified
-    "NOISE_SIGMA": 0.15,        # lognormal sigma of cycle-to-cycle wear scatter; literature prior, unverified
-    "P_SET_PSI": 200.0,         # cold nominal inflation pressure, psi; literature prior, unverified
-    "P_LOW_FRAC": 0.75,         # cold pressure fraction below which the tire is removed (flat/under-inflated); literature prior, unverified
-    "UNDERINFL_WEAR": 3.0,      # extra wear multiplier slope per unit fractional pressure deficit; literature prior, unverified
-    "LEAK_FRAC_DAY": 0.0008,    # permeation loss as fraction of cold pressure per calendar day at 15 C; literature prior, unverified
-    "LEAK_SIGMA": 0.35,         # lognormal sigma of per-unit leak rate (valve/bead seat quality); literature prior, unverified
-    "LEAK_TEMP_COEF": 0.03,     # fractional leak growth per C above 15 C; literature prior, unverified
-    "RETREAD_LEAK_GROWTH": 0.15,  # leak multiplier growth per retread (carcass ageing); literature prior, unverified
-    "RETREAD_MAX": 5.0,         # maximum number of retreads before the carcass is condemned; literature prior, unverified
-    "FOD_RATE": 1.0 / 1500.0,   # cut/FOD events per landing at dust index 0; literature prior, unverified
-    "FOD_DUST_GAIN": 3.0,       # FOD rate multiplier slope per unit dust index; literature prior, unverified
-    "CUT_DMG_MIN": 0.25,        # minimum cut damage increment per event (1.0 = tire removed); literature prior, unverified
-    "CUT_DMG_MAX": 0.6,         # maximum cut damage increment per event; literature prior, unverified
-    "CUT_P_LOSS_MIN": 0.02,     # minimum step pressure loss fraction per cut; literature prior, unverified
-    "CUT_P_LOSS_MAX": 0.15,     # maximum step pressure loss fraction per cut; literature prior, unverified
-    "CUT_LEAK_ADD": 0.004,      # added daily leak fraction per cut; literature prior, unverified
-    "CUT_WEAR_MM": 0.3,         # extra tread loss per cut, mm; literature prior, unverified
-    "TIRE_HEAT_C": 25.0,        # tire temperature rise over ambient after landing and taxi, C; literature prior, unverified
-    "TIRE_HEAT_ENERGY_C": 0.5,  # additional rise per MJ of brake energy (conducted heat), C; literature prior, unverified
-    "TREAD_SD_MM": 0.25,        # tread reading noise between inspections, mm; literature prior, unverified
-    "TREAD_SD_INSPECT_MM": 0.05,  # tread reading noise at inspection (depth gauge resolution), mm; literature prior, unverified
-    "PRESS_SD_PSI": 0.5,        # pressure sensor noise, psi; literature prior, unverified
-    "TEMP_SD_C": 3.0,           # tire temperature sensor noise, C; literature prior, unverified
-    "AGE_COEF": 0.1,            # leak growth with virtual age (rubber permeability ageing); literature prior, unverified
-    "AGE_REF_CYCLES": 300.0,    # virtual age scale for AGE_COEF, cycles; literature prior, unverified
-    "REPAIR_TREAD_FRAC": 0.5,   # fraction of tread loss retained by repair (times q); literature prior, unverified
+    "TREAD_NEW_MM": 9.0,        # new tread groove depth, mm (matches v1 healthy); assumed (no citation)
+    "TREAD_LIMIT_MM": 1.6,      # mean minimum groove depth at removal, mm (matches v1 limit); assumed (no citation)
+    "TREAD_LIMIT_SD_MM": 0.1,   # per-unit spread of removal depth, mm; assumed (no citation)
+    "K_LAND_MM": 0.019,         # tread loss per landing at reference weight and sink rate, mm; assumed (no citation)
+    "K_LAND_SIGMA": 0.2,        # lognormal sigma of per-unit wear coefficient (compound/spin-up spread); assumed (no citation)
+    "W_REF": 0.85,              # reference landing weight fraction; assumed (no citation)
+    "W_EXP": 1.5,               # exponent of wear on landing weight; assumed (no citation)
+    "SINK_REF_FPS": 3.0,        # reference sink rate, ft/s; assumed (no citation)
+    "SINK_EXP": 0.8,            # exponent of wear on sink rate (spin-up scrub); assumed (no citation)
+    "WET_FACTOR": 1.2,          # wear multiplier on wet runways (hydroplane spin-up scrub, locked-wheel skids); assumed (no citation)
+    "K_TAXI_MM_KM": 0.0009,     # scrub loss per taxi km, mm; assumed (no citation)
+    "NOISE_SIGMA": 0.15,        # lognormal sigma of cycle-to-cycle wear scatter; assumed (no citation)
+    "P_SET_PSI": 200.0,         # cold nominal inflation pressure, psi; assumed (no citation)
+    "P_LOW_FRAC": 0.75,         # cold pressure fraction below which the tire is removed (flat/under-inflated); assumed (no citation)
+    "UNDERINFL_WEAR": 3.0,      # extra wear multiplier slope per unit fractional pressure deficit; assumed (no citation)
+    "LEAK_FRAC_DAY": 0.0008,    # permeation loss as fraction of cold pressure per calendar day at 15 C; assumed (no citation)
+    "LEAK_SIGMA": 0.35,         # lognormal sigma of per-unit leak rate (valve/bead seat quality); assumed (no citation)
+    "LEAK_TEMP_COEF": 0.03,     # fractional leak growth per C above 15 C; assumed (no citation)
+    "RETREAD_LEAK_GROWTH": 0.15,  # leak multiplier growth per retread (carcass ageing); assumed (no citation)
+    "RETREAD_MAX": 5.0,         # maximum number of retreads before the carcass is condemned; assumed (no citation)
+    "FOD_RATE": 1.0 / 1500.0,   # cut/FOD events per landing at dust index 0; assumed (no citation)
+    "FOD_DUST_GAIN": 3.0,       # FOD rate multiplier slope per unit dust index; assumed (no citation)
+    "CUT_DMG_MIN": 0.25,        # minimum cut damage increment per event (1.0 = tire removed); assumed (no citation)
+    "CUT_DMG_MAX": 0.6,         # maximum cut damage increment per event; assumed (no citation)
+    "CUT_P_LOSS_MIN": 0.02,     # minimum step pressure loss fraction per cut; assumed (no citation)
+    "CUT_P_LOSS_MAX": 0.15,     # maximum step pressure loss fraction per cut; assumed (no citation)
+    "CUT_LEAK_ADD": 0.004,      # added daily leak fraction per cut; assumed (no citation)
+    "CUT_WEAR_MM": 0.3,         # extra tread loss per cut, mm; assumed (no citation)
+    "TIRE_HEAT_C": 25.0,        # tire temperature rise over ambient after landing and taxi, C; assumed (no citation)
+    "TIRE_HEAT_ENERGY_C": 0.5,  # additional rise per MJ of brake energy (conducted heat), C; assumed (no citation)
+    "TREAD_SD_MM": 0.25,        # tread reading noise between inspections, mm; assumed (no citation)
+    "TREAD_SD_INSPECT_MM": 0.05,  # tread reading noise at inspection (depth gauge resolution), mm; assumed (no citation)
+    "PRESS_SD_PSI": 0.5,        # pressure sensor noise, psi; assumed (no citation)
+    "TEMP_SD_C": 3.0,           # tire temperature sensor noise, C; assumed (no citation)
+    "AGE_COEF": 0.1,            # leak growth with virtual age (rubber permeability ageing); assumed (no citation)
+    "AGE_REF_CYCLES": 300.0,    # virtual age scale for AGE_COEF, cycles; assumed (no citation)
+    "REPAIR_TREAD_FRAC": 0.5,   # fraction of tread loss retained by repair (times q); assumed (no citation)
 }
 
 

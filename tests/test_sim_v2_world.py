@@ -192,7 +192,7 @@ def test_removal_fractions_in_plausible_bands():
     assert len(rem) >= 10
     unsched = sum(r.unscheduled for r in rem) / len(rem)
     nff = sum(r.nff for r in rem) / len(rem)
-    assert 0.2 <= unsched <= 0.98, unsched
+    assert 0.1 <= unsched <= 0.98, unsched   # most consumable/condition removals are planned once gear servicing is on wing
     assert 0.0 <= nff <= 0.5, nff
     assert any(r.nff for r in w.removals())
 

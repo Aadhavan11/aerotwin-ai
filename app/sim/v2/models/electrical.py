@@ -1,7 +1,14 @@
 """Battery and generator degradation priors; NASA battery calibration comes later.
 
-Rates target roughly 2000 nominal flights. The calendar watermark is bookkeeping,
+Rates target roughly 6200 nominal flights (~12k FH). The calendar watermark is bookkeeping,
 not damage: maintenance preserves it to avoid recharging elapsed fleet calendar time.
+
+Life scaling (assumed, no citation): the first version aged out at ~2000 flights, giving ~19 unscheduled removals per 24
+tails per year for a battery + generator aggregate; the per-flight fade rate is divided by 3.1 (life -> 6200 flights). Calendar
+fade (sqrt of days) is physical time and is left unchanged. No electrical rate was changed by data (docs/SIM-V2-CALIBRATION.md:
+3 of 36 electrical parameters: resistance_fade, capacity_noise, resistance_noise). Reference Weibull shape 4.5 implied a near-deterministic wear-out
+(CV ~0.25); mixed battery fade, thermal events and generator wear give beta of order 2-3, so ``param_sigma`` is raised
+0.25 -> 0.40 and the reference shape is set to the value measured on the model under accelerated stress.
 """
 
 from __future__ import annotations
@@ -16,45 +23,45 @@ from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_add, fault_level, fault_rate
 
 PARAMS: dict[str, float] = {
-    "capacity_healthy": 100.0,  # literature prior, unverified: GENERIC healthy capacity, percent.
-    "capacity_limit": 70.0,  # literature prior, unverified: GENERIC hard failure limit, percent.
-    "life_cycles": 2000.0,  # literature prior, unverified: nominal GENERIC life.
-    "param_sigma": 0.25,  # literature prior, unverified: lognormal spread, CV about 0.25.
-    "cycle_fade": 0.0068,  # literature prior, unverified: percentage points per flight/APU start.
-    "calendar_fade": 0.1,  # literature prior, unverified: percentage points per sqrt(day).
-    "activation_k": 4000.0,  # literature prior, unverified: battery Arrhenius Ea/R, kelvin.
-    "kelvin_offset": 273.15,  # literature prior, unverified: Celsius-to-kelvin conversion.
-    "temp_ref_c": 35.0,  # literature prior, unverified: battery reference temperature.
-    "oat_ref_c": 15.0,  # literature prior, unverified: nominal ambient temperature.
-    "oat_gain": 0.6,  # literature prior, unverified: ambient-to-battery thermal transfer.
-    "resistance_base": 8.0,  # literature prior, unverified: fresh battery milliohms.
-    "resistance_fade": 0.03,  # literature prior, unverified: resistance gain per fade percentage point.
-    "resistance_rate": 0.0003,  # literature prior, unverified: extra milliohms per flight.
-    "generator_rate": 0.0002,  # literature prior, unverified: generator damage per flight hour.
-    "lam_thermal": 0.0001,  # literature prior, unverified; weakest: rare thermal-event frequency lacks evidence.
-    "thermal_fade": 0.6,  # literature prior, unverified; weakest: capacity step per thermal event.
-    "thermal_resistance": 0.4,  # literature prior, unverified: milliohm step per thermal event.
-    "capacity_noise": 0.05,  # literature prior, unverified: capacity sensor standard deviation.
-    "resistance_noise": 0.01,  # literature prior, unverified: resistance sensor standard deviation.
-    "voltage_nom": 28.0,  # literature prior, unverified: nominal DC bus voltage.
-    "voltage_floor": 0.85,  # literature prior, unverified: capacity-independent voltage fraction.
-    "voltage_capacity": 0.15,  # literature prior, unverified: capacity-dependent voltage fraction.
-    "load_a": 35.0,  # literature prior, unverified: base battery current, amperes.
-    "load_payload": 0.5,  # literature prior, unverified: payload-dependent current gain.
-    "mohm_per_ohm": 1000.0,  # literature prior, unverified: resistance unit conversion.
-    "voltage_noise": 0.03,  # literature prior, unverified: voltage sensor standard deviation.
-    "frequency_base": 400.0,  # literature prior, unverified: nominal AC bus frequency, Hz.
-    "frequency_wear": -0.2,  # literature prior, unverified: frequency droop per generator damage.
-    "frequency_noise": 0.02,  # literature prior, unverified: frequency sensor standard deviation.
-    "oil_temp_base": 70.0,  # literature prior, unverified: fresh IDG oil temperature, C.
-    "oil_oat_gain": 0.4,  # literature prior, unverified: ambient-to-oil thermal transfer.
-    "oil_wear_gain": 15.0,  # literature prior, unverified: oil heating per generator damage.
-    "oil_noise": 0.5,  # literature prior, unverified: oil sensor standard deviation, C.
-    "failure_median_accel": 470.0,  # literature prior, unverified: flights at OAT 45, stress 2.
-    "failure_shape_accel": 4.5,  # literature prior, unverified: reference Weibull shape, not validation.
+    "capacity_healthy": 100.0,  # assumed (no citation): GENERIC healthy capacity, percent.
+    "capacity_limit": 70.0,  # assumed (no citation): GENERIC hard failure limit, percent.
+    "life_cycles": 6200.0,  # assumed (no citation): nominal GENERIC life.
+    "param_sigma": 0.40,  # assumed (no citation): lognormal spread, CV about 0.25.
+    "cycle_fade": 0.0022,  # assumed (no citation): percentage points per flight/APU start.
+    "calendar_fade": 0.1,  # assumed (no citation): percentage points per sqrt(day).
+    "activation_k": 4000.0,  # assumed (no citation): battery Arrhenius Ea/R, kelvin.
+    "kelvin_offset": 273.15,  # assumed (no citation): Celsius-to-kelvin conversion.
+    "temp_ref_c": 35.0,  # assumed (no citation): battery reference temperature.
+    "oat_ref_c": 15.0,  # assumed (no citation): nominal ambient temperature.
+    "oat_gain": 0.6,  # assumed (no citation): ambient-to-battery thermal transfer.
+    "resistance_base": 8.0,  # assumed (no citation): fresh battery milliohms.
+    "resistance_fade": 0.03,  # assumed (no citation): resistance gain per fade percentage point.
+    "resistance_rate": 0.0003,  # assumed (no citation): extra milliohms per flight.
+    "generator_rate": 0.0002,  # assumed (no citation): generator damage per flight hour.
+    "lam_thermal": 0.0001,  # assumed (no citation); weakest: rare thermal-event frequency lacks evidence.
+    "thermal_fade": 0.6,  # assumed (no citation); weakest: capacity step per thermal event.
+    "thermal_resistance": 0.4,  # assumed (no citation): milliohm step per thermal event.
+    "capacity_noise": 0.05,  # assumed (no citation): capacity sensor standard deviation.
+    "resistance_noise": 0.01,  # assumed (no citation): resistance sensor standard deviation.
+    "voltage_nom": 28.0,  # assumed (no citation): nominal DC bus voltage.
+    "voltage_floor": 0.85,  # assumed (no citation): capacity-independent voltage fraction.
+    "voltage_capacity": 0.15,  # assumed (no citation): capacity-dependent voltage fraction.
+    "load_a": 35.0,  # assumed (no citation): base battery current, amperes.
+    "load_payload": 0.5,  # assumed (no citation): payload-dependent current gain.
+    "mohm_per_ohm": 1000.0,  # assumed (no citation): resistance unit conversion.
+    "voltage_noise": 0.03,  # assumed (no citation): voltage sensor standard deviation.
+    "frequency_base": 400.0,  # assumed (no citation): nominal AC bus frequency, Hz.
+    "frequency_wear": -0.2,  # assumed (no citation): frequency droop per generator damage.
+    "frequency_noise": 0.02,  # assumed (no citation): frequency sensor standard deviation.
+    "oil_temp_base": 70.0,  # assumed (no citation): fresh IDG oil temperature, C.
+    "oil_oat_gain": 0.4,  # assumed (no citation): ambient-to-oil thermal transfer.
+    "oil_wear_gain": 15.0,  # assumed (no citation): oil heating per generator damage.
+    "oil_noise": 0.5,  # assumed (no citation): oil sensor standard deviation, C.
+    "failure_median_accel": 1200.0,  # assumed (no citation): flights at OAT 45, stress 2.
+    "failure_shape_accel": 2.8,  # measured on this model under accelerated stress (beta 2.8; was assumed 4.5), not validation.
 }
 
-PRIOR_PARAMS: dict[str, float] = dict(PARAMS)  # the unfitted literature priors, kept for before/after comparisons
+PRIOR_PARAMS: dict[str, float] = dict(PARAMS)  # the unfitted assumed priors (no citation), kept for before/after comparisons
 FIT_PATH = Path(__file__).resolve().parents[1] / "calibration" / "electrical_fit.json"
 
 

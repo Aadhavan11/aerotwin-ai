@@ -28,11 +28,12 @@ import numpy as np
 from app.contracts.models import TelemetryRow
 from app.ml.sensors import TELEMETRY_KEYS, kind_from_component_id
 from app.sim.clock import START
+from app.sim.constants import ENGINE_CMAPSS_MEAN_LIFE_CYCLES
 from app.sim.v2.models.engine import PARAMS as ENGINE_PARAMS
 from app.sim.v2.world import POLICY, World
 
 SOURCE_LABEL = "simulated_v2_world"
-MEAN_FIT_LIFE = 206.3  # C-MAPSS FD001 mean cycles to failure (docs/SIM-V2-ENGINE.md)
+MEAN_FIT_LIFE = ENGINE_CMAPSS_MEAN_LIFE_CYCLES  # C-MAPSS FD001 mean cycles to failure (shared constant)
 ENGINE_START_CAP = 0.6
 # v1 SPONTANEOUS_MODE analogue -> v2 fault library ids, per kind
 ANOMALY_MODES: dict[str, tuple[str, ...]] = {

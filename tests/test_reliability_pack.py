@@ -139,7 +139,7 @@ def test_pack_route_shape_and_provenance():
             "top_contributors", "unscheduled_removals_total", "weibull"} <= set(j)
     assert set(j["metrics"]) == {"per_kind", "per_ata"} and len(j["metrics"]["per_kind"]) == 9
     k = j["metrics"]["per_kind"][0]
-    assert {"kind", "ata_chapter", "ata_section", "units", "flight_hours", "flight_cycles", "removals", "unscheduled_removals", "failures",
+    assert {"kind", "ata_chapter", "ata_section", "units", "unit_definition", "flight_hours", "flight_cycles", "removals", "unscheduled_removals", "failures",
             "nff_removals", "mtbur_fh", "mtbur_fc", "mtbf_fh", "mtbf_fc", "nff_rate", "premature_removal_rate", "removal_rate_per_1000fh",
             "rate_ci_low", "rate_ci_high", "ci_level", "alert_status"} == set(k)
     assert {a["kind"] for a in j["alerts"]} == {x["kind"] for x in j["metrics"]["per_kind"]}

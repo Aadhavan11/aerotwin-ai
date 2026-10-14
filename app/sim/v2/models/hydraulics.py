@@ -1,7 +1,15 @@
 """Monotone hydraulic degradation priors; calibration against UCI hydraulic data comes later.
 
-Rates target roughly 2000 nominal flights, not validated service-life predictions.
+Rates target roughly 9000 nominal flights (~18k FH at 2 FH/flight), not validated service-life predictions.
 Filter differential pressure is excess above a fresh filter (zero kPa).
+
+Life scaling (assumed, no citation): the first version used 2000 flights (~4k FH), which produced ~27 unscheduled
+removals per 24 tails per year (MTBUR ~3.9k FH), far below pump/system MTBUR of order 10^4 FH. All per-flight damage
+rates below were divided by 4.5 (life 2000 -> 9000 flights) so every channel keeps its shape as a function of life
+fraction; none of these rates was changed by data (docs/SIM-V2-CALIBRATION.md: 0 of 36 hydraulics parameters).
+Wear-out shape: the earlier reference Weibull shape 6.0 (CV ~0.2) was near-deterministic wear-out, unlike
+pumps/valves/lines whose mixed contamination, leak and wear causes give beta of order 2-3. ``param_sigma`` is raised
+0.25 -> 0.45 and the reference shape set to the measured value of the model under accelerated stress.
 """
 
 from __future__ import annotations
@@ -16,45 +24,45 @@ from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_rate
 
 PARAMS: dict[str, float] = {
-    "pressure_healthy": 20700.0,  # literature prior, unverified: GENERIC healthy pressure, kPa.
-    "pressure_limit": 17200.0,  # literature prior, unverified: GENERIC failure limit, kPa.
-    "life_cycles": 2000.0,  # literature prior, unverified: nominal GENERIC life.
-    "param_sigma": 0.25,  # literature prior, unverified: lognormal spread, CV about 0.25.
-    "eta_drift": 0.00030,  # literature prior, unverified: efficiency loss per flight.
-    "eta_sigma": 0.00006,  # literature prior, unverified: Wiener increment standard deviation.
-    "leak_shape": 2.0,  # literature prior, unverified: gamma shape per flight.
-    "leak_scale": 0.00005,  # literature prior, unverified: gamma leak increment scale.
-    "precharge_rate": 0.000025,  # literature prior, unverified: gas loss per flight.
-    "acid_rate": 0.00015,  # literature prior, unverified: acid-number proxy per flight.
-    "acid_wear": 0.5,  # literature prior, unverified; weakest: proxy-to-pump coupling lacks calibration.
-    "acid_dust": 2.0,  # literature prior, unverified: contamination sensitivity to dust.
-    "filter_rate": 0.04,  # literature prior, unverified: kPa per dust/acid exposure.
-    "leak_weight": 1.0,  # literature prior, unverified: pressure damage per leak proxy.
-    "precharge_weight": 1.0,  # literature prior, unverified: pressure damage per gas-loss proxy.
-    "activation_k": 4000.0,  # literature prior, unverified: Arrhenius Ea/R, kelvin.
-    "kelvin_offset": 273.15,  # literature prior, unverified: Celsius-to-kelvin conversion.
-    "temp_ref_c": 55.0,  # literature prior, unverified: fluid reference temperature.
-    "oat_ref_c": 15.0,  # literature prior, unverified: nominal ambient temperature.
-    "oat_gain": 0.6,  # literature prior, unverified: ambient-to-fluid thermal transfer.
-    "heat_eta": 4.0,  # literature prior, unverified: efficiency-loss heating, C/proxy.
-    "hours_ref": 2.0,  # literature prior, unverified: nominal flight hours.
-    "heat_hours": 2.0,  # literature prior, unverified: fluid heating per extra hour.
-    "pressure_factor_ref": 1.53,  # literature prior, unverified: (1 + payload .7) * (1 - derate .1).
-    "pressure_noise": 15.0,  # literature prior, unverified: sensor standard deviation, kPa.
-    "temp_noise": 1.5,  # literature prior, unverified: fluid sensor standard deviation, C.
-    "drain_base": 0.5,  # literature prior, unverified: fresh case drain, L/min.
-    "drain_leak": 8.0,  # literature prior, unverified: case-drain gain, L/min/proxy.
-    "drain_noise": 0.03,  # literature prior, unverified: drain sensor standard deviation.
-    "qty_base": 100.0,  # literature prior, unverified: fresh fluid quantity, percent.
-    "qty_precharge": 30.0,  # literature prior, unverified: quantity loss per gas-loss proxy.
-    "qty_leak": 10.0,  # literature prior, unverified: quantity loss per leak proxy.
-    "qty_noise": 0.1,  # literature prior, unverified: quantity sensor standard deviation.
-    "filter_noise": 0.1,  # literature prior, unverified: differential-pressure sensor noise, kPa.
-    "failure_median_accel": 650.0,  # literature prior, unverified: flights at OAT 45, dust .9, stress 2.
-    "failure_shape_accel": 6.0,  # literature prior, unverified: reference Weibull shape, not validation.
+    "pressure_healthy": 20700.0,  # assumed (no citation): GENERIC healthy pressure, kPa.
+    "pressure_limit": 17200.0,  # assumed (no citation): GENERIC failure limit, kPa.
+    "life_cycles": 9000.0,  # assumed (no citation): nominal GENERIC life.
+    "param_sigma": 0.45,  # assumed (no citation): lognormal spread, CV about 0.25.
+    "eta_drift": 0.0000667,  # assumed (no citation): efficiency loss per flight.
+    "eta_sigma": 0.0000133,  # assumed (no citation): Wiener increment standard deviation.
+    "leak_shape": 2.0,  # assumed (no citation): gamma shape per flight.
+    "leak_scale": 0.0000111,  # assumed (no citation): gamma leak increment scale.
+    "precharge_rate": 0.00000556,  # assumed (no citation): gas loss per flight.
+    "acid_rate": 0.0000333,  # assumed (no citation): acid-number proxy per flight.
+    "acid_wear": 0.5,  # assumed (no citation); weakest: proxy-to-pump coupling lacks calibration.
+    "acid_dust": 2.0,  # assumed (no citation): contamination sensitivity to dust.
+    "filter_rate": 0.00889,  # assumed (no citation): kPa per dust/acid exposure.
+    "leak_weight": 1.0,  # assumed (no citation): pressure damage per leak proxy.
+    "precharge_weight": 1.0,  # assumed (no citation): pressure damage per gas-loss proxy.
+    "activation_k": 4000.0,  # assumed (no citation): Arrhenius Ea/R, kelvin.
+    "kelvin_offset": 273.15,  # assumed (no citation): Celsius-to-kelvin conversion.
+    "temp_ref_c": 55.0,  # assumed (no citation): fluid reference temperature.
+    "oat_ref_c": 15.0,  # assumed (no citation): nominal ambient temperature.
+    "oat_gain": 0.6,  # assumed (no citation): ambient-to-fluid thermal transfer.
+    "heat_eta": 4.0,  # assumed (no citation): efficiency-loss heating, C/proxy.
+    "hours_ref": 2.0,  # assumed (no citation): nominal flight hours.
+    "heat_hours": 2.0,  # assumed (no citation): fluid heating per extra hour.
+    "pressure_factor_ref": 1.53,  # assumed (no citation): (1 + payload .7) * (1 - derate .1).
+    "pressure_noise": 15.0,  # assumed (no citation): sensor standard deviation, kPa.
+    "temp_noise": 1.5,  # assumed (no citation): fluid sensor standard deviation, C.
+    "drain_base": 0.5,  # assumed (no citation): fresh case drain, L/min.
+    "drain_leak": 8.0,  # assumed (no citation): case-drain gain, L/min/proxy.
+    "drain_noise": 0.03,  # assumed (no citation): drain sensor standard deviation.
+    "qty_base": 100.0,  # assumed (no citation): fresh fluid quantity, percent.
+    "qty_precharge": 30.0,  # assumed (no citation): quantity loss per gas-loss proxy.
+    "qty_leak": 10.0,  # assumed (no citation): quantity loss per leak proxy.
+    "qty_noise": 0.1,  # assumed (no citation): quantity sensor standard deviation.
+    "filter_noise": 0.1,  # assumed (no citation): differential-pressure sensor noise, kPa.
+    "failure_median_accel": 2925.0,  # assumed (no citation): flights at OAT 45, dust .9, stress 2.
+    "failure_shape_accel": 3.0,  # measured on this model under accelerated stress (beta 2.9; was assumed 6.0), not validation.
 }
 
-PRIOR_PARAMS: dict[str, float] = dict(PARAMS)  # the unfitted literature priors, kept for before/after comparisons
+PRIOR_PARAMS: dict[str, float] = dict(PARAMS)  # the unfitted assumed priors (no citation), kept for before/after comparisons
 FIT_PATH = Path(__file__).resolve().parents[1] / "calibration" / "hydraulics_fit.json"
 
 

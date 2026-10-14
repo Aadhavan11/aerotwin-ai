@@ -27,7 +27,7 @@ kept under `data/external/nasa_cmapss/extracted/`, git-ignored; override with `A
 
 ## Time scale: model cycles vs real flights
 C-MAPSS engines fail in ~206 cycles; those are not flights (a real narrow-body engine stays on wing 15-25k flights).
-`PARAMS["flights_per_model_cycle"]` (default 87) maps one unit of the fitted life axis to 87 real flights, so mean
+`PARAMS["flights_per_model_cycle"]` (default 87, from `app/sim/constants.py: ENGINE_FLIGHTS_PER_MODEL_CYCLE`, the single source of engine life) maps one unit of the fitted life axis to 87 real flights, so mean
 on-wing life is 206.3 x 87 = ~18,000 flights (lognormal, sd ~22%). Only the wear RATE is scaled
 (`dp = accel / accel_ref / (life_scale * K)` per flight); the sensor map is a function of progress `p` alone, so the
 sensor-trajectory shape against life fraction is identical to the fit. The validation below is run with K = 1
@@ -72,3 +72,8 @@ scores 1.5, which is in-sample and optimistic. Sim MAE 13.2 is therefore somewha
   context distributions shift life accordingly.
 * The scorer is FD001-trained; running it on FD002-4 variants is not meaningful.
 * Polynomial curves are only valid on p in [0,1]; progress is clipped there.
+
+## Shop visits and removal reasons
+The world's condition-based engine shop visit (health index below 0.15, the EGT-margin / performance proxy) is recorded with reason
+`performance` (unscheduled in the reliability pack, in MTBUR, not in MTBF), not `scheduled`. After a shop visit or replacement the
+engine's wear rate carries a small decaying early-life multiplier (1.15 peak, 300 cycles; assumed, no citation).

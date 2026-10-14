@@ -18,11 +18,18 @@ from app.sim.v2.core import ACTIONS, Fleet, StreamRng
 PROVENANCE = "SIMULATED"
 # "wear_limit": consumable (tires, brakes) change because the wear / retread limit was reached with no fault, cut or leak
 # involved. It is a planned, condition-based removal, so it is never counted as unscheduled.
-REMOVAL_REASONS = ("scheduled", "wear_limit", "failure", "inspection_finding", "nff", "deferred_defect_rectification", "opportunistic")
+# "performance": engine shop visit driven by EGT-margin / performance erosion below the restoration threshold. It is NOT a
+# confirmed failure (excluded from MTBF) but it is unscheduled in the reliability pack (counted in MTBUR): the visit is
+# condition-triggered, not a calendar/hours task.
+# "nff": no-fault-found. The unit is removed, found serviceable at the shop and RETURNED unchanged (same serial,
+# same TSN/CSN; action ``nff_return``). It counts as an unscheduled removal (MTBUR) but never as a failure (MTBF).
+REMOVAL_REASONS = ("scheduled", "wear_limit", "failure", "inspection_finding", "nff", "deferred_defect_rectification", "opportunistic",
+                   "performance")
+NFF_RETURN = "nff_return"  # Removal.action of a no-fault-found shop check (unit returned, state unchanged)
 _PLANNED = ("scheduled", "wear_limit", "opportunistic", "deferred_defect_rectification")
 COST_CLASS = {"inspect": "inspect", "repair": "repair", "overhaul": "overhaul", "replace": "replace"}
 DEFAULT_Q = {"inspect": 1.0, "repair": 0.6, "overhaul": 0.15, "replace": 0.0}
-NFF_HEALTH = 0.85  # removed for failure/finding while health index above this => no fault found
+NFF_HEALTH = 0.85  # health index above this counts as "healthy" (premature removal / NFF analytics); apply() flags nff only for reason "nff"
 
 MEL_INTERVAL_DAYS: dict[str, float | None] = {"A": None, "B": 3.0, "C": 10.0, "D": 120.0}
 MEL_INTERVAL_TEXT = {"A": "A: per limit", "B": "B: 3 days", "C": "C: 10 days", "D": "D: 120 days"}
@@ -329,7 +336,7 @@ class MaintenanceEngine:
 
     def apply(self, fleet: Fleet, kind: str, idx: Any, action: str, q: float | None = None, reason: str = "scheduled",
               now: datetime | None = None, reason_text: str = "") -> list[Removal | InspectionRecord]:
-        if action not in ACTIONS:
+        if action not in ACTIONS and action != NFF_RETURN:
             raise ValueError(f"unknown action: {action}")
         if reason not in REMOVAL_REASONS:
             raise ValueError(f"unknown removal reason: {reason}")
@@ -337,8 +344,10 @@ class MaintenanceEngine:
         if action == "inspect":
             fleet.maintain(kind, idx, "inspect", 1.0)
             return list(self.inspect(fleet, kind, idx, now))
-        qq = self.q_by_action[action] if q is None else float(q)
         hi0 = fleet.models[kind].health_index(fleet.state[kind]).copy()
+        if action == NFF_RETURN or reason == "nff":
+            return self.shop_check(fleet, kind, idx, reason="nff", now=now, reason_text=reason_text, hi0=hi0)
+        qq = self.q_by_action[action] if q is None else float(q)
         fleet.maintain(kind, idx, action, qq)
         hi1 = fleet.models[kind].health_index(fleet.state[kind])
         out: list[Removal | InspectionRecord] = []
@@ -347,7 +356,7 @@ class MaintenanceEngine:
             part = self.registry.on_unit(kind, i)
             if part is None:
                 part = self.registry.install(kind, i)
-            nff = reason == "nff" or (reason in ("failure", "inspection_finding") and float(hi0[i]) > self.nff_health)
+            nff = False
             new_serial = None
             tail = part.installed_on
             if action == "replace":
@@ -367,6 +376,29 @@ class MaintenanceEngine:
             out.append(rec)
         return out
 
+    def shop_check(self, fleet: Fleet, kind: str, idx: Any, reason: str = "nff", now: datetime | None = None,
+                   reason_text: str = "", hi0: np.ndarray | None = None) -> list[Removal | InspectionRecord]:
+        """No-fault-found removal: the unit goes to the shop, passes, and is reinstalled with its state unchanged.
+
+        No call to ``Fleet.maintain``; the ``PartInstance`` keeps serial / TSN / CSN / TSO (no new serial). The record is
+        ``action="nff_return"``, ``nff=True``, ``unscheduled=True`` (MTBUR) and never ``failure`` (MTBF).
+        """
+        idx = np.atleast_1d(np.asarray(idx, dtype=np.int64))
+        hi = fleet.models[kind].health_index(fleet.state[kind]) if hi0 is None else hi0
+        out: list[Removal | InspectionRecord] = []
+        for i in idx:
+            i = int(i)
+            part = self.registry.on_unit(kind, i)
+            if part is None:
+                part = self.registry.install(kind, i)
+            rec = Removal(serial=part.serial, kind=kind, unit=i, position=part.position, tail=part.installed_on, action=NFF_RETURN,
+                          removal_reason=reason, unscheduled=reason not in _PLANNED, nff=True, health_before=float(hi[i]),
+                          health_after=float(hi[i]), q=0.0, cost_class=COST_CLASS["inspect"], tsn_h=part.tsn_h, csn=part.csn,
+                          tso_h=part.tso_h, cso=part.cso, reason_text=reason_text, time=_iso(now), new_serial=None)
+            self.registry.removals.append(rec)
+            out.append(rec)
+        return out
+
 
 __all__ = ["CheckDef", "DueCheck", "InspectionRecord", "InstallRegistry", "MaintenanceEngine", "MelBook", "MelDeferral", "PartInstance",
-           "REMOVAL_REASONS", "Removal", "ScheduledCheckGenerator", "pod_curve", "MEL_INTERVAL_DAYS"]
+           "NFF_RETURN", "REMOVAL_REASONS", "Removal", "ScheduledCheckGenerator", "pod_curve", "MEL_INTERVAL_DAYS"]

@@ -1,5 +1,9 @@
 """Start/hour-driven APU margin loss, starter wear, oil consumption and shocks.
 
+Life scaling (assumed, no citation): ``start_loss_c`` 0.024 -> 0.015 and ``hour_loss_c`` 0.012 -> 0.0075 (margin life ~1.6x
+longer). The first values gave ~17-24 unscheduled APU removals per 24 tails per year (~0.8 per unit-year); the revised
+rates give roughly 0.4-0.6 per unit-year, an MTBUR of order 10^3-10^4 FH given ~1 APU hour per flight.
+
 Unit wear factors are lognormal. Margin failures use noise-free loss, with
 surge events providing an independent compound-Poisson damage contribution.
 """
@@ -13,34 +17,34 @@ from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_add, fault_mult
 
 PARAMS = {
-    "healthy_margin_c": 90.0,  # literature prior, unverified
-    "limit_margin_c": 20.0,  # literature prior, unverified
-    "start_loss_c": 0.024,  # literature prior, unverified
-    "hour_loss_c": 0.012,  # literature prior, unverified
-    "unit_sigma": 0.2,  # literature prior, unverified
-    "reference_oat_c": 15.0,  # literature prior, unverified
-    "hot_coefficient": 0.025,  # literature prior, unverified
-    "altitude_coefficient": 0.4,  # literature prior, unverified
-    "altitude_scale_ft": 10000.0,  # literature prior, unverified
-    "starter_rate": 0.004,  # literature prior, unverified: seconds per start
-    "starter_sigma": 0.15,  # literature prior, unverified
-    "start_time_s": 25.0,  # literature prior, unverified
-    "cold_s_per_c": 0.25,  # literature prior, unverified
-    "oil_initial_pct": 100.0,  # literature prior, unverified
-    "oil_rate_pct_per_h": 0.01,  # literature prior, unverified
-    "oil_rate_sigma": 0.15,  # literature prior, unverified
-    "oil_growth_hours": 5000.0,  # literature prior, unverified
-    "oil_growth_power": 2.0,  # literature prior, unverified
-    "shock_rate": 0.0005,  # literature prior, unverified
-    "shock_scale_c": 1.5,  # literature prior, unverified
-    "egt_limit_c": 950.0,  # literature prior, unverified
-    "rpm_nominal_pct": 100.0,  # literature prior, unverified
-    "rpm_droop_pct": 3.0,  # literature prior, unverified
-    "margin_noise_c": 0.1,  # literature prior, unverified
-    "rpm_noise_pct": 0.05,  # literature prior, unverified
-    "start_noise_s": 0.1,  # literature prior, unverified
-    "oil_noise_pct": 0.05,  # literature prior, unverified
-    "peak_noise_c": 0.5,  # literature prior, unverified
+    "healthy_margin_c": 90.0,  # assumed (no citation)
+    "limit_margin_c": 20.0,  # assumed (no citation)
+    "start_loss_c": 0.015,  # assumed (no citation)
+    "hour_loss_c": 0.0075,  # assumed (no citation)
+    "unit_sigma": 0.2,  # assumed (no citation)
+    "reference_oat_c": 15.0,  # assumed (no citation)
+    "hot_coefficient": 0.025,  # assumed (no citation)
+    "altitude_coefficient": 0.4,  # assumed (no citation)
+    "altitude_scale_ft": 10000.0,  # assumed (no citation)
+    "starter_rate": 0.004,  # assumed (no citation): seconds per start
+    "starter_sigma": 0.15,  # assumed (no citation)
+    "start_time_s": 25.0,  # assumed (no citation)
+    "cold_s_per_c": 0.25,  # assumed (no citation)
+    "oil_initial_pct": 100.0,  # assumed (no citation)
+    "oil_rate_pct_per_h": 0.01,  # assumed (no citation)
+    "oil_rate_sigma": 0.15,  # assumed (no citation)
+    "oil_growth_hours": 5000.0,  # assumed (no citation)
+    "oil_growth_power": 2.0,  # assumed (no citation)
+    "shock_rate": 0.0005,  # assumed (no citation)
+    "shock_scale_c": 1.5,  # assumed (no citation)
+    "egt_limit_c": 950.0,  # assumed (no citation)
+    "rpm_nominal_pct": 100.0,  # assumed (no citation)
+    "rpm_droop_pct": 3.0,  # assumed (no citation)
+    "margin_noise_c": 0.1,  # assumed (no citation)
+    "rpm_noise_pct": 0.05,  # assumed (no citation)
+    "start_noise_s": 0.1,  # assumed (no citation)
+    "oil_noise_pct": 0.05,  # assumed (no citation)
+    "peak_noise_c": 0.5,  # assumed (no citation)
 }
 
 

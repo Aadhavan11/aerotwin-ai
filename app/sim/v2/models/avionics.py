@@ -1,7 +1,9 @@
 """Thermal-accelerated Weibull avionics life and intermittent BITE faults.
 
-NFF removals call maintain(..., "inspect"): the shop finds nothing and reinstalls
-the unit with bit-identical state. Confirmed removals call repair or replace.
+NFF removals do not touch the unit: the shop finds nothing and the unit is reinstalled with bit-identical state
+(the world records a ``nff_return`` removal and never calls ``maintain``; ``inspect`` is a no-op here). Confirmed
+removals call repair or replace. ``bite_rate`` was 0.015 per cycle: with the repeat-BITE removal trigger that gave ~150
+avionics removals per 24 tails per year; 0.005 (assumed, no citation) gives an aggregate of the order of 50-60.
 Hard limits use noise-free signals; measurement noise cannot create failures.
 """
 
@@ -14,34 +16,34 @@ from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_add, fault_mult
 
 PARAMS = {
-    "beta": 1.1,  # literature prior, unverified
-    "eta_cycles": 3000.0,  # literature prior, unverified
-    "eta_sigma": 0.15,  # literature prior, unverified
-    "ea_over_k": 0.5 / 8.617333262e-5,  # literature prior, unverified: eV / (eV/K)
-    "kelvin_offset": 273.15,  # literature prior, unverified
-    "reference_box_c": 40.0,  # literature prior, unverified
-    "box_offset_c": 30.0,  # literature prior, unverified
-    "box_offset_sigma_c": 1.0,  # literature prior, unverified
-    "soak_coefficient": 0.35,  # literature prior, unverified
-    "soak_minutes": 30.0,  # literature prior, unverified
-    "flight_heat_c_per_h": 0.5,  # literature prior, unverified
-    "cruise_cold_offset_c": 25.0,  # literature prior, unverified
-    "thermal_range_c": 60.0,  # literature prior, unverified
-    "thermal_exponent": 2.0,  # literature prior, unverified
-    "thermal_weight": 0.2,  # literature prior, unverified
-    "error_healthy": 0.2,  # literature prior, unverified
-    "error_limit": 5.0,  # literature prior, unverified
-    "error_noise": 0.025,  # literature prior, unverified
-    "box_noise_c": 0.25,  # literature prior, unverified
-    "bite_rate": 0.015,  # literature prior, unverified
-    "bite_damage_gain": 4.0,  # literature prior, unverified
-    "fan_nominal_rpm": 4000.0,  # literature prior, unverified
-    "fan_temp_gain": 45.0,  # literature prior, unverified
-    "fan_age_loss": 0.08,  # literature prior, unverified
-    "fan_factor_sigma": 0.025,  # literature prior, unverified
-    "fan_noise_rpm": 15.0,  # literature prior, unverified
-    "nff_base": 0.35,  # literature prior, unverified
-    "nff_fault_scale": 10.0,  # literature prior, unverified
+    "beta": 1.1,  # assumed (no citation)
+    "eta_cycles": 3000.0,  # assumed (no citation)
+    "eta_sigma": 0.15,  # assumed (no citation)
+    "ea_over_k": 0.5 / 8.617333262e-5,  # assumed (no citation): eV / (eV/K)
+    "kelvin_offset": 273.15,  # assumed (no citation)
+    "reference_box_c": 40.0,  # assumed (no citation)
+    "box_offset_c": 30.0,  # assumed (no citation)
+    "box_offset_sigma_c": 1.0,  # assumed (no citation)
+    "soak_coefficient": 0.35,  # assumed (no citation)
+    "soak_minutes": 30.0,  # assumed (no citation)
+    "flight_heat_c_per_h": 0.5,  # assumed (no citation)
+    "cruise_cold_offset_c": 25.0,  # assumed (no citation)
+    "thermal_range_c": 60.0,  # assumed (no citation)
+    "thermal_exponent": 2.0,  # assumed (no citation)
+    "thermal_weight": 0.2,  # assumed (no citation)
+    "error_healthy": 0.2,  # assumed (no citation)
+    "error_limit": 5.0,  # assumed (no citation)
+    "error_noise": 0.025,  # assumed (no citation)
+    "box_noise_c": 0.25,  # assumed (no citation)
+    "bite_rate": 0.005,  # assumed (no citation)
+    "bite_damage_gain": 4.0,  # assumed (no citation)
+    "fan_nominal_rpm": 4000.0,  # assumed (no citation)
+    "fan_temp_gain": 45.0,  # assumed (no citation)
+    "fan_age_loss": 0.08,  # assumed (no citation)
+    "fan_factor_sigma": 0.025,  # assumed (no citation)
+    "fan_noise_rpm": 15.0,  # assumed (no citation)
+    "nff_base": 0.35,  # assumed (no citation)
+    "nff_fault_scale": 10.0,  # assumed (no citation)
 }
 
 

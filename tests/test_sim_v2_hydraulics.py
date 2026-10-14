@@ -1,4 +1,4 @@
-"""Simulator lifetime checks compare a literature prior, not validation against data."""
+"""Simulator lifetime checks compare a assumed prior (no citation), not validation against data."""
 
 from dataclasses import fields, replace
 from time import perf_counter
@@ -40,7 +40,7 @@ def _failure_times(accelerated: bool) -> np.ndarray:
     ctx = _ctx(n, oat_c=45.0 if accelerated else 15.0, dust_index=0.9 if accelerated else 0.2)
     if accelerated:
         fleet.state[KIND]["stress_ext"][:] = 2.0
-    cutoff = 2000 if accelerated else 4000
+    cutoff = 8000 if accelerated else 20000   # life scaled up (see model docstring); cutoffs keep ~0.1% censoring
     times = np.full(n, cutoff, dtype=float)
     seen = np.zeros(n, dtype=bool)
     for cycle in range(1, cutoff + 1):
@@ -71,7 +71,7 @@ def test_registration_and_channels() -> None:
 
 
 def test_failure_distribution_prior() -> None:
-    """Reference Weibull is a literature prior, not validation of real equipment."""
+    """Reference Weibull is a assumed prior (no citation), not validation of real equipment."""
     times = np.sort(_failure_times(accelerated=True))
     median = PARAMS["failure_median_accel"]
     shape = PARAMS["failure_shape_accel"]
@@ -80,7 +80,7 @@ def test_failure_distribution_prior() -> None:
     statistic = max(np.max(rank - cdf), np.max(cdf - (rank - 1.0 / times.size)))
     assert statistic < 0.18, (statistic, np.median(times))
     assert 0.75 * median < np.median(times) < 1.3 * median
-    assert (times < 2000).mean() > 0.95
+    assert (times < 8000).mean() > 0.95
 
 
 def test_nominal_life_prior() -> None:
@@ -93,7 +93,7 @@ def test_monotone_health_and_latents() -> None:
     fleet = Fleet(61, {KIND: 24})
     model = fleet.models[KIND]
     state = fleet.state[KIND]
-    state["stress_ext"][:] = np.linspace(1.0, 12.0, 24)
+    state["stress_ext"][:] = np.linspace(1.0, 40.0, 24)
     stress = state["stress_ext"].copy()
     rng = np.random.default_rng(93)
     for cycle in range(1, 501):
@@ -117,16 +117,16 @@ def test_monotone_health_and_latents() -> None:
 
 def test_temperature_acceleration() -> None:
     hot, cold = Fleet(31, {KIND: 64}), Fleet(31, {KIND: 64})
-    _run(hot, 300, oat_c=35.0)
-    _run(cold, 300, oat_c=-10.0)
+    _run(hot, 1350, oat_c=35.0)
+    _run(cold, 1350, oat_c=-10.0)
     assert hot.health_index()[KIND].mean() < cold.health_index()[KIND].mean() - 0.05
 
 
 def test_external_stress_acceleration() -> None:
     normal, stressed = Fleet(19, {KIND: 32}), Fleet(19, {KIND: 32})
     stressed.state[KIND]["stress_ext"][:] = 3.0
-    _run(normal, 300)
-    _run(stressed, 300)
+    _run(normal, 1350)
+    _run(stressed, 1350)
     assert stressed.health_index()[KIND].mean() < normal.health_index()[KIND].mean() - 0.1
 
 

@@ -4,7 +4,7 @@ Latent state: pad/heat-sink wear (mm), lumped disc temperature, oxidation loss, 
 Wear is driven per brake application (taxi snubs dominate) scaled by energy per application; an Arrhenius oxidation
 term switches on above ~400 C-equivalent; RTOs are a Poisson shock process (large wear, very high temperature).
 
-Every constant in PARAMS is a literature prior, unverified: nothing here is calibrated against fleet data.
+Every constant in PARAMS is a assumed (no citation): nothing here is calibrated against fleet data.
 """
 
 from __future__ import annotations
@@ -15,39 +15,39 @@ from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_add
 
-# All values: literature prior, unverified.
+# All values: assumed (no citation).
 PARAMS: dict[str, float] = {
-    "K_APP_MM": 0.0005,        # mm of wear per brake application at the reference energy (taxi snubs dominate); literature prior, unverified
-    "K_APP_SIGMA": 0.25,       # lognormal sigma of per-unit wear coefficient (manufacturing/install spread); literature prior, unverified
-    "E_REF_MJ": 1.3,           # reference energy per application, MJ; literature prior, unverified
-    "BETA_ENERGY": 0.5,        # exponent of wear on energy per application (<1 keeps wear monotone in application count at fixed total energy); literature prior, unverified
-    "WET_FACTOR": 1.15,        # wear multiplier on wet runways (more modulation and re-applications); literature prior, unverified
-    "NOISE_SIGMA": 0.15,       # lognormal sigma of cycle-to-cycle wear scatter; literature prior, unverified
-    "LIMIT_MM": 12.0,          # mean usable wear-pin limit, mm (matches v1 limit); literature prior, unverified
-    "LIMIT_SIGMA_MM": 0.4,     # per-unit spread of the wear limit, mm; literature prior, unverified
-    "HEAT_CAP_MJ_K": 0.012,    # lumped heat capacity of one heat-sink, MJ/K; literature prior, unverified
-    "N_BRAKES": 4.0,           # braked wheels sharing the landing energy; literature prior, unverified
-    "LANDING_ENERGY_FRAC": 0.7,  # fraction of cycle brake energy absorbed in the landing roll (rest is taxi); literature prior, unverified
-    "TAU_COOL_MIN": 45.0,      # mean cooling time constant of the heat-sink, min; literature prior, unverified
-    "TAU_SIGMA": 0.15,         # lognormal sigma of cooling time constant; literature prior, unverified
-    "TURNAROUND_MIN": 35.0,    # ground time between landing and next heat-up, min; literature prior, unverified
-    "OX_REF_MM": 0.0003,       # oxidation loss per cycle at the reference temperature, mm; literature prior, unverified
-    "OX_T_REF_C": 400.0,       # reference temperature of the oxidation Arrhenius term, C; literature prior, unverified
-    "OX_EA_J_MOL": 100000.0,   # apparent activation energy of carbon oxidation, J/mol; literature prior, unverified
-    "OX_SIGMA": 0.3,           # lognormal sigma of per-unit oxidation sensitivity (antioxidant coat quality); literature prior, unverified
-    "OX_CAP_MM": 2.0,          # cap of oxidation loss in one cycle, mm (dwell time at peak is short); literature prior, unverified
-    "RTO_RATE": 4.0e-4,        # rejected-takeoff probability per cycle; literature prior, unverified
-    "RTO_WEAR_MIN_MM": 0.4,    # minimum RTO wear, mm; literature prior, unverified
-    "RTO_WEAR_MAX_MM": 1.2,    # maximum RTO wear, mm; literature prior, unverified
-    "RTO_PEAK_C": 850.0,       # base disc temperature after an RTO, C; literature prior, unverified
-    "AGE_COEF": 0.2,           # wear growth with Kijima virtual age (heat-sink fatigue); literature prior, unverified
-    "AGE_REF_CYCLES": 2000.0,  # virtual age scale for AGE_COEF, cycles; literature prior, unverified
-    "PIN_SD_MM": 0.10,         # wear-pin reading noise between inspections, mm; literature prior, unverified
-    "PIN_SD_INSPECT_MM": 0.02,  # wear-pin reading noise on an inspection cycle, mm; literature prior, unverified
-    "TEMP_SD_C": 5.0,          # disc temperature sensor noise, C; literature prior, unverified
-    "P_BRAKE_KPA": 9000.0,     # brake pressure at reference energy per application, kPa; literature prior, unverified
-    "P_SD_KPA": 150.0,         # brake pressure sensor noise, kPa; literature prior, unverified
-    "OVERHAUL_FRAC": 0.25,     # damage fraction kept by overhaul (times q); literature prior, unverified
+    "K_APP_MM": 0.0005,        # mm of wear per brake application at the reference energy (taxi snubs dominate); assumed (no citation)
+    "K_APP_SIGMA": 0.25,       # lognormal sigma of per-unit wear coefficient (manufacturing/install spread); assumed (no citation)
+    "E_REF_MJ": 1.3,           # reference energy per application, MJ; assumed (no citation)
+    "BETA_ENERGY": 0.5,        # exponent of wear on energy per application (<1 keeps wear monotone in application count at fixed total energy); assumed (no citation)
+    "WET_FACTOR": 1.15,        # wear multiplier on wet runways (more modulation and re-applications); assumed (no citation)
+    "NOISE_SIGMA": 0.15,       # lognormal sigma of cycle-to-cycle wear scatter; assumed (no citation)
+    "LIMIT_MM": 12.0,          # mean usable wear-pin limit, mm (matches v1 limit); assumed (no citation)
+    "LIMIT_SIGMA_MM": 0.4,     # per-unit spread of the wear limit, mm; assumed (no citation)
+    "HEAT_CAP_MJ_K": 0.012,    # lumped heat capacity of one heat-sink, MJ/K; assumed (no citation)
+    "N_BRAKES": 4.0,           # braked wheels sharing the landing energy; assumed (no citation)
+    "LANDING_ENERGY_FRAC": 0.7,  # fraction of cycle brake energy absorbed in the landing roll (rest is taxi); assumed (no citation)
+    "TAU_COOL_MIN": 45.0,      # mean cooling time constant of the heat-sink, min; assumed (no citation)
+    "TAU_SIGMA": 0.15,         # lognormal sigma of cooling time constant; assumed (no citation)
+    "TURNAROUND_MIN": 35.0,    # ground time between landing and next heat-up, min; assumed (no citation)
+    "OX_REF_MM": 0.0003,       # oxidation loss per cycle at the reference temperature, mm; assumed (no citation)
+    "OX_T_REF_C": 400.0,       # reference temperature of the oxidation Arrhenius term, C; assumed (no citation)
+    "OX_EA_J_MOL": 100000.0,   # apparent activation energy of carbon oxidation, J/mol; assumed (no citation)
+    "OX_SIGMA": 0.3,           # lognormal sigma of per-unit oxidation sensitivity (antioxidant coat quality); assumed (no citation)
+    "OX_CAP_MM": 2.0,          # cap of oxidation loss in one cycle, mm (dwell time at peak is short); assumed (no citation)
+    "RTO_RATE": 4.0e-4,        # rejected-takeoff probability per cycle; assumed (no citation)
+    "RTO_WEAR_MIN_MM": 0.4,    # minimum RTO wear, mm; assumed (no citation)
+    "RTO_WEAR_MAX_MM": 1.2,    # maximum RTO wear, mm; assumed (no citation)
+    "RTO_PEAK_C": 850.0,       # base disc temperature after an RTO, C; assumed (no citation)
+    "AGE_COEF": 0.2,           # wear growth with Kijima virtual age (heat-sink fatigue); assumed (no citation)
+    "AGE_REF_CYCLES": 2000.0,  # virtual age scale for AGE_COEF, cycles; assumed (no citation)
+    "PIN_SD_MM": 0.10,         # wear-pin reading noise between inspections, mm; assumed (no citation)
+    "PIN_SD_INSPECT_MM": 0.02,  # wear-pin reading noise on an inspection cycle, mm; assumed (no citation)
+    "TEMP_SD_C": 5.0,          # disc temperature sensor noise, C; assumed (no citation)
+    "P_BRAKE_KPA": 9000.0,     # brake pressure at reference energy per application, kPa; assumed (no citation)
+    "P_SD_KPA": 150.0,         # brake pressure sensor noise, kPa; assumed (no citation)
+    "OVERHAUL_FRAC": 0.25,     # damage fraction kept by overhaul (times q); assumed (no citation)
 }
 _R_GAS = 8.314
 

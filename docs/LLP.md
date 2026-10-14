@@ -7,6 +7,8 @@ Every payload carries `"simulated": true`, `"provenance": "SIMULATED"`, `disclai
 
 ## Parts per aircraft (12)
 
+Limits come from `app.sim.constants.LLP_CYCLE_LIMITS` (single source, assumed (no citation) 20-30k band; the v2 engine
+model's one surrogate LLP counter uses the HPC-rotor value).
 Per engine (`engine_1`, `engine_2`; position `"engine_1:<key>"`): `fan_disk` (30,000 cyc), `hpc_rotor` (25,000),
 `hpt_disk` (20,000), `lpt_shaft` (30,000). Per airframe (position = key): `mlg_leg_l`, `mlg_leg_r` (25,000),
 `nlg_leg` (30,000), `mlg_retract_actuator` (20,000). Calendar limits 15-25 years.
@@ -14,7 +16,7 @@ Per engine (`engine_1`, `engine_2`; position `"engine_1:<key>"`): `fan_disk` (30
 * Cycles since new (`csn`) = deterministic pre-owned stagger (hash of seed, tail, position) + live counter
   (engine component cycles for engine parts, `Aircraft.cycles` for airframe parts). Seeding wraps at 97% of the limit.
 * `remaining_cycles = cycle_limit - csn`; `remaining_days` at the tail's observed flights/day (legs / span of the leg
-  window; 4/day default); `limit_date` = earliest of the cycle and calendar date; `limit_driver` = `cycles` | `calendar`.
+  window; 6/day default = `app.sim.constants.FLIGHTS_PER_DAY`); `limit_date` = earliest of the cycle and calendar date; `limit_driver` = `cycles` | `calendar`.
 * `status` on effective remaining cycles (min of cycles and calendar-days x flights/day):
   `ok` >= 2000, `watch` < 2000, `alert` < 500, `expired` <= 0.
 * Replacement: `llp.record_replacement(tail, position, at_cycles, when=None, serial=None)` resets a part;

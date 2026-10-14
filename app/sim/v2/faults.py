@@ -103,8 +103,11 @@ LIBRARY: dict[str, FaultMode] = {m.id: m for m in (
        detect_channels=("tire_pressure_psi", "tread_depth_mm"), effect_key="tread_loss_mm", effect_mult=2.0),
     _m("strut_seal_leak", "landing_gear", "32", 3e-4, age_ref_cycles=8000, ramp_cycles=400,
        detect_channels=("strut_pressure_kpa", "strut_extension_mm"), effect_key="leak_kpa", effect_mult=0.75),
-    _m("hard_landing_damage", "landing_gear", "32", 1e-4, driver="sink_rate_fps", driver_gain=0.3, ramp_cycles=3,
-       detect_channels=("shock_load_g", "strut_extension_mm"), effect_key="fatigue", effect_shift=0.2),
+    # Overload landing (beyond a routine hard landing): the strut is condemned at the next inspection (effect 0.8 of life).
+    # base_hazard 1e-4 -> 4e-5 (assumed, no citation): ~4 events per 24 tails per year, with effect_shift 0.2 -> 0.8 so a
+    # finding leads to a removal. Routine hard landings stay inspection + on-wing servicing (see landing_gear.py).
+    _m("hard_landing_damage", "landing_gear", "32", 4e-5, driver="sink_rate_fps", driver_gain=0.3, ramp_cycles=3,
+       detect_channels=("shock_load_g", "strut_extension_mm"), effect_key="fatigue", effect_shift=0.8),
     _m("pump_cavitation", "hydraulics", "29", 3e-4, age_ref_cycles=5000, ramp_cycles=250, shape="exponential",
        detect_channels=("pump_pressure_kpa", "fluid_temp_c"), effect_key="eta_loss", effect_mult=0.7),
     _m("line_leak", "hydraulics", "29", 4e-4, age_ref_cycles=7000, ramp_cycles=300,
@@ -133,7 +136,7 @@ def modes_for(kind: str) -> list[FaultMode]:
 
 
 # ---- helpers concrete models call to consume ``state['fault_<mode>']`` (all return neutral values when absent) ----
-RATE_EXPONENT = 3.0  # literature prior, unverified: an effect_mult m<1 on a *measured* quantity boosts degradation rate by (1/m)**3
+RATE_EXPONENT = 3.0  # assumed (no citation): an effect_mult m<1 on a *measured* quantity boosts degradation rate by (1/m)**3
 
 
 def fault_level(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:

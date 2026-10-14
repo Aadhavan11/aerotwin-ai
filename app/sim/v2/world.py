@@ -32,12 +32,12 @@ from app.sim.clock import START
 from app.sim.profile import FlightProfile, profile_for, profile_for_cycle
 from app.sim.v2 import core
 from app.sim.v2 import models as _models
-from app.sim.v2.core import Fleet
+from app.sim.v2.core import Fleet, StreamRng
 from app.sim.v2.coupling import CouplingGraph
 from app.sim.v2.drivers import OperatingContext, build_context
 from app.sim.v2.faults import FaultInjector
 from app.sim.v2.models.tires import PARAMS as TIRE_PARAMS
-from app.sim.v2.maintenance import (CheckDef, InspectionRecord, InstallRegistry, MaintenanceEngine, MelDeferral,
+from app.sim.v2.maintenance import (NFF_RETURN, CheckDef, InspectionRecord, InstallRegistry, MaintenanceEngine, MelDeferral,
                                     PartInstance, Removal, ScheduledCheckGenerator)
 
 _models.load_all()  # make sure every kind (incl. engine when present) is registered
@@ -76,6 +76,35 @@ FINDING_BELOW = 0.4        # inspection finding is actioned only if hi is below 
 REPAIR_ABOVE = 0.3         # finding with hi above this is repaired, else replaced
 NFF_WINDOW = 60            # cycles: repeat-defect window for intermittent avionics BITE reports
 NFF_BITE_DELTA = 5         # BITE count increase within the window that triggers a pilot-reported removal
+NFF_ESCALATE_N = 1         # NFF returns on one serial after which the next call swaps the unit (troubleshooting escalation)
+NFF_HEALTH_MIN = 0.6       # a unit above this health index is serviceable (above every action threshold): an indication on it is a false call
+
+# ---- no-fault-found (false call) priors, ALL ASSUMED (no citation), per kind ----
+# (spurious fault indications per 1000 cycles per healthy unit, probability an indication ends in a shop removal).
+# An indication is a BITE / CMC / crew-reported fault message that does not correspond to a degraded unit. The removal
+# probability is the "false-call probability": the share of such indications acted on by pulling the unit rather than
+# cleared by a reset / troubleshooting step. The unit then goes to the shop, passes, and is returned unchanged
+# (Removal.action == "nff_return", nff=True). Expected NFF removals per 24 tails per year = 52.6 * rate * p_call.
+#   avionics     : HIGH. Handled separately: repeat BITE reports (``NFF_BITE_DELTA`` in ``NFF_WINDOW``) trigger a removal and the
+#                  shop finding is drawn from ``avionics.nff_prob`` (0.35 base, rising with BITE history).
+#   hydraulics, electrical, ecs, apu : MODERATE (sensor / connector / indication-system false warnings).
+#   mechanical (brakes, landing_gear, tires, engine): LOW (indications are physical: temperature, pressure, position).
+FALSE_CALL: dict[str, tuple[float, float]] = {
+    "hydraulics": (0.10, 0.5), "electrical": (0.10, 0.5), "ecs": (0.12, 0.5), "apu": (0.12, 0.5),
+    "brakes": (0.02, 0.2), "landing_gear": (0.02, 0.2), "tires": (0.02, 0.1), "engine": (0.01, 0.2),
+}
+
+# ---- early-life (infant mortality) hazard multiplier after replace / overhaul, ASSUMED (no citation) ----
+# (peak multiplier on the degradation rate right after the work, decay constant in cycles). m(age) = 1 + (M - 1) exp(-age/tau).
+# Total extra wear is (M - 1) * tau cycles of life: a few tenths of a percent to ~2% of the part life (bounded, small).
+# Consumables (brakes, tires) are wear-limited by design and carry no infant term.
+INFANT: dict[str, tuple[float, float]] = {
+    "avionics": (1.5, 200.0), "electrical": (1.3, 150.0), "hydraulics": (1.3, 150.0), "apu": (1.3, 100.0),
+    "ecs": (1.2, 100.0), "landing_gear": (1.15, 200.0), "engine": (1.15, 300.0),
+}
+# ---- maintenance-induced fault: probability a repair / overhaul leaves a new low-severity fault (ASSUMED, no citation) ----
+MX_INDUCED_P = {"repair": 0.03, "overhaul": 0.04}
+MX_INDUCED_SEVERITY = 0.25
 
 
 def _arrival_station(seed: int, tail: str, cycle: int) -> str:
@@ -118,6 +147,10 @@ class World:
             for i in range(self.counts[k]):
                 self.registry.install(k, i, position=self.component_name(k, i), tail=self.tails[int(self.unit_tail[k][i])])
         self.maintenance = MaintenanceEngine(self.seed, self.registry)
+        self._fc_rng = StreamRng(self.seed, "world.false_call")
+        self._mx_rng = StreamRng(self.seed, "world.mx_induced")
+        self._shop_rng = StreamRng(self.seed, "world.nff_shop")
+        self.infant_age = {k: np.full(self.counts[k], 1e9) for k in self.kinds}  # cycles since last replace/overhaul (1e9: none yet)
         self.checks = ScheduledCheckGenerator([CheckDef(f"{k}_inspect", k, interval_days=POLICY[k].check_days) for k in self.kinds])
         self.sensor_state: dict[str, dict] = {}
         self.bite_hist: dict[int, list[tuple[int, int]]] = {}
@@ -175,7 +208,17 @@ class World:
             self.injector.step(k, fl.state[k], fl.cycle, fl._ctx_for(k, ctx))
         if self.coupling_enabled:
             self.coupling.apply(fl, ctx)
+        saved: dict[str, np.ndarray] = {}
+        for k in self.kinds:
+            if k in INFANT:
+                m, tau = INFANT[k]
+                saved[k] = fl.state[k]["stress_ext"]
+                fl.state[k]["stress_ext"] = saved[k] * (1.0 + (m - 1.0) * np.exp(-self.infant_age[k] / tau))
         fl.step_cycle(ctx)
+        for k, v in saved.items():
+            fl.state[k]["stress_ext"] = v
+        for k in self.kinds:
+            self.infant_age[k] = self.infant_age[k] + 1.0
         emitted = fl.emit_all(ctx)
         for k in self.kinds:
             self.registry.accrue(k, fl._ctx_for(k, ctx).flight_hours, 1.0)
@@ -222,20 +265,42 @@ class World:
         return out
 
     # ---- maintenance ----
-    def _do(self, kind: str, unit: int, action: str, reason: str, text: str, ctx: OperatingContext) -> None:
+    def _do(self, kind: str, unit: int, action: str, reason: str, text: str, ctx: OperatingContext, induce: bool = False) -> None:
         st = self.fleet.state[kind]
         t = int(self.unit_tail[kind][unit])
         now = START + timedelta(days=float(ctx.calendar_days[t]))
         hi0 = float(st["hi"][unit])
-        if action != "inspect":
+        if action not in ("inspect", NFF_RETURN):   # a no-fault-found return leaves faults, MEL items and state untouched
             self.injector.clear(kind, [unit], self.fleet.cycle, st)
             self.maintenance.mel.close(kind, unit, now)
-        recs = self.maintenance.apply(self.fleet, kind, [unit], action, reason=reason, now=now, reason_text=text)
+        if action == NFF_RETURN:
+            recs = self.maintenance.shop_check(self.fleet, kind, [unit], reason="nff", now=now, reason_text=text)
+        else:
+            recs = self.maintenance.apply(self.fleet, kind, [unit], action, reason=reason, now=now, reason_text=text)
+            if action in ("replace", "overhaul") and recs and not getattr(recs[0], "nff", False):
+                self.infant_age[kind][unit] = 0.0
         ev: dict[str, Any] = {"cycle": self.fleet.cycle, "kind": kind, "unit": unit, "tail": self.tails[t], "action": action,
                               "reason": reason, "hi_before": hi0, "hi_after": float(st["hi"][unit])}
         if action == "inspect":
             ev["detected"] = bool(recs[0].detected)
+        elif induce and action in MX_INDUCED_P and not getattr(recs[0], "nff", False):
+            mode = self._maybe_induce(kind, unit, action)
+            if mode:
+                ev["induced_fault"] = mode
         self.events.append(ev)
+
+    def _maybe_induce(self, kind: str, unit: int, action: str) -> str | None:
+        """Maintenance-induced fault: with probability ``MX_INDUCED_P[action]`` the work leaves a low-severity fault."""
+        from app.sim.v2.faults import modes_for
+        modes = modes_for(kind)
+        if not modes:
+            return None
+        u = self._mx_rng.at(self.fleet.cycle * 65536 + unit).random(2)
+        if u[0] >= MX_INDUCED_P[action]:
+            return None
+        mode = modes[min(int(u[1] * len(modes)), len(modes) - 1)]
+        self.inject_fault(kind, unit, mode.id, MX_INDUCED_SEVERITY)
+        return mode.id
 
     def _wear_driven(self, kind: str, i: int) -> bool:
         """True when a consumable (tires, brakes) is at its wear / retread limit and nothing else is wrong: no active
@@ -262,14 +327,19 @@ class World:
             for i in np.flatnonzero(failed):
                 wear = self._wear_driven(k, int(i))
                 self._do(k, int(i), "replace", "wear_limit" if wear else "failure",
-                         "wear/retread limit reached" if wear else "failed in service", ctx)
+                         "wear/retread limit reached" if wear else "failed in service", ctx, induce=True)
                 done.add(int(i))
             for i in np.flatnonzero(~failed & (hi < pol.wear_below)):
                 i = int(i)
-                self._do(k, i, pol.wear_action, "scheduled", "condition-based: health below threshold", ctx)
+                if k == "engine":   # EGT-margin / performance erosion driven shop visit (hi is its proxy), not a calendar task
+                    self._do(k, i, pol.wear_action, "performance", "performance restoration: EGT margin / health below threshold", ctx, induce=True)
+                else:
+                    self._do(k, i, pol.wear_action, "scheduled", "condition-based: health below threshold", ctx, induce=True)
                 done.add(i)
             if k == "avionics":
                 self._nff_removals(k, ctx, done)
+            else:
+                self._false_calls(k, ctx, done)
             for i in range(self.counts[k]):
                 if i in done:
                     continue
@@ -292,12 +362,19 @@ class World:
                             act = pol.finding_action or ("repair" if h > REPAIR_ABOVE else "replace")
                             wear = self._wear_driven(k, i)
                             self._do(k, i, act, "wear_limit" if wear else "inspection_finding",
-                                     "wear limit reached at inspection" if wear else "inspection finding", ctx)
+                                     "wear limit reached at inspection" if wear else "inspection finding", ctx, induce=True)
                     break
         self._mel_expiry(ctx)
 
     def _nff_removals(self, kind: str, ctx: OperatingContext, done: set[int]) -> None:
-        bite = self.fleet.state[kind]["bite_fault_count"]
+        """Avionics: repeat BITE reports trigger a removal; the shop finding is drawn from ``avionics.nff_prob``.
+
+        NFF -> unit returned unchanged (``nff_return``); otherwise a confirmed failure is replaced (reason ``failure``) and
+        confirmed degradation is replaced as an ``inspection_finding``. Shop draws are keyed (seed, cycle, unit).
+        """
+        from app.sim.v2.models import avionics as av
+        st = self.fleet.state[kind]
+        bite = st["bite_fault_count"]
         cyc = self.fleet.cycle
         for i in range(self.counts[kind]):
             h = self.bite_hist.setdefault(i, [])
@@ -308,14 +385,42 @@ class World:
                 continue
             if h[-1][1] - h[0][1] >= NFF_BITE_DELTA:
                 self.bite_hist[i] = []
-                self._do(kind, i, "replace", "failure", "repeat BITE report: box removed for troubleshooting", ctx)
+                finding = av.removal_reason(st, np.array([i]), self._shop_rng.at(cyc * 65536 + i))[0]
+                part = self.registry.on_unit(kind, i)
+                prior_nff = 0 if part is None else sum(1 for r in self.registry.history(part.serial) if r.nff)
+                if finding == "NFF" and prior_nff >= NFF_ESCALATE_N:
+                    # persistent fault the shop cannot reproduce: the box is swapped to clear it (counted as a confirmed removal)
+                    self._do(kind, i, "replace", "failure", "repeat NFF: box swapped to clear persistent fault", ctx, induce=True)
+                elif finding == "NFF":
+                    self._do(kind, i, NFF_RETURN, "nff", "repeat BITE report: box removed, no fault found, returned to service", ctx)
+                elif finding == "confirmed_failure":
+                    self._do(kind, i, "replace", "failure", "repeat BITE report: box failed at shop", ctx, induce=True)
+                else:
+                    self._do(kind, i, "replace", "inspection_finding", "repeat BITE report: degradation confirmed at shop", ctx, induce=True)
+                done.add(i)
+
+    def _false_calls(self, kind: str, ctx: OperatingContext, done: set[int]) -> None:
+        """Non-avionics NFF: spurious indication on a healthy unit that ends in a removal (see ``FALSE_CALL``)."""
+        rate, p_call = FALSE_CALL.get(kind, (0.0, 0.0))
+        if rate <= 0.0:
+            return
+        n = self.counts[kind]
+        off = sum(self.counts[k] for k in self.kinds[:self.kinds.index(kind)])
+        total = sum(self.counts[k] for k in self.kinds)
+        u = self._fc_rng.at(self.fleet.cycle).random((total, 2))[off:off + n]
+        st = self.fleet.state[kind]
+        hot = (u[:, 0] < rate / 1000.0) & (u[:, 1] < p_call) & (st["hi"] > NFF_HEALTH_MIN) & ~st["failed"]
+        for i in np.flatnonzero(hot):
+            i = int(i)
+            if i not in done:
+                self._do(kind, i, NFF_RETURN, "nff", "false fault indication: unit removed, no fault found, returned to service", ctx)
                 done.add(i)
 
     def _mel_expiry(self, ctx: OperatingContext) -> None:
         for d in list(self.maintenance.mel.open_items()):
             t = self.tails.index(d.tail) if d.tail in self.tails else 0
             if d.expired(self._tail_now(t)):
-                self._do(d.kind, d.unit, "repair", "deferred_defect_rectification", f"MEL {d.id} expired", ctx)
+                self._do(d.kind, d.unit, "repair", "deferred_defect_rectification", f"MEL {d.id} expired", ctx, induce=True)
                 self.maintenance.mel.close(d.kind, d.unit, self._tail_now(t))
 
 
@@ -442,6 +547,8 @@ class World:
         out: dict[str, np.ndarray] = {f"fleet/{k}": v for k, v in self.fleet.snapshot().items()}
         for (k, m), a in self.injector.onset.items():
             out[f"inj/onset/{k}/{m}"] = a.copy()
+        for k, a in self.infant_age.items():
+            out[f"infant/{k}"] = a.copy()
         blob = {
             "inj_log": self.injector.snapshot()["log"],
             "parts": [p.as_dict() for p in self.registry.parts.values()],
@@ -469,6 +576,9 @@ class World:
         blob = json.loads(str(snap["blob"]))
         self.injector.restore({"onset": {f"{k}/{m}": np.asarray(snap[f"inj/onset/{k}/{m}"]) for (k, m) in self.injector.onset},
                                "log": blob["inj_log"]})
+        for k in self.kinds:
+            key = f"infant/{k}"
+            self.infant_age[k] = np.array(snap[key], copy=True) if key in snap else np.full(self.counts[k], 1e9)
         reg = self.registry
         reg.parts = {d["serial"]: PartInstance(**d) for d in blob["parts"]}
         reg.installed = {(k, int(i)): s for k, i, s in blob["installed"]}

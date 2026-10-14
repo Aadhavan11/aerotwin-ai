@@ -116,7 +116,7 @@ not an independent check. R/R0 improved because `resistance_fade` was fitted to 
 
 ## Limits (plain language)
 * The hydraulic rig is a 160 bar lab bench with a stepped, designed fault grid. It says nothing about when an
-  aircraft pump fails, how fast filters clog or how fluid ages. All hydraulics rates are still literature priors.
+  aircraft pump fails, how fast filters clog or how fluid ages. All hydraulics rates are still assumed priors (no citation); in this revision the per-flight damage rates were divided by 4.5 (life 2000 -> 9000 flights) to move the removal rate to a plausible order, a prior change, not a data fit.
 * The one effect the rig does show strongly (cooler failure, +17 degC, -1.3 bar on PS5) has no counterpart in the model.
   The rig's pressure rises with leak and low precharge, opposite to the model; this is probably a load-controlled bench
   artefact, but it was not resolved, so pump pressure sensitivity remains a prior.
