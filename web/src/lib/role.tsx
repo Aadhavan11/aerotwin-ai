@@ -37,6 +37,9 @@ const N = {
   insights: { to: "/insights", label: "Insights", icon: "search" },
   reliability: { to: "/reliability", label: "Reliability", icon: "pulse" },
   runs: { to: "/runs", label: "Runs", icon: "lab" },
+  llp: { to: "/llp", label: "Life-limited parts", icon: "pulse" },
+  mel: { to: "/mel", label: "MEL register", icon: "shield" },
+  risk: { to: "/risk", label: "Plan risk", icon: "search" },
   copilot: { to: "/copilot", label: "Copilot", icon: "agents" },
 } satisfies Record<string, NavItem>;
 
@@ -47,7 +50,7 @@ export const ROLES: Role[] = [
     blurb: "Fleet health, decisions waiting, the plan, and the risk of waiting.",
     home: "/",
     canDecide: true,
-    nav: [N.fleet, N.control, N.twin, N.plan, N.insights, N.reliability, N.runs, N.copilot, N.lab],
+    nav: [N.fleet, N.control, N.twin, N.plan, N.insights, N.reliability, N.runs, N.copilot, N.lab, N.llp, N.mel, N.risk],
   },
   {
     id: "maintenance",
@@ -55,7 +58,7 @@ export const ROLES: Role[] = [
     blurb: "Work orders to approve, technicians, parts and hangar slots, and the jobs planned at each station.",
     home: "/workorders",
     canDecide: true,
-    nav: [N.workorders, N.plan, N.twin, N.control, N.insights, N.reliability, N.copilot],
+    nav: [N.workorders, N.plan, N.twin, N.control, N.insights, N.reliability, N.copilot, N.llp, N.mel, N.risk],
   },
   {
     id: "pilot",
@@ -71,7 +74,7 @@ export const ROLES: Role[] = [
     blurb: "Upcoming departures, which flights touch a maintenance window, and aircraft that need attention.",
     home: "/departures",
     canDecide: false,
-    nav: [N.departures, N.release, N.crew, N.weather, N.messages, N.plan, N.copilot],
+    nav: [N.departures, N.release, N.crew, N.weather, N.messages, N.plan, N.copilot, N.mel],
   },
   {
     id: "admin",
@@ -79,7 +82,7 @@ export const ROLES: Role[] = [
     blurb: "Service health, data and model quality, the full audit trail, and scenario controls.",
     home: "/admin",
     canDecide: false,
-    nav: [N.admin, N.lab, N.fleet, N.insights, N.reliability, N.runs, N.copilot],
+    nav: [N.admin, N.lab, N.fleet, N.insights, N.reliability, N.runs, N.copilot, N.llp, N.mel, N.risk],
   },
 ];
 

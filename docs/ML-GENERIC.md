@@ -101,3 +101,20 @@ The committed artifacts were generated against the v2 simulator as it stood on 2
 `python -m app.ml.train_generic` (about 2-3 minutes, writes `app/ml/artifacts/generic_<kind>.joblib` and
 `generic_meta.json`; `--tiny` for the small test configuration). Committed artifacts total 1.90 MB (lzma-compressed joblib, 8 files + meta).
 Tests: `tests/test_ml_generic.py` (tiny configuration, trains in about 20 s), `tests/test_conformal.py`.
+
+## Serving `age` verification (live path)
+Training `age` = cycles since the unit was last restored (cycles since the start of the run for a unit never restored).
+Serving gets it from the row `cycle` the scorer receives, and that is not the raw source counter: `app/twin/state.py`
+rebases each component's window to `row.cycle - cycle0` (`cycle0` = first row seen, cleared by `apply_maintenance`).
+Findings (`tests/test_ml_generic_live.py`, both `SIM_ENGINE=v1` and `v2`, driving `Simulator` -> `twin.ingest_telemetry`):
+* Fresh / aged unit: age counts 1, 2, 3 ... from the first row the twin saw. **Agrees** with training in both engines.
+* After a work-order restoration (`twin.apply_maintenance` then `source.restore`, as `PlatformSimulator.step` does; both
+  engines reset the source counter to 0): age restarts at 1. **Agrees**; RUL p50 and health recover for a worn unit.
+* Fixed: if the source restarted a series but the twin was not told, the cycle went backwards and the sorted window put the
+  stale pre-restoration rows last (age from the old counter). `ingest_telemetry` now starts a new window on a cycle regression.
+* Missing channel -> rule model with a `sim-trained model not used (...)` reason; short window -> sim model, `degraded`
+  with "window has N of 30 rows". Both exercised through the live path.
+* Residual mismatch: units that start the live run already worn (v2 start wear, v1 `wear_profile`) report age from the
+  start of observation, as in training (training worlds start new), so a pre-worn unit has a low age with worn channels, a
+  combination the models saw only via stress variation. Also the first rows after a restoration use windows of <30 rows
+  (training required cycle >= 3).

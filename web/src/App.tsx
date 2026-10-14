@@ -26,6 +26,9 @@ const Insights = lazy(() => import("./pages/Insights"));
 const Reliability = lazy(() => import("./pages/Reliability"));
 const ReliabilityAta = lazy(() => import("./pages/ReliabilityAta"));
 const Runs = lazy(() => import("./pages/Runs"));
+const Llp = lazy(() => import("./pages/Llp"));
+const Mel = lazy(() => import("./pages/Mel"));
+const Risk = lazy(() => import("./pages/Risk"));
 const Extra = {
   Trips: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Trips }))),
   Duty: lazy(() => import("./pages/Extra").then((m) => ({ default: m.Duty }))),
@@ -173,6 +176,9 @@ export default function App() {
               <Route path="/reliability" element={<Reliability />} />
               <Route path="/reliability/ata" element={<ReliabilityAta />} />
               <Route path="/runs" element={<Runs />} />
+              <Route path="/llp" element={<Llp />} />
+              <Route path="/mel" element={<Mel />} />
+              <Route path="/risk" element={<Risk />} />
             </Routes>
           </div>
         </Suspense>

@@ -182,8 +182,8 @@ def _require_open(item: MelItem) -> None:
         raise MelError(f"MEL item {item.id} is {item.status}; only open items can be closed or extended")
 
 
-def close_item(item_id: str, actor: str) -> MelItem:
-    """Rectify an open item and record the decision in the audit trail."""
+def close_item(item_id: str, actor: str, reference: str | None = None) -> MelItem:
+    """Rectify an open item and record the decision in the audit trail (``reference``: e.g. the completing work order)."""
     now = persist.sim_now()
     refresh_statuses(now)
     with _conn() as c:
@@ -192,7 +192,7 @@ def close_item(item_id: str, actor: str) -> MelItem:
         _require_open(item)
         item.status, item.rectified_at = "rectified", now
         _save(c, item)
-    audit.record(actor, "mel_closed", item.id, "rectified", now)
+    audit.record(actor, "mel_closed", item.id, "rectified" if not reference else f"rectified by {reference}", now)
     return item
 
 

@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Optional
 
+from app import settings
 from app.contracts.models import ComponentState, FleetState, Leg, Task
 from app.solver.cards import TaskCard, load_cards, rul_card_for, scheduled_cards_for
 from app.solver.skills import with_level
@@ -90,6 +91,8 @@ def derive_tasks_ex(
     scheduled_horizon_days: float = 5.0,
     max_scheduled: int = 3,
     cards: Optional[list[TaskCard]] = None,
+    llp_tasks: Optional[bool] = None,
+    mel_tasks: Optional[bool] = None,
 ) -> DeriveResult:
     now = aware(state.now)
     cards = cards or load_cards()
@@ -143,7 +146,18 @@ def derive_tasks_ex(
         notes.append(f"{len(sched) - max_scheduled} further scheduled checks fall inside the horizon but "
                      f"only {max_scheduled} are planned (max_scheduled)")
 
-    tasks = sorted(rul_tasks + scheduled_tasks, key=lambda t: (aware(t.deadline), t.id))
+    # optional ops links, OFF by default (settings.LLP_TASKS / MEL_TASKS): with both off nothing below runs
+    ops_tasks: list[Task] = []
+    if settings.LLP_TASKS if llp_tasks is None else llp_tasks:
+        from app.solver import links
+
+        ops_tasks += links.llp_tasks(state, now, scheduled_horizon_days, notes)
+    if settings.MEL_TASKS if mel_tasks is None else mel_tasks:
+        from app.solver import links
+
+        ops_tasks += links.mel_tasks(state, now, cards, notes)
+
+    tasks = sorted(rul_tasks + scheduled_tasks + ops_tasks, key=lambda t: (aware(t.deadline), t.id))
     ids = [t.id for t in tasks]
     assert len(ids) == len(set(ids)), "duplicate task ids"
     return DeriveResult(tasks=tasks, notes=notes)
