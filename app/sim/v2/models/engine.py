@@ -22,6 +22,12 @@ from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
 
 PARAMS = {
+    # TIME SCALE: C-MAPSS runs to failure in ~206 cycles, which are not flights. One model cycle (one unit of the
+    # fitted life axis) is `flights_per_model_cycle` real flights, so mean on-wing life is ~206.3 * 87 = ~18,000
+    # flights (narrow-body shop-visit interval prior, 15-25k). Only the wear RATE is scaled: the sensor map is a
+    # function of life fraction p and is unchanged. Set 1.0 to recover the raw C-MAPSS time axis (the validation
+    # in docs/SIM-V2-ENGINE.md is run with 1.0 so its numbers stay comparable to the data).
+    "flights_per_model_cycle": 87.0,
     "jitter_sigma": 0.08,  # prior: per-cycle lognormal wear jitter
     "hot_per_c": 0.012,  # prior: +1.2% wear per degC above reference OAT (capped)
     "hot_ref_c": 15.0,
@@ -37,8 +43,8 @@ PARAMS = {
     "egt_margin_sd_c": 10.0,
     "egt_hot_c_per_c": 0.5,  # prior: margin lost per degC OAT above reference
     "egt_fault_c": 25.0,  # prior: extra margin loss at full HPT erosion severity
-    "llp_limit_cycles": 20000.0,  # prior: life-limited part cycle limit
-    "llp_initial_frac_max": 0.5,
+    "llp_limit_cycles": 25000.0,  # prior: life-limited part cycle limit (flights; narrow-body LLPs are 20-30k)
+    "llp_initial_frac_max": 0.3,
     "llp_derate_gain": 0.1,  # prior: full-thrust takeoff counts ~10% more LLP cycle
     "fault_progress_hpt": 0.5,  # prior: fraction of life consumed at full erosion severity
     "fault_progress_foul": 0.15,
@@ -176,7 +182,7 @@ class EngineModel:
         accel = np.clip(1.0 + hot + da + derate + PARAMS["dust_gain"] * ctx.dust_index, PARAMS["accel_min"], PARAMS["accel_max"])
         sj = PARAMS["jitter_sigma"]
         jitter = np.exp(sj * z - 0.5 * sj * sj)
-        dp = accel / PARAMS["accel_ref"] * np.maximum(state["stress_ext"], 0.0) * jitter / state["life_scale"]
+        dp = accel / PARAMS["accel_ref"] * np.maximum(state["stress_ext"], 0.0) * jitter / (state["life_scale"] * PARAMS["flights_per_model_cycle"])
         state["progress"] = np.minimum(state["progress"] + dp, 1.0)
         # acute faults: running peak so hi never recovers without maintenance
         sev_h = self._fault(state, "hpt_blade_erosion", n)

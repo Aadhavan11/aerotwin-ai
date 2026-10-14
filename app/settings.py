@@ -25,6 +25,8 @@ SEED: int = int(os.environ.get("SEED", "1234"))
 DB_PATH: Path = Path(os.environ.get("DB_PATH", str(ROOT / "data" / "aerotwin.db")))
 LLM_MODEL: str = os.environ.get("LLM_MODEL", "claude-sonnet-5-5")
 HAS_LLM_KEY: bool = bool(os.environ.get("ANTHROPIC_API_KEY"))  # only the boolean is ever exposed
+# Telemetry engine behind the simulator service: "v1" (app.sim.telemetry, default) or "v2" (app.sim.v2.World).
+SIM_ENGINE: str = os.environ.get("SIM_ENGINE", "v1").strip().lower()
 SIM_START = "2026-10-12T12:00:00Z"  # SimClock origin (UTC)
 VERSION = "0.1.0"
 

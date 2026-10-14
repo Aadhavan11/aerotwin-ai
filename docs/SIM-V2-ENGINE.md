@@ -25,6 +25,24 @@ kept under `data/external/nasa_cmapss/extracted/`, git-ignored; override with `A
 * `maintain`: inspect (flag only), repair (keeps 0.5+0.5q of progress), overhaul (keeps 0.6q, faults x0.2),
   replace (resample unit, zero everything). `EngineModel.set_variant` selects fd001..fd004 fits (default fd001).
 
+## Time scale: model cycles vs real flights
+C-MAPSS engines fail in ~206 cycles; those are not flights (a real narrow-body engine stays on wing 15-25k flights).
+`PARAMS["flights_per_model_cycle"]` (default 87) maps one unit of the fitted life axis to 87 real flights, so mean
+on-wing life is 206.3 x 87 = ~18,000 flights (lognormal, sd ~22%). Only the wear RATE is scaled
+(`dp = accel / accel_ref / (life_scale * K)` per flight); the sensor map is a function of progress `p` alone, so the
+sensor-trajectory shape against life fraction is identical to the fit. The validation below is run with K = 1
+(`app/calib/engine_validate.py` sets it for the run) so its numbers stay comparable to the data and did not change.
+Knock-on priors retuned for flight units: LLP limit 25,000 flights (initial use <= 30% of limit) and engine fault
+hazards per flight (`hpt_blade_erosion` 2e-5, `compressor_fouling` 4e-5, roughly 10-15% of engines per year).
+Shop-visit semantics in `World`: `overhaul`/`replace` when health < 0.15 (progress ~0.85, ~15k flights), engine
+borescope findings only act on an active fault (otherwise on-wing repairs would keep resetting wear).
+Fleet-year numbers (24 tails, 48 engines, 6 legs/day = 2,190 flights/tail-year, staggered start): see
+docs/SIM-V2-SERVICE.md. A tail-year is ~12% of an engine life, so steady state is ~48 x 0.12 / 0.85 = ~7 shop visits
+per fleet-year. Measured (seeds 7, 8, 6 years, fleet.py staggered start, `World` policy): cumulative engine shop visits
+[0, 0, 7, 13, 26, 34] and [0, 0, 5, 12, 20, 35] i.e. 0 in years 1-2 (the v1 fleet starts at <= 45% of life) and 5-13
+(mean ~7) per fleet-year after that, plus ~8 on-wing repairs per year. A 1-3 per fleet-year prior would imply ~40k-flight
+engines; at 18k flights and 2,190 flights/tail-year the arithmetic above is what the model must give.
+
 ## Validation (100 simulated FD001-variant engines, seed 7, v1 flight profiles; real = FD001 train)
 | check | result |
 |---|---|

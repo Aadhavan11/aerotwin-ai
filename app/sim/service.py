@@ -11,6 +11,7 @@ from copy import deepcopy
 from pathlib import Path
 from threading import RLock
 from app.contracts.models import FleetState, ScenarioEvent, TwinEvent
+from app import settings
 from app.sim.clock import SimClock
 from app.sim.fleet import generate_fleet
 from app.sim.telemetry import TelemetrySource
@@ -18,13 +19,18 @@ from app.sim.telemetry import TelemetrySource
 SOURCE_ATTRS = ('positions', 'origins', 'units', 'wear', 'faults', 'damage', 'modes', 'sensor_faults')
 
 class Simulator:
-    def __init__(self, db_path='data/aerotwin.db', seed=1234, ingest=None, trajectories=None, stochastic=False):
+    def __init__(self, db_path='data/aerotwin.db', seed=1234, ingest=None, trajectories=None, stochastic=False, engine=None):
         if db_path != ':memory:':
             Path(db_path).parent.mkdir(parents=True,exist_ok=True)
         self.connection = sqlite3.connect(db_path, check_same_thread=False)
         self.lock = RLock()
         self.seed, self.ingest = seed, ingest
-        self.source = TelemetrySource(seed,trajectories,stochastic)
+        self.engine = (engine or settings.SIM_ENGINE) if (engine or settings.SIM_ENGINE) in ('v1','v2') else 'v1'
+        if self.engine=='v2':
+            from app.sim.v2.live import V2Source
+            self.source = V2Source(seed,trajectories,stochastic)
+        else:
+            self.source = TelemetrySource(seed,trajectories,stochastic)
         self.connection.executescript('''
         CREATE TABLE IF NOT EXISTS aircraft (tail TEXT PRIMARY KEY,type TEXT,home TEXT,location TEXT,status TEXT,cycles INTEGER,hours REAL,json TEXT);
         CREATE TABLE IF NOT EXISTS components (tail TEXT,component_id TEXT,kind TEXT,state_json TEXT,PRIMARY KEY(tail,component_id));
@@ -45,6 +51,8 @@ class Simulator:
         else:
             self.reset()
         self.source.now = self.state.now
+        if self.engine=='v2':
+            self.source.bind(self.state)
 
     @contextmanager
     def _atomic(self):
@@ -91,6 +99,8 @@ class Simulator:
                 getattr(self.source,attr).clear()
             self.source.positions.update({c.component_id:c.cycles for c in self.state.components})
             self.source.origins.update(self.source.positions)
+            if self.engine=='v2':
+                self.source.bind(self.state,force=True)
             self.connection.execute("INSERT INTO kv VALUES ('scenario_name',?)",(name,))
             self._save()
             return {'ok':True}

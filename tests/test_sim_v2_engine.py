@@ -9,6 +9,12 @@ from app.sim.v2 import Fleet, build_context
 from app.sim.v2.core import get, kinds
 from app.sim.v2.models import engine as eng
 
+@pytest.fixture(autouse=True)
+def _raw_cmapss_time_axis(monkeypatch):
+    """These tests check the fitted C-MAPSS life axis (~206 cycles); the real-flight scaling has its own tests."""
+    monkeypatch.setitem(eng.PARAMS, "flights_per_model_cycle", 1.0)
+
+
 STATIONS = ("ATL", "DFW", "JFK", "ORD", "LAX", "SFO", "DEN", "MIA")
 
 

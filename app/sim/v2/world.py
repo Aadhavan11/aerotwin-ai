@@ -94,8 +94,10 @@ class World:
     ``(tail, cycle) -> FlightProfile``, a sequence of ``FlightProfile`` (cycled, shared) or of ``Leg`` (cycled per tail)."""
 
     def __init__(self, seed: int, tails: Sequence[str], legs_or_profiles: Any = None, stochastic: bool = True,
-                 coupling: bool = True, faults: bool = True) -> None:
+                 coupling: bool = True, faults: bool = True, utilisation: float = 1.0, auto_maintain: bool = True) -> None:
         self.seed = int(seed)
+        self.utilisation = float(utilisation)  # multiplies per-tail utilisation (cycles per calendar day); 1.0 = ~3 flights/day
+        self.auto_maintain = bool(auto_maintain)  # False: only explicit actions (live service) change components
         self.tails = list(tails)
         self.stochastic = bool(stochastic)
         self._source = legs_or_profiles
@@ -163,7 +165,7 @@ class World:
     def step(self) -> list[dict[str, Any]]:
         cyc = self.fleet.cycle + 1
         pairs = [self._profile(t, cyc) for t in self.tails]
-        ctx = build_context([p for p, _ in pairs], self.tails, self.seed, [_arr_name(a) for _, a in pairs], prev=self._ctx)
+        ctx = build_context([p for p, _ in pairs], self.tails, self.seed, [_arr_name(a) for _, a in pairs], utilisation=self.utilisation, prev=self._ctx)
         self._ctx = ctx
         fl = self.fleet
         for k in self.kinds:
@@ -175,7 +177,8 @@ class World:
         for k in self.kinds:
             self.registry.accrue(k, fl._ctx_for(k, ctx).flight_hours, 1.0)
         rows = self._rows(emitted, ctx, fl.cycle)
-        self._maintain(ctx)
+        if self.auto_maintain:
+            self._maintain(ctx)
         self.rows.extend(rows)
         return rows
 
@@ -257,7 +260,11 @@ class World:
                     self._do(k, i, "inspect", "scheduled", f"scheduled check {d.check_id}", ctx)
                     detected = self.events[-1]["detected"]
                     h = float(st["hi"][i])
-                    if detected and h < FINDING_BELOW:
+                    # engines: a borescope finding is a defect (an active fault), not mere wear; wear is handled by the
+                    # condition-based shop-visit threshold. Without this every borescope on a half-worn engine would trigger
+                    # an on-wing repair that resets part of its wear, so engines would never reach a shop visit.
+                    defect = k != "engine" or any(self.injector.onset[(k, m.id)][i] >= 0 for m in self.injector._modes.get(k, []))
+                    if detected and h < FINDING_BELOW and defect:
                         t = int(self.unit_tail[k][i])
                         already = any(m.kind == k and m.unit == i for m in self.maintenance.mel.open_items())
                         if pol.defer_ok and h > REPAIR_ABOVE and not already:
@@ -289,6 +296,114 @@ class World:
             if d.expired(self._tail_now(t)):
                 self._do(d.kind, d.unit, "repair", "deferred_defect_rectification", f"MEL {d.id} expired", ctx)
                 self.maintenance.mel.close(d.kind, d.unit, self._tail_now(t))
+
+
+    # ---- scenario / live-service hooks ----
+    def pre_age(self, wear: dict[str, Sequence[float]], stress: float = 15.0, max_steps: int = 4000) -> int:
+        """Start units part-worn: ``wear[kind][unit]`` is the target wear fraction (health index 1 - wear).
+
+        A throwaway faultless world is run with ``stress_ext`` raised for units still above their target health and
+        zero for units that reached it; the resulting arrays replace this world's state (stress back to 1, cycle
+        counter and RNG streams untouched, so determinism is unchanged). Returns the steps used.
+        """
+        tmp = World(self.seed, self.tails, self._source, stochastic=False, coupling=False, faults=False,
+                    utilisation=self.utilisation, auto_maintain=False)
+        target = {k: 1.0 - np.clip(np.asarray(wear[k], dtype=float), 0.0, 0.95) for k in wear if k in tmp.kinds}
+        frozen: dict[str, dict[str, np.ndarray]] = {k: {n: np.array(a, copy=True) for n, a in tmp.fleet.state[k].items()} for k in tmp.kinds}
+        done = {k: np.zeros(tmp.counts[k], dtype=bool) for k in tmp.kinds}
+        steps = 0
+        for steps in range(0, max_steps + 1):
+            active = False
+            for k, tgt in target.items():
+                st = tmp.fleet.state[k]
+                hi = np.asarray(tmp.fleet.models[k].health_index(st), dtype=float)
+                hit = ~done[k] & ((hi <= tgt) | np.asarray(st["failed"], dtype=bool))
+                for i in np.flatnonzero(hit):  # capture the unit the moment it reaches its target (calendar effects keep acting)
+                    for n, a in st.items():
+                        frozen[k].setdefault(n, np.array(a, copy=True))[i] = a[i]
+                done[k] |= hit
+                # taper the acceleration near the target so a coarse step cannot overshoot far
+                st["stress_ext"] = np.where(done[k], 0.0, np.clip(40.0 * (hi - tgt), 4.0, float(stress)))
+                active = active or not bool(done[k].all())
+            if not active or steps == max_steps:
+                break
+            tmp.step()
+        for k in tmp.kinds:
+            if k in target:
+                for i in np.flatnonzero(~done[k]):
+                    for n, a in tmp.fleet.state[k].items():
+                        frozen[k].setdefault(n, np.array(a, copy=True))[i] = a[i]
+            for name, arr in frozen[k].items():
+                self.fleet.state[k][name] = arr
+            self.fleet.state[k]["stress_ext"] = np.ones(self.counts[k])
+        return steps
+
+    def _preview_ctx(self) -> OperatingContext:
+        if self._ctx is not None:
+            return self._ctx
+        pairs = [self._profile(t, 1) for t in self.tails]
+        return build_context([p for p, _ in pairs], self.tails, self.seed, [_arr_name(a) for _, a in pairs], utilisation=self.utilisation)
+
+    def inject_fault(self, kind: str, unit: int, mode_id: str, severity: float = 1.0) -> None:
+        """Force fault ``mode_id`` on one unit at ``severity`` (0..1) right now; recorded as ground truth."""
+        from app.sim.v2.faults import GroundTruthFault, LIBRARY
+        mode = LIBRARY[mode_id]
+        if mode.kind != kind:
+            raise ValueError(f"fault {mode_id} does not apply to {kind}")
+        sev = float(np.clip(severity, 0.0, 1.0))
+        inj, cyc = self.injector, self.fleet.cycle
+        key = (kind, mode_id)
+        if inj.onset[key][unit] >= 0 and float(inj.severity(kind, mode, cyc)[unit]) >= sev:
+            return
+        lo, hi = 0, max(int(mode.ramp_cycles) * 20, 1)
+        if float(mode.severity(hi)) >= sev:
+            while lo < hi:
+                mid = (lo + hi) // 2
+                if float(mode.severity(mid)) >= sev:
+                    hi = mid
+                else:
+                    lo = mid + 1
+        inj.onset[key][unit] = cyc - hi
+        rec = GroundTruthFault(kind, int(unit), mode_id, int(cyc - hi), mode.ramp_cycles, mode.shape).as_dict()
+        inj._log.append(rec)
+        inj._open[(kind, mode_id, int(unit))] = rec
+        self.fleet.state[kind][f"fault_{mode_id}"] = inj.severity(kind, mode, cyc)
+
+    def raise_state(self, kind: str, unit: int, key: str, value: float) -> None:
+        """Raise a latent state variable (never lowers it) and refresh derived health (scenario hook)."""
+        st = self.fleet.state[kind]
+        st[key][unit] = max(float(st[key][unit]), float(value))
+        upd = getattr(self.fleet.models[kind], "_update", None)
+        if upd is not None:
+            upd(st)
+
+    def set_stress(self, kind: str, unit: int, stress: float) -> None:
+        self.fleet.state[kind]["stress_ext"][unit] = float(stress)
+
+    def apply_action(self, kind: str, unit: int, action: str, reason: str = "scheduled", text: str = "explicit action") -> None:
+        """Explicit maintenance on one unit (clears injected faults, resets stress, logs removal/inspection)."""
+        self._do(kind, unit, action, reason, text, self._preview_ctx())
+        if action != "inspect":
+            self.fleet.state[kind]["stress_ext"][unit] = 1.0
+
+    def preview(self, kind: str, unit: int, n: int) -> list[dict[str, float]]:
+        """The next ``n`` emissions of one unit projected on a COPY of its kind's state (world state untouched).
+
+        Active faults and ``stress_ext`` are honoured; used to give a freshly injected event immediate telemetry.
+        """
+        fl = self.fleet
+        model = fl.models[kind]
+        ctx = fl._ctx_for(kind, self._preview_ctx())
+        st = {k: np.array(v, copy=True) for k, v in fl.state[kind].items()}
+        out = []
+        for j in range(n):
+            for m in self.injector._modes.get(kind, []):
+                st[f"fault_{m.id}"] = self.injector.severity(kind, m, fl.cycle + j)
+            c = 10**9 + fl.cycle * 64 + j
+            model.step(st, ctx, fl._rng[kind]["step"].at(c))
+            em = model.emit(st, ctx, fl._rng[kind]["emit"].at(c))
+            out.append({ch: float(v[unit]) for ch, v in em.items()})
+        return out
 
     # ---- truth / views ----
     def ground_truth(self) -> list[dict[str, Any]]:

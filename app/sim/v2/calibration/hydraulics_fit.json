@@ -1,0 +1,586 @@
+{
+ "meta": {
+  "tag": "fitted to a test rig, not an aircraft: relative sensitivities and noise only; rates remain literature priors",
+  "source": "UCI Condition monitoring of hydraulic systems (ZeMA gGmbH), CC BY 4.0",
+  "n_cycles": 2205,
+  "n_stable_cycles": 1449,
+  "n_label_cells": 144,
+  "severity_definition": {
+   "cooler": "(100 - label) / 97",
+   "valve": "(100 - label) / 27",
+   "leak": "label / 2",
+   "accumulator": "(130 - label) / 40"
+  },
+  "cycle_features": "mean over each 60 s cycle",
+  "bootstrap": {
+   "resamples": 300,
+   "unit": "label cell"
+  },
+  "detect_dprime": 3.0
+ },
+ "sensors": {
+  "PS1": {
+   "unit": "bar",
+   "mean": 161.27281695882246,
+   "intercept": 156.92093704896283,
+   "coef_per_full_severity": {
+    "cooler": 1.711087168361527,
+    "valve": 0.1125063839673867,
+    "leak": 2.967904894163901,
+    "accumulator": 3.339505084206199
+   },
+   "coef_se": {
+    "cooler": 0.685943797539623,
+    "valve": 0.9324750514299779,
+    "leak": 0.7933465861338727,
+    "accumulator": 0.8318555851998921
+   },
+   "coef_all_cycles": {
+    "cooler": 0.5245735558441121,
+    "valve": 0.7573884611718819,
+    "leak": 3.536959438193469,
+    "accumulator": 2.7209049853733664
+   },
+   "r2": 0.12256086368836494,
+   "within_cell_sd": 2.885802889171359,
+   "cell_sd_median": 0.015925473994402715,
+   "cell_rel_sd_median": 9.874865643643431e-05,
+   "hf_noise_sd": 0.10268770760292488,
+   "resolution": 0.009999999999990905,
+   "samples_per_cycle": 6000
+  },
+  "PS2": {
+   "unit": "bar",
+   "mean": 110.12431761743746,
+   "intercept": 105.37398003657638,
+   "coef_per_full_severity": {
+    "cooler": 2.6378900172148785,
+    "valve": -0.6976903169719257,
+    "leak": 3.3561486963184644,
+    "accumulator": 3.4710483411451043
+   },
+   "coef_se": {
+    "cooler": 0.7279698376825285,
+    "valve": 0.9973737217951595,
+    "leak": 0.8434401939217526,
+    "accumulator": 0.8834695794357693
+   },
+   "coef_all_cycles": {
+    "cooler": 1.3796831787042776,
+    "valve": 0.021932851294648774,
+    "leak": 3.983997399339774,
+    "accumulator": 2.798723252447113
+   },
+   "r2": 0.1458040034364878,
+   "within_cell_sd": 3.033501954558376,
+   "cell_sd_median": 0.018718738633829474,
+   "cell_rel_sd_median": 0.00016997824857227978,
+   "hf_noise_sd": 0.8962318053731043,
+   "resolution": 0.006999999999990791,
+   "samples_per_cycle": 6000
+  },
+  "PS3": {
+   "unit": "bar",
+   "mean": 1.710109585806298,
+   "intercept": 2.1423070696798656,
+   "coef_per_full_severity": {
+    "cooler": -0.44286402680880926,
+    "valve": -0.007860302605120719,
+    "leak": -0.19220428769140388,
+    "accumulator": -0.12144591322075692
+   },
+   "coef_se": {
+    "cooler": 0.025569558344198235,
+    "valve": 0.03729450765271907,
+    "leak": 0.030427526099562976,
+    "accumulator": 0.03146316548937565
+   },
+   "coef_all_cycles": {
+    "cooler": -0.4006448664219928,
+    "valve": -0.03266855943897042,
+    "leak": -0.21367882147332495,
+    "accumulator": -0.10207825665801154
+   },
+   "r2": 0.5607123388221533,
+   "within_cell_sd": 0.0934985606971335,
+   "cell_sd_median": 0.005746803708783334,
+   "cell_rel_sd_median": 0.0033604885654586743,
+   "hf_noise_sd": 0.06751811260293682,
+   "resolution": 0.006999999999999673,
+   "samples_per_cycle": 6000
+  },
+  "PS4": {
+   "unit": "bar",
+   "mean": 3.355278432137114,
+   "intercept": 9.474961899333556,
+   "coef_per_full_severity": {
+    "cooler": -10.463312765618946,
+    "valve": 0.009722188583368109,
+    "leak": 0.28382101822294675,
+    "accumulator": 0.11034394292691262
+   },
+   "coef_se": {
+    "cooler": 0.19667363105680194,
+    "valve": 0.20855147986434688,
+    "leak": 0.2087472053864415,
+    "accumulator": 0.19871441199975332
+   },
+   "coef_all_cycles": {
+    "cooler": -8.480071861133055,
+    "valve": 1.0608858973883966,
+    "leak": 1.1742041391969844,
+    "accumulator": -1.6542770112154266
+   },
+   "r2": 0.9431178588788522,
+   "within_cell_sd": 0.45371091021497834,
+   "cell_sd_median": 0.003562489562703324,
+   "cell_rel_sd_median": 0.0010617567616986792,
+   "hf_noise_sd": 0.0,
+   "resolution": 0.0009999999999994458,
+   "samples_per_cycle": 6000
+  },
+  "PS5": {
+   "unit": "bar",
+   "mean": 9.15438972532781,
+   "intercept": 9.908341715362285,
+   "coef_per_full_severity": {
+    "cooler": -1.2638742421975893,
+    "valve": 0.0010474846995781615,
+    "leak": 0.006238747444786379,
+    "accumulator": 0.011929018729789784
+   },
+   "coef_se": {
+    "cooler": 0.026120490109870262,
+    "valve": 0.047544543008084084,
+    "leak": 0.03834943973600222,
+    "accumulator": 0.039770343064413266
+   },
+   "coef_all_cycles": {
+    "cooler": -1.2488863029375756,
+    "valve": -0.017521337878362693,
+    "leak": -0.009587491828780461,
+    "accumulator": 0.020513583827777945
+   },
+   "r2": 0.8902991091964796,
+   "within_cell_sd": 0.005372287561745542,
+   "cell_sd_median": 0.004095557244142631,
+   "cell_rel_sd_median": 0.00044738724994537775,
+   "hf_noise_sd": 0.010157709936675356,
+   "resolution": 0.0009999999999994458,
+   "samples_per_cycle": 6000
+  },
+  "PS6": {
+   "unit": "bar",
+   "mean": 9.07088786910511,
+   "intercept": 9.788968155005074,
+   "coef_per_full_severity": {
+    "cooler": -1.2054324893385582,
+    "valve": 0.0009352518411777722,
+    "leak": 0.006488725776924916,
+    "accumulator": 0.012827812356684707
+   },
+   "coef_se": {
+    "cooler": 0.024802275591083934,
+    "valve": 0.045140125851726276,
+    "leak": 0.03643576275263898,
+    "accumulator": 0.037884634702350296
+   },
+   "coef_all_cycles": {
+    "cooler": -1.191195443762114,
+    "valve": -0.016743593209438544,
+    "leak": -0.008598948799181263,
+    "accumulator": 0.020926038673519217
+   },
+   "r2": 0.8912190249238233,
+   "within_cell_sd": 0.00514761544531605,
+   "cell_sd_median": 0.003928384315543226,
+   "cell_rel_sd_median": 0.00043307605299841296,
+   "hf_noise_sd": 0.010251953069209974,
+   "resolution": 0.0009999999999994458,
+   "samples_per_cycle": 6000
+  },
+  "EPS1": {
+   "unit": "W",
+   "mean": 2509.7805705314336,
+   "intercept": 2490.6536179692916,
+   "coef_per_full_severity": {
+    "cooler": -63.82680637189275,
+    "valve": 2.37113983040413,
+    "leak": 72.26300776305835,
+    "accumulator": 38.48567013443698
+   },
+   "coef_se": {
+    "cooler": 8.41820911844248,
+    "valve": 10.776330271988343,
+    "leak": 9.50537054781704,
+    "accumulator": 10.116873944652292
+   },
+   "coef_all_cycles": {
+    "cooler": -78.17832307919305,
+    "valve": 7.633878658870221,
+    "leak": 77.35818838053423,
+    "accumulator": 32.66765715475362
+   },
+   "r2": 0.3191195590066287,
+   "within_cell_sd": 38.81104432785434,
+   "cell_sd_median": 1.9198948610733348,
+   "cell_rel_sd_median": 0.0007649652258909657,
+   "hf_noise_sd": 1.7639449603279949,
+   "resolution": 0.1999999999998181,
+   "samples_per_cycle": 6000
+  },
+  "FS1": {
+   "unit": "l/min",
+   "mean": 5.9833071302047385,
+   "intercept": 7.45931396557524,
+   "coef_per_full_severity": {
+    "cooler": -1.1186431923192004,
+    "valve": -0.01734985539562315,
+    "leak": -0.9305187744612553,
+    "accumulator": -0.6147047146201482
+   },
+   "coef_se": {
+    "cooler": 0.13504898574777133,
+    "valve": 0.19324838795014662,
+    "leak": 0.15875917539949208,
+    "accumulator": 0.16643814349144992
+   },
+   "coef_all_cycles": {
+    "cooler": -0.874765792357276,
+    "valve": -0.1535241402705251,
+    "leak": -1.049268730355981,
+    "accumulator": -0.5155444053278533
+   },
+   "r2": 0.30585534162671224,
+   "within_cell_sd": 0.5123247256539655,
+   "cell_sd_median": 0.004913822629393579,
+   "cell_rel_sd_median": 0.00082125528950165,
+   "hf_noise_sd": 0.6434797227361504,
+   "resolution": 0.0009999999999976694,
+   "samples_per_cycle": 600
+  },
+  "FS2": {
+   "unit": "l/min",
+   "mean": 9.631304114331723,
+   "intercept": 10.243078715632315,
+   "coef_per_full_severity": {
+    "cooler": -0.9658314245394259,
+    "valve": 0.0060883420394570705,
+    "leak": 0.0065204960062265884,
+    "accumulator": -0.06438559530029662
+   },
+   "coef_se": {
+    "cooler": 0.02933998037508801,
+    "valve": 0.053284819871791414,
+    "leak": 0.04276070410127871,
+    "accumulator": 0.04471786469181489
+   },
+   "coef_all_cycles": {
+    "cooler": -0.9156369164869868,
+    "valve": -0.033638416529783194,
+    "leak": -0.026303383217638518,
+    "accumulator": -0.05078085967012591
+   },
+   "r2": 0.7877794398895581,
+   "within_cell_sd": 0.006631549127513906,
+   "cell_sd_median": 0.0036497342500051567,
+   "cell_rel_sd_median": 0.0003789449701390098,
+   "hf_noise_sd": 0.011696027301384975,
+   "resolution": 0.0009999999999994458,
+   "samples_per_cycle": 600
+  },
+  "TS1": {
+   "unit": "degC",
+   "mean": 45.59205945479641,
+   "intercept": 35.18243437659339,
+   "coef_per_full_severity": {
+    "cooler": 17.16140672673317,
+    "valve": -0.04541469875125779,
+    "leak": -0.10906849004305828,
+    "accumulator": 0.21359430259159753
+   },
+   "coef_se": {
+    "cooler": 0.4766381370302083,
+    "valve": 0.8711583067939105,
+    "leak": 0.7006468444157737,
+    "accumulator": 0.7280124633815512
+   },
+   "coef_all_cycles": {
+    "cooler": 16.635440094631186,
+    "valve": 0.31260839512026595,
+    "leak": 0.1883857553847627,
+    "accumulator": -0.11831502897015318
+   },
+   "r2": 0.8155907984352744,
+   "within_cell_sd": 0.0644463085510003,
+   "cell_sd_median": 0.02877344626647992,
+   "cell_rel_sd_median": 0.0006311065262363986,
+   "hf_noise_sd": 0.03376801656645701,
+   "resolution": 0.0030000000000001137,
+   "samples_per_cycle": 60
+  },
+  "TS2": {
+   "unit": "degC",
+   "mean": 50.457877915804005,
+   "intercept": 41.085186265366964,
+   "coef_per_full_severity": {
+    "cooler": 15.808786595070956,
+    "valve": -0.026987597913136943,
+    "leak": -0.3728167583924006,
+    "accumulator": 0.030268101853154962
+   },
+   "coef_se": {
+    "cooler": 0.4314342416170125,
+    "valve": 0.7927753616564192,
+    "leak": 0.6434934034385534,
+    "accumulator": 0.6696481270096186
+   },
+   "coef_all_cycles": {
+    "cooler": 15.396158530340273,
+    "valve": 0.2589951754559165,
+    "leak": -0.12349281412611686,
+    "accumulator": -0.1964511223216783
+   },
+   "r2": 0.8197317418566535,
+   "within_cell_sd": 0.08835390093557974,
+   "cell_sd_median": 0.024068339597835168,
+   "cell_rel_sd_median": 0.0004769986490116874,
+   "hf_noise_sd": 0.02000033036210939,
+   "resolution": 0.0030000000000001137,
+   "samples_per_cycle": 60
+  },
+  "TS3": {
+   "unit": "degC",
+   "mean": 47.826291235334715,
+   "intercept": 38.06517313273461,
+   "coef_per_full_severity": {
+    "cooler": 15.99622022428362,
+    "valve": -0.04593647832253871,
+    "leak": -0.05981252405637012,
+    "accumulator": 0.27277373240703956
+   },
+   "coef_se": {
+    "cooler": 0.45134915185528884,
+    "valve": 0.8238635898689457,
+    "leak": 0.6616849715708528,
+    "accumulator": 0.686901884577762
+   },
+   "coef_all_cycles": {
+    "cooler": 15.466509089681827,
+    "valve": 0.30170690691901525,
+    "leak": 0.22928149601547904,
+    "accumulator": 0.05705065617546824
+   },
+   "r2": 0.8109232498813294,
+   "within_cell_sd": 0.06750680619590209,
+   "cell_sd_median": 0.024431313767155717,
+   "cell_rel_sd_median": 0.0005108343786671363,
+   "hf_noise_sd": 0.020223364883627217,
+   "resolution": 0.0030000000000001137,
+   "samples_per_cycle": 60
+  },
+  "TS4": {
+   "unit": "degC",
+   "mean": 40.88703436853001,
+   "intercept": 30.131078971707414,
+   "coef_per_full_severity": {
+    "cooler": 17.558484300829974,
+    "valve": -0.02419460540628618,
+    "leak": -0.011617708802279443,
+    "accumulator": 0.30112655883745526
+   },
+   "coef_se": {
+    "cooler": 0.4588031225272947,
+    "valve": 0.8383158598583009,
+    "leak": 0.6768605277254506,
+    "accumulator": 0.698644993523292
+   },
+   "coef_all_cycles": {
+    "cooler": 17.096955878856896,
+    "valve": 0.2749583361450398,
+    "leak": 0.2350902935819983,
+    "accumulator": -0.10475285680130494
+   },
+   "r2": 0.8326420328292077,
+   "within_cell_sd": 0.07743700890497557,
+   "cell_sd_median": 0.03864940784600023,
+   "cell_rel_sd_median": 0.0009452729561561932,
+   "hf_noise_sd": 0.017813760904534612,
+   "resolution": 0.0030000000000001137,
+   "samples_per_cycle": 60
+  },
+  "VS1": {
+   "unit": "mm/s",
+   "mean": 0.6183029215550955,
+   "intercept": 0.5234986468090517,
+   "coef_per_full_severity": {
+    "cooler": 0.12928190869130257,
+    "valve": 0.006522863915572187,
+    "leak": 0.018249405042523748,
+    "accumulator": 0.007802955458880773
+   },
+   "coef_se": {
+    "cooler": 0.004811010922567193,
+    "valve": 0.007111348349661298,
+    "leak": 0.006482799263891317,
+    "accumulator": 0.00592888365091152
+   },
+   "coef_all_cycles": {
+    "cooler": 0.1137664390944804,
+    "valve": 0.008655169181584576,
+    "leak": 0.01994852990211509,
+    "accumulator": 0.005442298846965453
+   },
+   "r2": 0.7276908966647442,
+   "within_cell_sd": 0.016289695914364282,
+   "cell_sd_median": 0.004600753070155301,
+   "cell_rel_sd_median": 0.007440936974038443,
+   "hf_noise_sd": 0.008799434574820207,
+   "resolution": 0.0009999999999998899,
+   "samples_per_cycle": 60
+  }
+ },
+ "detectability": {
+  "cooler": {
+   "levels": [
+    {
+     "severity": 0.8247,
+     "hi_equivalent": 0.1753,
+     "best_sensor": "TS1",
+     "dprime": 219.60935305296348,
+     "detectable": true
+    },
+    {
+     "severity": 1.0,
+     "hi_equivalent": 0.0,
+     "best_sensor": "TS1",
+     "dprime": 266.2899879386001,
+     "detectable": true
+    }
+   ],
+   "first_detectable_hi": 0.1753
+  },
+  "valve": {
+   "levels": [
+    {
+     "severity": 0.3704,
+     "hi_equivalent": 0.6296,
+     "best_sensor": "FS2",
+     "dprime": 0.34005959211830783,
+     "detectable": false
+    },
+    {
+     "severity": 0.7407,
+     "hi_equivalent": 0.2593,
+     "best_sensor": "FS2",
+     "dprime": 0.6800273754914433,
+     "detectable": false
+    },
+    {
+     "severity": 1.0,
+     "hi_equivalent": 0.0,
+     "best_sensor": "FS2",
+     "dprime": 0.9180874517232932,
+     "detectable": false
+    }
+   ],
+   "first_detectable_hi": null
+  },
+  "leak": {
+   "levels": [
+    {
+     "severity": 0.5,
+     "hi_equivalent": 0.5,
+     "best_sensor": "TS2",
+     "dprime": 2.1097922923868824,
+     "detectable": false
+    },
+    {
+     "severity": 1.0,
+     "hi_equivalent": 0.0,
+     "best_sensor": "TS2",
+     "dprime": 4.219584584773765,
+     "detectable": true
+    }
+   ],
+   "first_detectable_hi": 0.0
+  },
+  "accumulator": {
+   "levels": [
+    {
+     "severity": 0.375,
+     "hi_equivalent": 0.625,
+     "best_sensor": "FS2",
+     "dprime": 3.6408684868874333,
+     "detectable": true
+    },
+    {
+     "severity": 0.75,
+     "hi_equivalent": 0.25,
+     "best_sensor": "FS2",
+     "dprime": 7.2817369737748665,
+     "detectable": true
+    },
+    {
+     "severity": 1.0,
+     "hi_equivalent": 0.0,
+     "best_sensor": "FS2",
+     "dprime": 9.708982631699822,
+     "detectable": true
+    }
+   ],
+   "first_detectable_hi": 0.625
+  }
+ },
+ "decisions": {
+  "pressure_noise": {
+   "applied": false,
+   "rig_rel_sd": 9.874865643643431e-05,
+   "rig_value_kpa": 2.0440971882341903,
+   "prior": 15.0,
+   "rule": "PS1 median within-cell sd / mean times model healthy pressure; max(rig, prior)",
+   "caveat": "cycle-to-cycle spread inside one label cell; lab-grade, far below fielded-sensor noise, so the prior is kept"
+  },
+  "temp_noise": {
+   "applied": false,
+   "rig_sd_c": 0.02898062686936776,
+   "prior": 1.5,
+   "rule": "mean of TS1-TS4 median within-cell sd, degC absolute; max(rig, prior)",
+   "caveat": "lab-grade rig temperatures are far quieter than the prior; the prior is kept as the fielded-sensor floor"
+  },
+  "heat_eta": {
+   "applied": false,
+   "rig_degC_per_full_leak": -0.13832887032352711,
+   "se": 0.6706714367876576,
+   "t": -0.20625430387506372,
+   "prior": 4.0,
+   "rule": "apply if coefficient > 0 and |t| >= 2"
+  },
+  "leak_weight": {
+   "applied": false,
+   "channel": "pump_pressure_kpa",
+   "rig_rel_change_per_full_severity": 0.018403007711595264,
+   "t": 3.7409940951874017,
+   "reason": "sign conflict: rig pump outlet pressure rises with this condition label (load-controlled test bench); the model's pressure falls with damage. Prior kept."
+  },
+  "precharge_weight": {
+   "applied": false,
+   "channel": "pump_pressure_kpa",
+   "rig_rel_change_per_full_severity": 0.020707178972751927,
+   "t": 4.014525049325391,
+   "reason": "sign conflict: rig pump outlet pressure rises with this condition label (load-controlled test bench); the model's pressure falls with damage. Prior kept."
+  },
+  "case_drain / fluid_qty / filter_dp channels": {
+   "applied": false,
+   "reason": "no corresponding rig sensor; priors kept"
+  },
+  "rates (eta_drift, leak_scale, precharge_rate, acid_rate, life_cycles, failure_*)": {
+   "applied": false,
+   "reason": "rig degradation is stepped by design: no time-to-failure information"
+  }
+ },
+ "overrides": {
+  "pressure_noise": 15.0,
+  "temp_noise": 1.5
+ }
+}

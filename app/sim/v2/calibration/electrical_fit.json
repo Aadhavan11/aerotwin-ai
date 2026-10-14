@@ -1,0 +1,686 @@
+{
+ "meta": {
+  "tag": "fitted to 18650 lab cells, not aircraft batteries: calibrates SHAPE and relative coupling, not absolute rates or limits",
+  "source": "NASA PCoE Li-ion battery ageing set #5 (B0005, B0006, B0007, B0018)",
+  "conditions": "charge 1.5 A CC to 4.2 V then CV to 20 mA; discharge 2 A CC to 2.7/2.5/2.2/2.5 V; ambient 24 degC; rated 2 Ah",
+  "units": "fade in pp of own initial capacity (mean of first 3 discharges); resistance as (Re + Rct) / R0 with R0 = mean of first 3 impedance readings",
+  "cells": {
+   "B0005": {
+    "discharges": 168,
+    "impedance_readings": 278,
+    "initial_capacity_ah": 1.8460546215871643
+   },
+   "B0006": {
+    "discharges": 168,
+    "impedance_readings": 278,
+    "initial_capacity_ah": 2.0246014027941577
+   },
+   "B0007": {
+    "discharges": 168,
+    "impedance_readings": 278,
+    "initial_capacity_ah": 1.8841173315929292
+   },
+   "B0018": {
+    "discharges": 132,
+    "impedance_readings": 53,
+    "initial_capacity_ah": 1.845933964978541
+   }
+  },
+  "best_capacity_model": "exp_decay",
+  "model_unit_translation": "model fade_pct (pp of healthy capacity) = rig fade_pp; model flight/start cycles are NOT rig cycles (rig 30% fade in ~100-170 cycles vs model ~2000 flights)"
+ },
+ "capacity_fade": {
+  "candidates": [
+   "linear",
+   "exp_decay",
+   "exp_accel",
+   "knee"
+  ],
+  "per_cell": {
+   "linear": {
+    "B0005": {
+     "params": [
+      0.18553268024071903
+     ],
+     "rmse_pp": 2.092163357015459,
+     "mae_pp": 1.5957693307973768,
+     "end_error_pp": 2.7629457811502753
+    },
+    "B0006": {
+     "params": [
+      0.2746914325574393
+     ],
+     "rmse_pp": 2.705960764884335,
+     "mae_pp": 2.263515703532145,
+     "end_error_pp": 4.436860093019959
+    },
+    "B0007": {
+     "params": [
+      0.15769828523789642
+     ],
+     "rmse_pp": 1.583199133431787,
+     "mae_pp": 1.2383771439116988,
+     "end_error_pp": 2.3635365269549773
+    },
+    "B0018": {
+     "params": [
+      0.23189147142542405
+     ],
+     "rmse_pp": 2.214405880312872,
+     "mae_pp": 1.8967534522117242,
+     "end_error_pp": 3.026721780726181
+    }
+   },
+   "exp_decay": {
+    "B0005": {
+     "params": [
+      0.0020955822193960824
+     ],
+     "rmse_pp": 2.427698834024118,
+     "mae_pp": 1.8943781457811952,
+     "end_error_pp": 1.3075175969404533
+    },
+    "B0006": {
+     "params": [
+      0.0033734571796235437
+     ],
+     "rmse_pp": 1.8736042588293114,
+     "mae_pp": 1.4501325726694432,
+     "end_error_pp": 1.6345070129736214
+    },
+    "B0007": {
+     "params": [
+      0.001750149454748832
+     ],
+     "rmse_pp": 1.7400871239111935,
+     "mae_pp": 1.3236217421652208,
+     "end_error_pp": 1.3715995410096298
+    },
+    "B0018": {
+     "params": [
+      0.0026403895178045383
+     ],
+     "rmse_pp": 1.9060184200917791,
+     "mae_pp": 1.5864211269225437,
+     "end_error_pp": 1.8899799055552755
+    }
+   },
+   "exp_accel": {
+    "B0005": {
+     "params": [
+      49.99999999999999,
+      0.0030406077976375327
+     ],
+     "rmse_pp": 1.90077700956918,
+     "mae_pp": 1.5707399254514816,
+     "end_error_pp": 4.859030437584291
+    },
+    "B0006": {
+     "params": [
+      49.99999999999991,
+      0.00410717532037955
+     ],
+     "rmse_pp": 4.283588831923552,
+     "mae_pp": 3.583557562606266,
+     "end_error_pp": 7.841121642393865
+    },
+    "B0007": {
+     "params": [
+      49.99999999999999,
+      0.0026495465957138377
+     ],
+     "rmse_pp": 1.5831152091857965,
+     "mae_pp": 1.3230721280190987,
+     "end_error_pp": 3.855613394485232
+    },
+    "B0018": {
+     "params": [
+      49.99999999999999,
+      0.003775383858629618
+     ],
+     "rmse_pp": 2.855619931001921,
+     "mae_pp": 2.4920160438863137,
+     "end_error_pp": 4.639021202658064
+    }
+   },
+   "knee": {
+    "B0005": {
+     "params": [
+      0.07469072942583993,
+      0.1465674686131559,
+      27.467797006229773,
+      1.0000000000000002
+     ],
+     "rmse_pp": 1.3769754556439846,
+     "mae_pp": 1.1202342793097975,
+     "end_error_pp": 4.703221777879211
+    },
+    "B0006": {
+     "params": [
+      0.2746914325574653,
+      1.3359663815722643e-09,
+      371.8620777833897,
+      8.601255150817565
+     ],
+     "rmse_pp": 2.705960764884335,
+     "mae_pp": 2.2635157035323483,
+     "end_error_pp": 4.436860093024308
+    },
+    "B0007": {
+     "params": [
+      0.06766416290660954,
+      0.11116575801346872,
+      21.344768809161355,
+      1.000005084481039
+     ],
+     "rmse_pp": 1.240405736252395,
+     "mae_pp": 1.0150467857718048,
+     "end_error_pp": 3.51971228152696
+    },
+    "B0018": {
+     "params": [
+      0.23189147143945188,
+      1.2050843166013891e-05,
+      381.6877450328127,
+      2.9816184606843557
+     ],
+     "rmse_pp": 2.2144058803128726,
+     "mae_pp": 1.89675345210354,
+     "end_error_pp": 3.0267217825638255
+    }
+   }
+  },
+  "loco_cycles": {
+   "linear": {
+    "B0005": {
+     "params": [
+      0.21925264537799033
+     ],
+     "rmse_pp": 3.870279218023716,
+     "mae_pp": 3.4910526425926167,
+     "end_error_pp": 8.394179959074581
+    },
+    "B0006": {
+     "params": [
+      0.18335757733128746
+     ],
+     "rmse_pp": 9.22514167128852,
+     "mae_pp": 8.33670619406827,
+     "end_error_pp": -10.815893729747394
+    },
+    "B0007": {
+     "params": [
+      0.2304586961803553
+     ],
+     "rmse_pp": 7.20203995602437,
+     "mae_pp": 6.521379493840759,
+     "end_error_pp": 14.514525154345609
+    },
+    "B0018": {
+     "params": [
+      0.2059741326199813
+     ],
+     "rmse_pp": 2.9598404143491024,
+     "mae_pp": 2.406805564455678,
+     "end_error_pp": -0.3684496027868214
+    }
+   },
+   "exp_decay": {
+    "B0005": {
+     "params": [
+      0.0025452978918143287
+     ],
+     "rmse_pp": 4.07819495885796,
+     "mae_pp": 3.7118275486483605,
+     "end_error_pp": 6.406242555152684
+    },
+    "B0006": {
+     "params": [
+      0.0020686399468533975
+     ],
+     "rmse_pp": 9.21223277366146,
+     "mae_pp": 8.235906691803555,
+     "end_error_pp": -12.225870601339516
+    },
+    "B0007": {
+     "params": [
+      0.00269214642175375
+     ],
+     "rmse_pp": 7.151745231081956,
+     "mae_pp": 6.727570476680613,
+     "end_error_pp": 12.238860898056519
+    },
+    "B0018": {
+     "params": [
+      0.0023749320664640727
+     ],
+     "rmse_pp": 2.4723717640975225,
+     "mae_pp": 1.999082960999317,
+     "end_error_pp": -0.6139421968581402
+    }
+   },
+   "exp_accel": {
+    "B0005": {
+     "params": [
+      49.99999999999999,
+      0.0034782266010151214
+     ],
+     "rmse_pp": 3.7367136481937497,
+     "mae_pp": 2.9910132167193315,
+     "end_error_pp": 11.158085831156786
+    },
+    "B0006": {
+     "params": [
+      49.999999999999815,
+      0.0030127163541590033
+     ],
+     "rmse_pp": 9.460675343065905,
+     "mae_pp": 8.631011132883142,
+     "end_error_pp": -8.742643167221651
+    },
+    "B0007": {
+     "params": [
+      49.99999999999999,
+      0.00362602871790629
+     ],
+     "rmse_pp": 7.247485082964458,
+     "mae_pp": 6.009811505847569,
+     "end_error_pp": 17.640613086068488
+    },
+    "B0018": {
+     "params": [
+      49.99999999999958,
+      0.0032948522549385967
+     ],
+     "rmse_pp": 3.8709182581153674,
+     "mae_pp": 3.193216749656455,
+     "end_error_pp": -0.3631313990343372
+    }
+   },
+   "knee": {
+    "B0005": {
+     "params": [
+      0.21925264499818942,
+      7.659132504219826e-12,
+      10.000129466058139,
+      1.2981446827722891
+     ],
+     "rmse_pp": 3.870279187723144,
+     "mae_pp": 3.4910526114538607,
+     "end_error_pp": 8.394179896850307
+    },
+    "B0006": {
+     "params": [
+      0.18335756945752663,
+      1.1464456950575898e-10,
+      10.022741978669973,
+      24.274499994928007
+     ],
+     "rmse_pp": 9.225142389700224,
+     "mae_pp": 8.336706834369329,
+     "end_error_pp": -10.81589502807789
+    },
+    "B0007": {
+     "params": [
+      0.23045869272139996,
+      4.576470726697059e-11,
+      10.001537056615437,
+      59.99997535074945
+     ],
+     "rmse_pp": 7.202039633143624,
+     "mae_pp": 6.52137920756113,
+     "end_error_pp": 14.514524582394682
+    },
+    "B0018": {
+     "params": [
+      0.1736971518201242,
+      0.03951251484136364,
+      20.55386773880451,
+      1.0014819932374208
+     ],
+     "rmse_pp": 3.1877792895871617,
+     "mae_pp": 2.6270953266170523,
+     "end_error_pp": -0.23272964747472358
+    }
+   }
+  },
+  "loco_life_fraction": {
+   "linear": {
+    "B0005": {
+     "params": [
+      0.22992233819818886
+     ],
+     "rmse_pp": 2.912558021336214,
+     "mae_pp": 2.427935346374114,
+     "end_error_pp": 6.267338910678529
+    },
+    "B0006": {
+     "params": [
+      0.19429756148866337
+     ],
+     "rmse_pp": 10.04421023762525,
+     "mae_pp": 9.063803501595089,
+     "end_error_pp": -12.291974920772894
+    },
+    "B0007": {
+     "params": [
+      0.24104400684350466
+     ],
+     "rmse_pp": 5.895199450141803,
+     "mae_pp": 5.356378876043941,
+     "end_error_pp": 12.184523918751974
+    },
+    "B0018": {
+     "params": [
+      0.22931786766259804
+     ],
+     "rmse_pp": 3.211024396417102,
+     "mae_pp": 2.1823540063202045,
+     "end_error_pp": 7.046619173385338
+    }
+   },
+   "exp_decay": {
+    "B0005": {
+     "params": [
+      0.002661729093517164
+     ],
+     "rmse_pp": 3.2567132065562543,
+     "mae_pp": 2.727969695357299,
+     "end_error_pp": 4.697318874010403
+    },
+    "B0006": {
+     "params": [
+      0.002185568278547627
+     ],
+     "rmse_pp": 9.990226015891908,
+     "mae_pp": 8.926483613820114,
+     "end_error_pp": -13.484780665112282
+    },
+    "B0007": {
+     "params": [
+      0.002809039348516548
+     ],
+     "rmse_pp": 6.006650323961095,
+     "mae_pp": 5.666823157738868,
+     "end_error_pp": 10.412269667873534
+    },
+    "B0018": {
+     "params": [
+      0.0026440910134756202
+     ],
+     "rmse_pp": 2.9311200228219723,
+     "mae_pp": 2.062132055792227,
+     "end_error_pp": 5.389555953116222
+    }
+   },
+   "exp_accel": {
+    "B0005": {
+     "params": [
+      49.99999999999999,
+      0.003664756499271687
+     ],
+     "rmse_pp": 2.6337861956025836,
+     "mae_pp": 1.9585696974559303,
+     "end_error_pp": 8.416811605821518
+    },
+    "B0006": {
+     "params": [
+      49.99999999999997,
+      0.003206452635069084
+     ],
+     "rmse_pp": 10.309899290769216,
+     "mae_pp": 9.40326477366358,
+     "end_error_pp": -10.55464163517918
+    },
+    "B0007": {
+     "params": [
+      49.99999999999999,
+      0.003809978327022001
+     ],
+     "rmse_pp": 5.742227544337313,
+     "mae_pp": 4.736245582508401,
+     "end_error_pp": 14.573707149450353
+    },
+    "B0018": {
+     "params": [
+      49.99999999999994,
+      0.0036682688512527004
+     ],
+     "rmse_pp": 3.743665044655768,
+     "mae_pp": 2.5651431517032517,
+     "end_error_pp": 9.332419854787368
+    }
+   },
+   "knee": {
+    "B0005": {
+     "params": [
+      0.22992233498257517,
+      4.472615408306867e-14,
+      207.26749201965538,
+      59.981682165327705
+     ],
+     "rmse_pp": 2.912557827305735,
+     "mae_pp": 2.4279351052721188,
+     "end_error_pp": 6.267338428337258
+    },
+    "B0006": {
+     "params": [
+      0.1292259627734169,
+      0.07978525448292213,
+      18.59833203599853,
+      1.0000139093326725
+     ],
+     "rmse_pp": 10.156728756449223,
+     "mae_pp": 9.318695858723416,
+     "end_error_pp": -11.56879921073974
+    },
+    "B0007": {
+     "params": [
+      0.24104400327582445,
+      4.58264295692685e-11,
+      10.001790711603135,
+      59.99997644557149
+     ],
+     "rmse_pp": 5.895199154626971,
+     "mae_pp": 5.356378610697242,
+     "end_error_pp": 12.184523388583816
+    },
+    "B0018": {
+     "params": [
+      0.19335658426186192,
+      0.04400805145512639,
+      18.434331637098733,
+      1.000187105841412
+     ],
+     "rmse_pp": 3.336450604068238,
+     "mae_pp": 2.3109757131320876,
+     "end_error_pp": 7.44237536588188
+    }
+   }
+  },
+  "summary": {
+   "linear": {
+    "per_cell_rmse_mean_pp": 2.1489322839111136,
+    "loco_cycles_rmse_mean_pp": 5.814325314921428,
+    "loco_life_fraction_rmse_mean_pp": 5.515748026380092
+   },
+   "exp_decay": {
+    "per_cell_rmse_mean_pp": 1.9868521592141004,
+    "loco_cycles_rmse_mean_pp": 5.728636181924725,
+    "loco_life_fraction_rmse_mean_pp": 5.546177392307808
+   },
+   "exp_accel": {
+    "per_cell_rmse_mean_pp": 2.655775245420112,
+    "loco_cycles_rmse_mean_pp": 6.078948083084869,
+    "loco_life_fraction_rmse_mean_pp": 5.60739451884122
+   },
+   "knee": {
+    "per_cell_rmse_mean_pp": 1.8844369592733967,
+    "loco_cycles_rmse_mean_pp": 5.871310125038539,
+    "loco_life_fraction_rmse_mean_pp": 5.575234085612541
+   }
+  }
+ },
+ "shape": {
+  "B0005": {
+   "window_cycles": 168,
+   "fade_end_pp": 28.221011819049803,
+   "fitted_fade_end_pp": 29.528529415990256,
+   "half_window_share": 0.5436340020258694
+  },
+  "B0006": {
+   "window_cycles": 168,
+   "fade_end_pp": 41.4366091440724,
+   "fitted_fade_end_pp": 43.07111615704602,
+   "half_window_share": 0.5699589507487002
+  },
+  "B0007": {
+   "window_cycles": 168,
+   "fade_end_pp": 23.972077107773725,
+   "fitted_fade_end_pp": 25.343676648783354,
+   "half_window_share": 0.5364694889289352
+  },
+  "B0018": {
+   "window_cycles": 132,
+   "fade_end_pp": 27.35106097600437,
+   "fitted_fade_end_pp": 29.241040881559645,
+   "half_window_share": 0.5431289324990773
+  }
+ },
+ "resistance": {
+  "per_cell": {
+   "B0005": {
+    "slope_per_pp": 0.008017449848247244,
+    "n_impedance": 278,
+    "r_rel_end": 1.182943982067289,
+    "re_rel_end": 1.224995839498598,
+    "rct_rel_end": 1.1561431199940735
+   },
+   "B0006": {
+    "slope_per_pp": 0.0053192750304548505,
+    "n_impedance": 278,
+    "r_rel_end": 1.2297903735817366,
+    "re_rel_end": 1.1991423350585175,
+    "rct_rel_end": 1.2532192513948366
+   },
+   "B0007": {
+    "slope_per_pp": 0.015091923700797216,
+    "n_impedance": 278,
+    "r_rel_end": 1.4527079093114637,
+    "re_rel_end": 1.6154530476826212,
+    "rct_rel_end": 1.356245228984076
+   },
+   "B0018": {
+    "slope_per_pp": -0.002331552339772135,
+    "n_impedance": 53,
+    "r_rel_end": 0.9750026964767522,
+    "re_rel_end": 1.0321319870564003,
+    "rct_rel_end": 0.9372965851929012
+   }
+  },
+  "pooled_slope_per_pp": 0.007466178215602839,
+  "cell_slope_mean": 0.006524274059931794,
+  "cell_slope_ci95": [
+   -0.004932233477354659,
+   0.01798078159721825
+  ],
+  "pooled_rmse_rel": 0.09954176303169453,
+  "loco": {
+   "B0005": {
+    "slope_per_pp": 0.007284867818404606,
+    "rmse_rel": 0.05006600673439025,
+    "mean_error_rel": -0.006724249082008844
+   },
+   "B0006": {
+    "slope_per_pp": 0.009983415663540158,
+    "rmse_rel": 0.13740176339012158,
+    "mean_error_rel": 0.13250517823714864
+   },
+   "B0007": {
+    "slope_per_pp": 0.005811055524885007,
+    "rmse_rel": 0.16225406239500131,
+    "mean_error_rel": -0.12082801866500704
+   },
+   "B0018": {
+    "slope_per_pp": 0.007815939686051399,
+    "rmse_rel": 0.17235958297735945,
+    "mean_error_rel": 0.1572339696387382
+   }
+  },
+  "scatter_rel_sd": 0.015089319753665837
+ },
+ "capacity_noise": {
+  "diff_sd_pp": 0.6645508241204428,
+  "diff_robust_sd_pp": 0.2790909616729405,
+  "smooth_fit_resid_sd_pp": 1.9853236385900856
+ },
+ "temperature_acceleration": {
+  "supported": false,
+  "ambient_c_values": [
+   24.0
+  ],
+  "reason": "all four cells were cycled at one ambient temperature; the small differences in measured cell temperature are self-heating and are confounded with discharge cut-off voltage (2.5/2.2/2.5 V) and cell-to-cell spread, so no Arrhenius activation energy can be fitted. activation_k stays a literature prior.",
+  "observational_only": {
+   "B0005": {
+    "mean_cell_temp_c": 32.79131856603086,
+    "mean_fade_pp_per_cycle": 0.16898809472484913
+   },
+   "B0006": {
+    "mean_cell_temp_c": 32.79266458937206,
+    "mean_fade_pp_per_cycle": 0.2481234080483377
+   },
+   "B0007": {
+    "mean_cell_temp_c": 32.367750973956205,
+    "mean_fade_pp_per_cycle": 0.14354537190283667
+   },
+   "B0018": {
+    "mean_cell_temp_c": 31.094192369945784,
+    "mean_fade_pp_per_cycle": 0.20878672500766693
+   }
+  }
+ },
+ "decisions": {
+  "resistance_fade": {
+   "applied": true,
+   "rig_value": 0.006524274059931794,
+   "cell_ci95_t": [
+    -0.004932233477354659,
+    0.01798078159721825
+   ],
+   "n_cells": 4,
+   "prior": 0.03,
+   "rule": "mean of the 4 per-cell slopes of R/R0 - 1 per fade pp; applied when the prior lies outside the cell-level 95% t-interval (the data reject the prior)",
+   "translation": "dimensionless (relative resistance growth per percentage point of fade): transfers across cell format",
+   "caveat": "with 4 cells the interval is wide and includes 0 (B0018 shows no growth); the data reject the prior's magnitude, they do not pin the value. resistance_rate stays a prior and may double-count a few % of R0"
+  },
+  "capacity_noise": {
+   "applied": true,
+   "rig_value_pp": 0.6645508241204428,
+   "robust_sd_pp": 0.2790909616729405,
+   "smooth_fit_resid_sd_pp": 1.9853236385900856,
+   "prior": 0.05,
+   "rule": "sd of first differences of fade_pp / sqrt(2); max(rig, prior) because the rig is a lab instrument",
+   "caveat": "includes real capacity-regeneration jumps after rest, not only measurement noise"
+  },
+  "resistance_noise": {
+   "applied": true,
+   "rig_rel_sd": 0.015089319753665837,
+   "rig_value_mohm": 0.1207145580293267,
+   "prior": 0.01,
+   "rule": "relative scatter of (Re + Rct) about a 5-point running median, times model fresh resistance (relative translation); max(rig, prior)"
+  },
+  "cycle_fade / calendar_fade / life_cycles": {
+   "applied": false,
+   "reason": "absolute rates of 18650 cells aged in ~150 cycles to 30% fade are not aircraft rates; priors kept"
+  },
+  "activation_k": {
+   "applied": false,
+   "reason": "no ambient-temperature variation in the data"
+  }
+ },
+ "overrides": {
+  "resistance_fade": 0.006524274059931794,
+  "capacity_noise": 0.6645508241204428,
+  "resistance_noise": 0.1207145580293267
+ }
+}

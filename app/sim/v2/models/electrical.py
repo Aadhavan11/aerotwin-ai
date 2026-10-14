@@ -6,6 +6,9 @@ not damage: maintenance preserves it to avoid recharging elapsed fleet calendar 
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 
 from app.sim.v2.core import State, register
@@ -50,6 +53,21 @@ PARAMS: dict[str, float] = {
     "failure_median_accel": 470.0,  # literature prior, unverified: flights at OAT 45, stress 2.
     "failure_shape_accel": 4.5,  # literature prior, unverified: reference Weibull shape, not validation.
 }
+
+PRIOR_PARAMS: dict[str, float] = dict(PARAMS)  # the unfitted literature priors, kept for before/after comparisons
+FIT_PATH = Path(__file__).resolve().parents[1] / "calibration" / "electrical_fit.json"
+
+
+def _apply_fit(path: Path = FIT_PATH) -> None:
+    """Override PARAMS with the committed data-fitted values (JSON key ``overrides``); defaults stay if the file is absent."""
+    if not path.is_file():
+        return
+    for key, value in json.loads(path.read_text()).get("overrides", {}).items():
+        if key in PARAMS:
+            PARAMS[key] = float(value)
+
+
+_apply_fit()
 
 
 @register("electrical")

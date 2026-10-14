@@ -89,9 +89,9 @@ def _m(id: str, kind: str, ata: str, h: float, **kw: Any) -> FaultMode:
 
 
 LIBRARY: dict[str, FaultMode] = {m.id: m for m in (
-    _m("hpt_blade_erosion", "engine", "72", 4e-4, age_ref_cycles=6000, driver="dust_index", driver_gain=2.0, ramp_cycles=1500,
+    _m("hpt_blade_erosion", "engine", "72", 2e-5, age_ref_cycles=6000, driver="dust_index", driver_gain=2.0, ramp_cycles=1500,
        detect_channels=("egt_margin_c", "T50"), effect_key="egt_margin_c", effect_mult=0.6),
-    _m("compressor_fouling", "engine", "72", 8e-4, driver="humidity_pct", driver_gain=0.01, ramp_cycles=800, shape="exponential",
+    _m("compressor_fouling", "engine", "72", 4e-5, driver="humidity_pct", driver_gain=0.01, ramp_cycles=800, shape="exponential",
        detect_channels=("hpc_eff_pct", "T30"), effect_key="hpc_eff_pct", effect_mult=0.93),
     _m("stuck_brake", "brakes", "32", 1.5e-4, age_ref_cycles=3000, ramp_cycles=15, shape="exponential",
        detect_channels=("disc_temp_c", "pad_wear_mm"), effect_key="temp_c", effect_shift=250.0),

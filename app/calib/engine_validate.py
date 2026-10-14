@@ -15,7 +15,21 @@ STATIONS = ("ATL", "DFW", "JFK", "ORD", "LAX", "SFO", "DEN", "MIA")
 
 
 def simulate(n: int, seed: int, variant: str = "fd001", max_cycles: int = 700, stress: float = 1.0) -> dict[str, Any]:
-    """Run n engines to failure with v1-profile contexts. Returns per-engine telemetry arrays (n, T, S) and life."""
+    """Run n engines to failure with v1-profile contexts. Returns per-engine telemetry arrays (n, T, S) and life.
+
+    Validation runs on the raw C-MAPSS time axis (``flights_per_model_cycle`` = 1) so cycles-to-failure is comparable to the data.
+    """
+    from app.sim.v2.models.engine import PARAMS
+
+    saved = PARAMS["flights_per_model_cycle"]
+    PARAMS["flights_per_model_cycle"] = 1.0
+    try:
+        return _simulate(n, seed, variant, max_cycles, stress)
+    finally:
+        PARAMS["flights_per_model_cycle"] = saved
+
+
+def _simulate(n: int, seed: int, variant: str, max_cycles: int, stress: float) -> dict[str, Any]:
     from app.sim.profile import profile_for_cycle
     from app.sim.v2 import Fleet, build_context
     from app.sim.v2.models.engine import EngineModel
