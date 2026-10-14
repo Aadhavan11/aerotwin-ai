@@ -29,10 +29,12 @@ CREATE TABLE IF NOT EXISTS plans(id TEXT PRIMARY KEY, mode TEXT, feasible INTEGE
 CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, type TEXT, at TEXT, json TEXT);
 CREATE TABLE IF NOT EXISTS agent_runs(id TEXT PRIMARY KEY, status TEXT, json TEXT);
 CREATE TABLE IF NOT EXISTS work_orders(id TEXT PRIMARY KEY, status TEXT, json TEXT);
+CREATE TABLE IF NOT EXISTS mel_items(seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE, status TEXT, json TEXT);
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, actor TEXT, action TEXT, ref TEXT, detail TEXT);
 CREATE TABLE IF NOT EXISTS kv(key TEXT PRIMARY KEY, value TEXT);
 """
 TABLES = ["aircraft", "components", "telemetry", "health_history", "legs", "stations", "tasks", "plans", "events", "agent_runs", "work_orders", "audit", "kv"]
+TABLES.append("mel_items")
 
 
 @contextmanager
