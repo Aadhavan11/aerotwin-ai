@@ -15,6 +15,7 @@ const WorkOrders = lazy(() => import("./pages/WorkOrders"));
 const FlightBrief = lazy(() => import("./pages/FlightBrief"));
 const Dispatch = lazy(() => import("./pages/Dispatch"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Insights = lazy(() => import("./pages/Insights"));
 
 // Short names for the top bar; the role's own longer labels are used as tooltips.
 const SHORT: Record<string, string> = {
@@ -28,6 +29,7 @@ const SHORT: Record<string, string> = {
   "/brief": "Readiness brief",
   "/departures": "Departures",
   "/admin": "System & audit",
+  "/insights": "Insights",
 };
 
 export default function App() {
@@ -61,7 +63,7 @@ export default function App() {
           AeroTwin <small>maintenance planning</small>
         </NavLink>
         <nav className="app-nav" aria-label="Main">
-          {role.nav.map((n) => (
+          {[...role.nav, { to: "/insights", label: "Insights" }].map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -128,6 +130,7 @@ export default function App() {
             <Route path="/brief" element={<FlightBrief />} />
             <Route path="/departures" element={<Dispatch />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/insights" element={<Insights />} />
           </Routes>
         </Suspense>
         <footer className="app-footer">

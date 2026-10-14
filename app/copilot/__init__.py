@@ -8,3 +8,9 @@ def reset_all() -> None:
     audit.reset()
     workorders.reset()
     chat.reset()
+    try:
+        from app.insights import disruptions
+
+        disruptions.reset()
+    except Exception:  # noqa: BLE001
+        pass

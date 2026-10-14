@@ -6,6 +6,7 @@ GET /health shows which is which and any import error, so a broken module is vis
 from __future__ import annotations
 
 import importlib
+import os
 import traceback
 
 from fastapi import FastAPI
@@ -16,7 +17,9 @@ from .api import core, mock
 
 app = FastAPI(title="AeroTwin AI API", version=settings.VERSION,
               description="Advisory-only maintenance planning prototype on SIMULATED data. See CONTRACTS.md for the spec.")
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"],
+_DEFAULT_CORS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173"
+_CORS = [o.strip() for o in os.environ.get("CORS_ORIGINS", _DEFAULT_CORS).split(",") if o.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=_CORS,
                    allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Data-Source"])
 db.init_db()
 app.include_router(core.router)

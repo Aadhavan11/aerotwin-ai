@@ -20,12 +20,13 @@ async function request<T>(
   if (!r.ok)
     throw new ApiError(r.status, `${r.status} ${path}: ${text.slice(0, 200)}`);
   return {
-    data: JSON.parse(text) as T,
+    data: (text ? JSON.parse(text) : null) as T,
     source: r.headers.get("x-data-source") ?? "",
   };
 }
 
 export const get = <T>(path: string) => request<T>(path);
+export const del = <T>(path: string) => request<T>(path, { method: "DELETE" });
 export const post = <T>(path: string, body?: unknown) =>
   request<T>(path, {
     method: "POST",

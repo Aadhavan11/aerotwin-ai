@@ -15,9 +15,9 @@ from app.sim.service import Simulator
 from app.solver.tasks import derive_tasks
 
 class IntegratedSimulator(Simulator):
-    def __init__(self, db_path='data/aerotwin.db', seed=1234, trajectories=None):
+    def __init__(self, db_path='data/aerotwin.db', seed=1234, trajectories=None, stochastic=False):
         self._connected = False
-        super().__init__(db_path,seed,trajectories=trajectories if trajectories is not None else cmapss.trajectories())
+        super().__init__(db_path,seed,trajectories=trajectories if trajectories is not None else cmapss.trajectories(), stochastic=stochastic)
         self.source.source = cmapss.data_source() if trajectories is None else 'provided_replay'
         self._connected = True
         self._restore_twin()
@@ -30,7 +30,7 @@ class IntegratedSimulator(Simulator):
     def _restore_twin(self):
         twin.reset()
         twin.set_now_provider(self.clock.now)
-        twin.set_ops_provider(lambda: ([l.model_copy(deep=True) for l in self.state.legs], [s.model_copy(deep=True) for s in self.state.stations]))
+        twin.set_ops_provider(lambda: ([lg.model_copy(deep=True) for lg in self.state.legs], [s.model_copy(deep=True) for s in self.state.stations]))
         self._register()
         twin.seed_components([c.model_copy(deep=True) for c in self.state.components])
         # Reconstruct scoring windows from durable rows without emitting duplicate alerts.
@@ -82,9 +82,9 @@ class IntegratedSimulator(Simulator):
             except Exception:
                 self._restore_twin()
                 raise
-            completed=[l for l in self.state.legs if old<l.sched_arr<=self.state.now]
+            completed=[lg for lg in self.state.legs if old<lg.sched_arr<=self.state.now]
             for component in self.state.components:
-                duration=sum((l.sched_arr-l.sched_dep).total_seconds()/3600 for l in completed if l.tail==component.tail)
+                duration=sum((lg.sched_arr-lg.sched_dep).total_seconds()/3600 for lg in completed if lg.tail==component.tail)
                 component.hours=previous_hours[component.component_id]+duration
             for leg in completed:
                 twin.add_timeline_event(leg.tail,TwinEvent(ts=leg.sched_arr,kind='flight',summary=f'SIMULATED flight {leg.dep} → {leg.arr}',ref=leg.id))
@@ -117,12 +117,17 @@ def create_app(db_path=None):
         app.include_router(router)
     @app.get('/health')
     def status():
-        return {'ok':True,'mock':False,'version':'simulator-integration-1','sim_now':simulator.state.now,'synthetic':True,'telemetry_source':simulator.source.source,'model_available':health.model_available(),'twin_connected':True}
+        return {'ok':True,'mock':False,'version':'simulator-integration-1','sim_now':simulator.state.now,'synthetic':True,'telemetry_source':simulator.source.source,
+                'model_available':health.model_available(),'twin_connected':True}
     @app.get('/fleet',response_model=FleetOverview)
     def fleet():
         aircraft=twin.aircraft_summaries()
-        return FleetOverview(aircraft=aircraft,stations=simulator.state.stations,kpis=FleetKpis(aircraft=len(aircraft),needing_attention=sum(a.status in ('watch','alert') for a in aircraft),predicted_maintenance_72h=sum(t.deadline<=simulator.state.now+timedelta(hours=72) for t in derive_tasks(twin.snapshot())),in_maintenance=sum(a.status=='in_maintenance' for a in aircraft),readiness_pct=100*sum(a.status not in ('in_maintenance','aog') for a in aircraft)/len(aircraft)))
+        return FleetOverview(aircraft=aircraft,stations=simulator.state.stations,kpis=FleetKpis(
+            aircraft=len(aircraft),needing_attention=sum(a.status in ('watch','alert') for a in aircraft),
+            predicted_maintenance_72h=sum(t.deadline<=simulator.state.now+timedelta(hours=72) for t in derive_tasks(twin.snapshot())),
+            in_maintenance=sum(a.status=='in_maintenance' for a in aircraft),
+            readiness_pct=100*sum(a.status not in ('in_maintenance','aog') for a in aircraft)/len(aircraft)))
     @app.get('/legs')
     def legs(tail: str|None=None):
-        return [l for l in simulator.state.legs if tail is None or l.tail==tail]
+        return [lg for lg in simulator.state.legs if tail is None or lg.tail==tail]
     return app

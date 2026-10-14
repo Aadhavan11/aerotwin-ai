@@ -28,10 +28,9 @@ from __future__ import annotations
 import json
 import logging
 import math
-from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, Optional, Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 
@@ -154,6 +153,38 @@ def _matrix(rows: Sequence[TelemetryRow], keys: Sequence[str]) -> np.ndarray:
                 except (TypeError, ValueError):
                     pass
     return out
+
+
+STUCK_LAST_K = 5          # last k rows identical -> partially stuck sensor
+SPIKE_SIGMA = 6.0         # a jump this many robust sigmas beyond the typical step is a spike
+
+
+def series_issues(name: str, x: np.ndarray, *, last_k: int = STUCK_LAST_K, sigma: float = SPIKE_SIGMA,
+                  check_missing: bool = True, check_shape: bool = True) -> list[tuple[str, str]]:
+    """Data-quality problems of one sensor's window as ``(mode, reason)``; mode is dropout, stuck or spike.
+
+    A window that is flat from start to end is reported by the caller (its message is older); this adds
+    the partial cases: values missing in the last ``last_k`` rows, the last ``last_k`` rows constant while the
+    rest varied, and one of the last 3 steps beyond ``sigma`` robust standard deviations (median/MAD) of the steps.
+    """
+    out: list[tuple[str, str]] = []
+    n = len(x)
+    tail = x[-last_k:]
+    if check_missing and n and np.isnan(tail).any():
+        out.append(("dropout", f"{name} missing in {int(np.isnan(tail).sum())} of last {len(tail)} rows"))
+    if not check_shape:
+        return out
+    valid = x[~np.isnan(x)]
+    if n >= last_k and not np.isnan(tail).any() and np.ptp(tail) == 0 and (np.ptp(valid) > 0 or len(valid) < 10):
+        out.append(("stuck", f"{name} constant for last {last_k} cycles"))
+    if len(valid) >= 8:
+        d = np.diff(valid)
+        med = float(np.median(d))
+        scale = max(1.4826 * float(np.median(np.abs(d - med))), 2e-4 * float(np.mean(np.abs(valid))), 1e-9)
+        if float(np.max(np.abs(d[-3:] - med))) > sigma * scale:
+            out.append(("spike", f"{name} jumped more than {sigma:g} sigma of its usual step"))
+    return out
+
 
 
 def _clip01(x: float) -> float:
@@ -398,6 +429,14 @@ def score_generic(kind: str, tail: str, component_id: str, window: Sequence[Tele
     if len(xv) >= 10 and np.std(xv) == 0:
         reasons.append(f"sensor {spec.wear_signal} flat for {len(xv)} cycles")
         status = "degraded"
+    else:
+        for _mode, why in series_issues(spec.wear_signal, x, check_missing=False):
+            reasons.append(why)
+            status = "degraded"
+    for j, key in enumerate(keys[1:], start=1):
+        for _mode, why in series_issues(key, mat[:, j], check_shape=False):
+            reasons.append(why)
+            status = "degraded"
     span = spec.limit - spec.healthy
     level = float(xv[-1])
     health = _clip01(1.0 - (level - spec.healthy) / span)

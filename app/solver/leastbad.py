@@ -15,7 +15,7 @@ from app.solver.common import aware, at_min
 
 def least_bad(state: FleetState, task: Task, max_ext_h: float = 3.0) -> Optional[dict]:
     now = aware(state.now)
-    last_arrival = max([aware(l.sched_arr) for l in state.legs if l.tail == task.tail] + [now])
+    last_arrival = max([aware(leg.sched_arr) for leg in state.legs if leg.tail == task.tail] + [now])
     relaxed = task.model_copy(update={"deadline": max(last_arrival, aware(task.deadline)) + timedelta(days=1)})
     ctx = SolveContext(state, [relaxed], max_ext_h=max_ext_h)
     cands = ctx.candidates(relaxed)

@@ -10,7 +10,7 @@
 # Fields per card
 #   id             stable card id; the copilot cites it as kb:<id>
 #   title          what the job is
-#   component_kind one of ComponentKind: engine | brakes | landing_gear | hydraulics | avionics
+#   component_kind one of ComponentKind: engine | brakes | landing_gear | hydraulics | avionics | apu | tires | ecs | electrical
 #   ata            ATA-style chapter label (loose)
 #   duration_h     job length in hours (float)
 #   skill          technician skill needed: engine | gear | hydraulics | avionics
@@ -88,6 +88,54 @@ cards:
     part_qty: 1
     trigger: rul
     note: Swap a line-replaceable avionics unit (SYNTHETIC card).
+    synthetic: true
+
+  - id: TC-APU-STARTER
+    title: APU starter replacement
+    component_kind: apu
+    ata: "ATA 49"
+    duration_h: 3.0
+    skill: engine
+    part: APU-STARTER
+    part_qty: 1
+    trigger: rul
+    note: Replace the APU starter after declining exhaust temperature margin (SIMULATED card, synthetic values).
+    synthetic: true
+
+  - id: TC-TIRE-REPLACE
+    title: Tire assembly replacement
+    component_kind: tires
+    ata: "ATA 32"
+    duration_h: 1.5
+    skill: gear
+    part: TIRE-ASSY
+    part_qty: 1
+    trigger: rul
+    note: Replace a tire with worn tread or an acute pressure leak (SIMULATED card, synthetic values).
+    synthetic: true
+
+  - id: TC-ECS-VALVE
+    title: ECS pack valve replacement
+    component_kind: ecs
+    ata: "ATA 21"
+    duration_h: 3.0
+    skill: hydraulics
+    part: ECS-PACK-VALVE
+    part_qty: 1
+    trigger: rul
+    note: Replace a pack valve after outlet temperature drifts above its setpoint (SIMULATED card, synthetic values).
+    synthetic: true
+
+  - id: TC-BATTERY-REPLACE
+    title: Battery pack replacement
+    component_kind: electrical
+    ata: "ATA 24"
+    duration_h: 2.0
+    skill: avionics
+    part: BATTERY-PACK
+    part_qty: 1
+    trigger: rul
+    note: Replace a battery pack with faded capacity and reduced bus voltage (SIMULATED card, synthetic values).
     synthetic: true
 
   # ---- routine checks (background work so the fleet always has something to plan) ----

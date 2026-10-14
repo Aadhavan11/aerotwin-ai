@@ -5,7 +5,7 @@ import json
 from functools import lru_cache
 from typing import Any, Type, TypeVar
 
-from pydantic import BaseModel, TypeAdapter
+from pydantic import TypeAdapter
 
 from . import settings
 

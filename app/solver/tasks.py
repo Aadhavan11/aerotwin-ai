@@ -39,8 +39,8 @@ def _short(component_id: str) -> str:
 
 def _future_legs(legs: list[Leg], tail: str, now: datetime) -> list[Leg]:
     """Legs of this aircraft that have not arrived yet (an in-progress leg still adds a cycle)."""
-    mine = [l for l in legs if l.tail == tail and aware(l.sched_arr) > now]
-    return sorted(mine, key=lambda l: (aware(l.sched_dep), l.id))
+    mine = [leg for leg in legs if leg.tail == tail and aware(leg.sched_arr) > now]
+    return sorted(mine, key=lambda leg: (aware(leg.sched_dep), leg.id))
 
 
 def cycle_deadline(future: list[Leg], cycles: int, now: datetime) -> tuple[datetime, str]:

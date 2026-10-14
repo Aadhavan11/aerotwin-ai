@@ -31,7 +31,7 @@ from typing import Callable, Deque, Iterable, Optional
 
 from app.contracts.models import (
     Aircraft, AircraftSummary, ComponentState, DataQuality, FleetState, HealthScore, HistoryPoint, Leg,
-    PredictedPoint, RulEstimate, ScenarioEvent, Station, TelemetryRow, TwinComponent, TwinEvent, TwinView,
+    PredictedPoint, ScenarioEvent, Station, TelemetryRow, TwinComponent, TwinEvent, TwinView,
 )
 from app.ml import health as ml_health
 from app.ml.sensors import kind_from_component_id

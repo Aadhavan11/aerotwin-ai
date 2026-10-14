@@ -29,7 +29,8 @@ COORDS = {  # (lat, lon): public airport coordinates, rounded
 }
 HUBS = ["ATL", "DFW", "ORD"]
 COMPONENT_KINDS = [("engine_1", "engine"), ("engine_2", "engine"), ("brakes", "brakes"),
-                   ("landing_gear", "landing_gear"), ("hydraulics", "hydraulics"), ("avionics", "avionics")]
+                   ("landing_gear", "landing_gear"), ("hydraulics", "hydraulics"), ("avionics", "avionics"),
+                   ("apu", "apu"), ("tires", "tires"), ("ecs", "ecs"), ("electrical", "electrical")]
 
 
 def _km(a: str, b: str) -> float:
@@ -119,20 +120,24 @@ SPECIAL_RUL = {
 SCHEDULED_DUE = {("SIM-008", "brakes"): 3}   # tire/wheel change (40-day synthetic interval) due in 3 days
 
 
-def _components(rng: random.Random, tail: str, now: datetime, wheel_interval_days: float) -> list[ComponentState]:
+def _components(rng: random.Random, tail: str, now: datetime, wheel_interval_days: float, seed: int = SEED) -> list[ComponentState]:
     comps: list[ComponentState] = []
+    ops_v2 = random.Random(f'{seed}:{tail}:ops:v2')
     for name, kind in COMPONENT_KINDS:
-        cycles = rng.randint(120, 2400)
+        component_rng = ops_v2 if kind in ('apu', 'tires', 'ecs', 'electrical') else rng
+        cycles = component_rng.randint(120, 2400)
         sp = SPECIAL_RUL.get((tail, name))
         if sp:
             p10, p50, p90, health, anomaly, status = sp
             cycles = 231 if (tail, name) == ("SIM-017", "engine_2") else cycles
         else:
-            p50 = rng.uniform(150, 450)
+            p50 = component_rng.uniform(150, 450)
             p10, p90 = round(p50 * 0.8, 1), round(p50 * 1.15, 1)
             p50 = round(p50, 1)
-            health, anomaly, status = round(rng.uniform(0.72, 0.95), 2), round(rng.uniform(0.04, 0.2), 2), "ok"
-        days_ago = rng.uniform(1.0, 9.0)           # recent service: no routine check falls inside the 5-day horizon by accident
+            health, anomaly, status = round(component_rng.uniform(0.72, 0.95), 2), round(component_rng.uniform(0.04, 0.2), 2), "ok"
+            if kind in ('apu', 'tires', 'ecs', 'electrical'):
+                health = round(1 - component_rng.uniform(.05, .35), 3)
+        days_ago = component_rng.uniform(1.0, 9.0)           # recent service: no routine check falls inside the 5-day horizon by accident
         if (tail, name) in SCHEDULED_DUE:
             days_ago = wheel_interval_days - SCHEDULED_DUE[(tail, name)]
         comps.append(ComponentState(
@@ -166,7 +171,7 @@ def golden_state(seed: Optional[int] = None, now: datetime = NOW) -> FleetState:
             first_dep = now + timedelta(minutes=30)
             dep_override = {1: datetime(2026, 10, 13, 5, 0, tzinfo=UTC)}
         legs.extend(_rotation(rng, tail, home, first_dep, forced=forced, dep_override=dep_override))
-        comps = _components(rng, tail, now, wheel)
+        comps = _components(rng, tail, now, wheel, seed)
         components.extend(comps)
         worst = min(("alert", "watch", "ok"), key=lambda s: ["alert", "watch", "ok"].index(s) if any(c.status == s for c in comps) else 9)
         aircraft.append(Aircraft(

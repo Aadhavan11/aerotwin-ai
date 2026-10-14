@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from app import copilot
 from app.contracts.models import (
     Aircraft, Assignment, ChatRequest, ComponentState, DataQuality, FleetState, PartStock, Plan, PlanDiff, PlanMetrics,
-    ReplanResult, RulEstimate, Station, TelemetryRow, Technician,
+    ReplanResult, RulEstimate, Station, Technician,
 )
 from app.copilot import audit, chat as chat_mod, kb, llm, persist, tools, workorders
 from app.copilot.router import router

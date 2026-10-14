@@ -5,7 +5,21 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
-from app.contracts.models import *  # noqa: F401,F403
+from app.contracts.models import (
+    AgentRun,
+    AuditEntry,
+    ChatResponse,
+    FleetOverview,
+    HealthScore,
+    Leg,
+    MetricsBundle,
+    Plan,
+    ReplanResult,
+    Station,
+    Task,
+    TwinView,
+    WorkOrder,
+)
 
 F = Path(__file__).resolve().parent.parent / "fixtures"
 CASES = {

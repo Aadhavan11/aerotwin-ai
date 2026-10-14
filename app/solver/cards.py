@@ -14,7 +14,7 @@ import yaml
 
 CARDS_PATH = Path(__file__).resolve().parent.parent / "copilot" / "kb" / "task_cards.yaml"
 
-KINDS = {"engine", "brakes", "landing_gear", "hydraulics", "avionics"}
+KINDS = {"engine", "brakes", "landing_gear", "hydraulics", "avionics", "apu", "tires", "ecs", "electrical"}
 SKILLS = {"engine", "gear", "hydraulics", "avionics"}
 
 

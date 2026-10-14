@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePoll } from "../api/client";
 import type { FleetOverview, HealthInfo, Leg } from "../api/types";
-import { ErrorBox, Loading, StatusPill } from "../components/ui";
+import type { InsightsDisruptions } from "../api/insights";
+import { Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
+import { delaysByTail } from "../lib/insights";
 import USMap from "../components/USMap";
 import { profileFor } from "../components/aircraftModels";
 import { fmtZ, STATUS_ORDER } from "../lib/format";
@@ -14,6 +16,10 @@ const COMPONENT: Record<string, string> = {
   landing_gear: "Landing gear",
   hydraulics: "Hydraulics",
   avionics: "Avionics",
+  apu: "APU",
+  tires: "Tires",
+  ecs: "Air conditioning (ECS)",
+  electrical: "Electrical / battery",
 };
 
 export default function Fleet() {
@@ -21,6 +27,8 @@ export default function Fleet() {
   const fleet = usePoll<FleetOverview>("/fleet", 3000);
   const legs = usePoll<Leg[]>("/legs", 15000);
   const health = usePoll<HealthInfo>("/health", 4000);
+  const disruptions = usePoll<InsightsDisruptions>("/insights/disruptions", 0);
+  const delays = delaysByTail(disruptions.data?.by_tail);
   const [query, setQuery] = useState("");
   const data = fleet.data;
   if (!data) return fleet.error ? <ErrorBox error={fleet.error} /> : <Loading what="the fleet" />;
@@ -105,6 +113,7 @@ export default function Fleet() {
                       <Link to={`/aircraft/${a.tail}`} onClick={(e) => e.stopPropagation()}>
                         {a.tail}
                       </Link>
+                      {delays.has(a.tail) && <> <Chip tone="amber">Delay {delays.get(a.tail)} min</Chip></>}
                     </td>
                     <td className="muted">{profileFor(a.type)?.key === "b738" ? "737-800" : profileFor(a.type)?.key === "a320" ? "A320" : a.type}</td>
                     <td className="mono">{a.location === "AIR" ? "airborne" : a.location}</td>

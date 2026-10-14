@@ -11,10 +11,11 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
-from app.contracts.models import Assignment, Plan, Station, Task, WorkOrder
+from app.contracts.models import Assignment, Station, Task, WorkOrder
 from app.copilot import kb, workorders
 
-LABEL = {"engine": "Engine", "brakes": "Brakes", "landing_gear": "Landing gear", "hydraulics": "Hydraulics", "avionics": "Avionics"}
+LABEL = {"engine": "Engine", "brakes": "Brakes", "landing_gear": "Landing gear", "hydraulics": "Hydraulics",
+         "avionics": "Avionics", "apu": "APU", "tires": "Tires", "ecs": "Environmental control", "electrical": "Electrical"}
 HISTORY_KINDS_HIDDEN = {"flight"}
 
 
@@ -87,7 +88,7 @@ def _order_for(task_id: str, orders: list[WorkOrder]) -> Optional[WorkOrder]:
 
 
 def _flights_per_day(legs: list, tail: str, now: datetime) -> float:
-    future = [l for l in legs if l.tail == tail and _aware(l.sched_dep) >= now]
+    future = [leg for leg in legs if leg.tail == tail and _aware(leg.sched_dep) >= now]
     if len(future) < 2:
         return 4.0
     span = (_aware(future[-1].sched_dep) - _aware(future[0].sched_dep)).total_seconds() / 86400

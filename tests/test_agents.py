@@ -186,7 +186,8 @@ def test_run_is_fast_and_deterministic():
     a = run_workflow(GOAL, {}, "scripted")
     elapsed = time.perf_counter() - t0
     assert elapsed < 5.0, elapsed                                   # INTEGRATION.md 4.2: scripted mode under 5 s
-    STORE.reset(); RUNS.reset()
+    STORE.reset()
+    RUNS.reset()
     b = run_workflow(GOAL, {}, "scripted")
     key = lambda r: ([(x.station, x.start) for x in r.plan.assignments], r.explanation.replace(r.plan.id, "P"))  # noqa: E731
     assert key(a) == key(b)

@@ -12,4 +12,5 @@ GROUPS: dict[str, tuple[str, str]] = {
     "sim": ("app.sim.router", "Aadhavan: POST /sim/step, /scenario/inject, /scenario/reset"),
     "agents": ("app.agents.router", "Pardhu: POST /agents/run, GET /agents/runs/{id}"),
     "copilot": ("app.copilot.router", "Aashirth: POST /copilot/chat, GET/POST /workorders, GET /audit"),
+    "insights": ("app.insights.router", "Aadhavan: GET /insights/data-quality, /insights/reliability, /insights/disruptions, POST/DELETE /insights/weather, GET /insights/legs/{id}/profile"),
 }

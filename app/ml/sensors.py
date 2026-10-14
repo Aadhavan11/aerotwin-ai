@@ -89,6 +89,10 @@ GENERIC: dict[str, GenericSpec] = {
     "landing_gear": GenericSpec("landing_gear", "strut_pressure_kpa", "down", 1800.0, 1200.0, "kPa", ("shock_load_g",), 1200.0),
     "hydraulics": GenericSpec("hydraulics", "pump_pressure_kpa", "down", 20700.0, 17200.0, "kPa", ("fluid_temp_c",), 2000.0),
     "avionics": GenericSpec("avionics", "error_rate_per_khr", "up", 0.2, 5.0, "1/kh", ("box_temp_c",), 3000.0),
+    "apu": GenericSpec("apu", "apu_egt_margin_c", "down", 90.0, 20.0, "degC", ("apu_rpm_pct",), 2500.0),
+    "tires": GenericSpec("tires", "tread_depth_mm", "down", 9.0, 1.6, "mm", ("tire_pressure_psi",), 800.0),
+    "ecs": GenericSpec("ecs", "pack_outlet_temp_c", "up", 15.0, 45.0, "degC", ("pack_flow_kgs",), 2500.0),
+    "electrical": GenericSpec("electrical", "battery_capacity_pct", "down", 100.0, 70.0, "%", ("bus_voltage_v",), 2000.0),
 }
 
 # Keys of TelemetryRow.values per component kind (engine uses SENSOR_NAMES).

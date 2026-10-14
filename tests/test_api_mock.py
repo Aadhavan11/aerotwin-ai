@@ -2,15 +2,27 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app.contracts.models import *  # noqa: F401,F403
+from app.contracts.models import (
+    AuditEntry,
+    FleetOverview,
+    Leg,
+    MetricsBundle,
+    Station,
+    TwinView,
+    WorkOrder,
+)
 from app.main import app
 from scripts import golden
 
 
 class Adapter:
     def __init__(self, c): self.c = c
-    def get(self, p): r = self.c.get(p); return r.status_code, r.json()
-    def post(self, p, b=None): r = self.c.post(p, json=b or {}); return r.status_code, r.json()
+    def get(self, p):
+        r = self.c.get(p)
+        return r.status_code, r.json()
+    def post(self, p, b=None):
+        r = self.c.post(p, json=b or {})
+        return r.status_code, r.json()
 
 
 @pytest.fixture()
@@ -22,7 +34,7 @@ def client():
 
 def test_health_lists_modules(client):
     j = client.get("/health").json()
-    assert j["ok"] and j["mock"] and set(j["modules"]) == {"twin", "solver", "whatif", "sim", "agents", "copilot"}
+    assert j["ok"] and j["mock"] and set(j["modules"]) == {"twin", "solver", "whatif", "sim", "agents", "copilot", "insights"}
 
 
 @pytest.mark.parametrize("path,model", [("/fleet", FleetOverview), ("/aircraft/SIM-017", TwinView), ("/aircraft/SIM-005", TwinView), ("/stations", list[Station]), ("/legs?tail=SIM-017", list[Leg]),
@@ -60,7 +72,8 @@ def test_inject_changes_fleet_and_twin(client):
 
 
 def test_compare_returns_a_row_per_scenario(client):
-    r = client.post("/whatif/compare", json={"scenarios": [{"name": "base"}, {"name": "kit late", "events": [{"type": "part_delay", "at": "2026-10-12T14:00:00Z", "station": "DFW", "part": "BORESCOPE-KIT", "delay_hours": 12}]}]})
+    r = client.post("/whatif/compare", json={"scenarios": [{"name": "base"}, {"name": "kit late", "events": [{"type": "part_delay", "at": "2026-10-12T14:00:00Z", "station": "DFW",
+        "part": "BORESCOPE-KIT", "delay_hours": 12}]}]})
     assert r.status_code == 200 and [x["name"] for x in r.json()["rows"]] == ["base", "kit late"]
 
 

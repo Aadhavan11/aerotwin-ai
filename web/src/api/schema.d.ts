@@ -1037,7 +1037,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "engine" | "brakes" | "landing_gear" | "hydraulics" | "avionics";
+            kind: "engine" | "brakes" | "landing_gear" | "hydraulics" | "avionics" | "apu" | "tires" | "ecs" | "electrical";
             /** Cycles */
             cycles: number;
             /** Hours */

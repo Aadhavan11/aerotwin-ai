@@ -9,8 +9,19 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, Response
 
-from .. import fixtures
-from ..contracts.models import *  # noqa: F401,F403
+from ..contracts.models import (
+    AgentRun,
+    AuditEntry,
+    ChatRequest,
+    ChatResponse,
+    Comparison,
+    Plan,
+    ReplanResult,
+    ScenarioEvent,
+    TelemetryRow,
+    TwinView,
+    WorkOrder,
+)
 from ..contracts.requests import AgentRunRequest, CompareRequest, DecisionRequest, ReplanRequest, ResetRequest, SolveRequest, StepRequest
 from .mockstate import STATE
 
@@ -111,6 +122,12 @@ def scenario_inject(ev: ScenarioEvent, response: Response):
 def scenario_reset(req: ResetRequest, response: Response):
     _mark(response)
     STATE.reset()
+    try:
+        from ..insights import disruptions
+
+        disruptions.reset()
+    except Exception:  # noqa: BLE001
+        pass
     return {"ok": True, "scenario": req.name}
 
 
@@ -164,4 +181,28 @@ def list_audit(response: Response):
     return list(reversed(STATE.audit))
 
 
-ROUTERS = {"twin": twin, "solver": solver, "whatif": whatif, "sim": sim, "agents": agents, "copilot": copilot}
+# ---------------------------------------------------------------- insights (Aadhavan)
+# The insights are a read-only overlay with their own seeded fallback, so the mock serves the same endpoints.
+# If the real module cannot be imported, this minimal router returns empty but valid shapes.
+try:
+    from ..insights.router import router as insights
+except Exception:  # noqa: BLE001
+    insights = APIRouter(tags=["insights (mock)"])
+
+    @insights.get("/insights/data-quality")
+    def insights_quality(response: Response):
+        _mark(response)
+        return {"simulated": True, "as_of": STATE.now.isoformat().replace("+00:00", "Z"), "counts": {"ok": 0, "degraded": 0, "bad": 0}, "items": []}
+
+    @insights.get("/insights/reliability")
+    def insights_reliability(response: Response):
+        _mark(response)
+        return {"simulated": True, "as_of": STATE.now.isoformat().replace("+00:00", "Z"), "kinds": []}
+
+    @insights.get("/insights/disruptions")
+    def insights_disruptions(response: Response):
+        _mark(response)
+        return {"simulated": True, "as_of": STATE.now.isoformat().replace("+00:00", "Z"), "events": [], "delayed_legs": [], "by_tail": []}
+
+
+ROUTERS = {"twin": twin, "solver": solver, "whatif": whatif, "sim": sim, "agents": agents, "copilot": copilot, "insights": insights}

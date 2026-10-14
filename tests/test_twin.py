@@ -36,7 +36,9 @@ def traj():
 def healthy(traj):
     # Real data: an engine that is still far from failure when its recording ends.
     # Synthetic fallback (no NASA files): every engine runs to failure, so any long one will do for its first rows.
-    pick = lambda rows: len(rows) >= 130 and (rows[-1]["true_rul"] > 100 or not cmapss.data_available())
+    def pick(rows):
+        return len(rows) >= 130 and (rows[-1]["true_rul"] > 100 or not cmapss.data_available())
+
     return next(rows for rows in traj.values() if pick(rows))
 
 

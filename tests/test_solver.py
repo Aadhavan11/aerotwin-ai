@@ -42,9 +42,9 @@ def golden_tasks(golden):
 
 
 # ------------------------------------------------------------------ task cards
-def test_task_cards_are_ten_synthetic_cards():
+def test_task_cards_are_fourteen_synthetic_cards():
     cards = load_cards()
-    assert len(cards) == 10
+    assert len(cards) == 14
     assert all(c.synthetic for c in cards)
     assert {c.skill for c in cards} <= {"engine", "gear", "hydraulics", "avionics"}
     header = " ".join(open("app/copilot/kb/task_cards.yaml").read().replace("#", " ").split())
@@ -69,7 +69,7 @@ def test_ground_window_is_arrival_to_next_departure():
 
 def test_broken_rotation_gives_no_window_and_is_flagged():
     s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0), ("BBB", 12.0, 20.0)]})
-    legs = [l.model_copy(update={"dep": "QQQ"}) if l.id == "L-SIM-001-1" else l for l in s.legs]  # leg leaves from the wrong airport
+    legs = [leg.model_copy(update={"dep": "QQQ"}) if leg.id == "L-SIM-001-1" else leg for leg in s.legs]  # leg leaves from the wrong airport
     ws, issues = ground_windows_checked(legs, s.now, s.aircraft)
     assert all(w.station != "AAA" for w in ws)
     assert any("arrives AAA" in i and "QQQ" in i for i in issues)
@@ -102,7 +102,7 @@ def test_golden_has_five_tasks_including_the_engine_inspection(golden_tasks):
 
 
 def test_deadline_is_arrival_of_the_floor_p10_th_future_flight_not_p50(golden):
-    legs = sorted((l for l in golden.legs if l.tail == GOLDEN_TAIL and l.sched_arr > golden.now), key=lambda l: l.sched_dep)
+    legs = sorted((leg for leg in golden.legs if leg.tail == GOLDEN_TAIL and leg.sched_arr > golden.now), key=lambda leg: leg.sched_dep)
     task = next(t for t in derive_tasks(golden) if t.tail == GOLDEN_TAIL)
     assert task.deadline == legs[17].sched_arr          # p10 = 18 -> the 18th flight (index 17)
     assert task.deadline < cycle_deadline(legs, 22, golden.now)[0]      # p50 = 22 would have given a LATER deadline: never used
@@ -110,14 +110,14 @@ def test_deadline_is_arrival_of_the_floor_p10_th_future_flight_not_p50(golden):
 
 def test_deadline_rounds_the_cycle_count_down():
     s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0)]})
-    future = sorted(s.legs, key=lambda l: l.sched_dep)
+    future = sorted(s.legs, key=lambda leg: leg.sched_dep)
     d_int, _ = cycle_deadline(future, 2, s.now)
     d_frac = cycle_deadline(future, int(2.9), s.now)[0]
     assert d_int == d_frac
 
 
 def test_deadline_beyond_known_rotation_extrapolates_with_the_aircrafts_own_rate(golden):
-    legs = sorted((l for l in golden.legs if l.tail == "SIM-005" and l.sched_arr > golden.now), key=lambda l: l.sched_dep)
+    legs = sorted((leg for leg in golden.legs if leg.tail == "SIM-005" and leg.sched_arr > golden.now), key=lambda leg: leg.sched_dep)
     d, how = cycle_deadline(legs, 35, golden.now)         # 20 known legs, 35 cycles requested
     assert d > legs[-1].sched_arr and "extrapolated" in how
     per_day = len(legs) / ((legs[-1].sched_arr - golden.now).total_seconds() / 86400)
@@ -126,8 +126,8 @@ def test_deadline_beyond_known_rotation_extrapolates_with_the_aircrafts_own_rate
 
 def test_zero_cycles_left_means_before_the_next_departure():
     s = mini_state(windows={"SIM-001": [("AAA", 2.0, 10.0)]})
-    d, _ = cycle_deadline(sorted(s.legs, key=lambda l: l.sched_dep), 0, s.now)
-    assert d == min(l.sched_dep for l in s.legs)
+    d, _ = cycle_deadline(sorted(s.legs, key=lambda leg: leg.sched_dep), 0, s.now)
+    assert d == min(leg.sched_dep for leg in s.legs)
 
 
 def test_component_with_alert_but_no_rul_is_reported_not_skipped_silently(golden):
@@ -265,7 +265,7 @@ def test_deadline_that_has_already_passed_is_infeasible_not_relaxed(golden):
     comp.rul_cycles = RulEstimate(p10=0.4, p50=1, p90=2)         # may not fly again
     tasks = derive_tasks(st)
     t = next(t for t in tasks if t.tail == GOLDEN_TAIL)
-    first_dep = min(l.sched_dep for l in st.legs if l.tail == GOLDEN_TAIL)
+    first_dep = min(leg.sched_dep for leg in st.legs if leg.tail == GOLDEN_TAIL)
     assert t.deadline == first_dep                                # must be fixed before the next departure
     plan = solve(st, tasks, mode="cpsat")
     # SIM-017 sits at ATL for 30 minutes: a 6 h job cannot fit before the deadline even with the 3 h extension cap
