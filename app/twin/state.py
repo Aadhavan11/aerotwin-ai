@@ -414,6 +414,9 @@ def list_aircraft() -> list[Aircraft]:
         return [_aircraft_view(t) for t in sorted(_aircraft)]  # type: ignore[misc]
 
 
+_SEVERITY = {"aog": 0, "alert": 1, "watch": 2, "in_maintenance": 3, "ok": 4}
+
+
 def aircraft_summaries() -> list[AircraftSummary]:
     """Per aircraft: status and the component with the lowest RUL p10 (for the fleet overview)."""
     with _LOCK:
@@ -421,12 +424,18 @@ def aircraft_summaries() -> list[AircraftSummary]:
         for tail in sorted(_aircraft):
             a = _aircraft_view(tail)
             assert a is not None
-            worst, best = None, None
+            # Worst status first (alert before watch before ok), then the shortest conservative remaining life. Two engines can tie on life
+            # (the estimate is capped), and the one in alert must win the tie.
+            chosen, chosen_key = None, None
             for c in _comps.values():
-                if c.state.tail == tail and c.state.rul_cycles is not None:
-                    p10 = c.state.rul_cycles.p10
-                    if best is None or p10 < best:
-                        best, worst = p10, c.state.component_id
+                if c.state.tail != tail:
+                    continue
+                p10 = c.state.rul_cycles.p10 if c.state.rul_cycles is not None else float("inf")
+                key = (_SEVERITY.get(c.state.status, 9), p10)
+                if chosen_key is None or key < chosen_key:
+                    chosen, chosen_key = c, key
+            worst = chosen.state.component_id if chosen is not None else None
+            best = chosen.state.rul_cycles.p10 if chosen is not None and chosen.state.rul_cycles is not None else None
             out.append(AircraftSummary(tail=a.tail, type=a.type, home=a.home, location=a.location, status=a.status,
                                        worst_component=worst, rul_p10_min=best))
         return out

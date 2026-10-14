@@ -1,5 +1,7 @@
 # Operations console visual upgrade
 
+> **Partly superseded (2026-10-11).** The procedural aircraft described below and its parts explorer were removed; the viewer now uses only the third-party 737-800 model (see [`ASSETS.md`](ASSETS.md)), and the shell and styling were redesigned (see [`DESIGN.md`](DESIGN.md)). This file stays as the record of that delivery.
+
 Branch: `aadhavan/visual-upgrade`, extending `aadhavan/aircraft-twin`.
 
 ## Delivered

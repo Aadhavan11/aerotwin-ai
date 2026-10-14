@@ -14,7 +14,7 @@ export function Card({
 }) {
   return (
     <section
-      className={`instrument-card p-4 ${className}`}
+      className={`instrument-card rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${className}`}
     >
       {(title || right) && (
         <header className="mb-3 flex items-center justify-between gap-2">
@@ -48,19 +48,26 @@ export function Kpi({
     blue: "text-blue-600",
   };
   return (
-    <div className="instrument-card p-4">
-      <div className="text-xs text-slate-500">{label}</div>
-      <div className={`mt-1 font-mono text-2xl font-medium ${tones[tone]}`}>
-        {value}
-      </div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+    <div className="fact">
+      <div className="fact-label">{label}</div>
+      <div className={`fact-value ${tones[tone]}`}>{value}</div>
+      {hint && <div className="fact-hint">{hint}</div>}
     </div>
   );
 }
 
 export function StatusPill({ status }: { status: string }) {
-  const s = STATUS_STYLE[status];
-  return <span className={`status s-${status}`}>{s?.label ?? status}</span>;
+  const s = STATUS_STYLE[status] ?? {
+    pill: "bg-slate-100 text-slate-700",
+    label: status,
+  };
+  return (
+    <span
+      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${s.pill}`}
+    >
+      {s.label}
+    </span>
+  );
 }
 
 export function Btn({
@@ -78,19 +85,18 @@ export function Btn({
   className?: string;
   title?: string;
 }) {
-  // Pills, as on Apple surfaces: one filled blue action at most; everything else is a quiet grey pill.
   const tones = {
-    default: "btn-face bg-gradient-to-b from-white to-[#ebebf0] text-[#1d1d1f] hover:to-[#e2e2e8]",
-    primary: "btn-face-primary bg-gradient-to-b from-[#3d3d42] to-[#111113] text-white hover:from-[#4a4a50] hover:to-[#000]",
-    danger: "btn-face bg-gradient-to-b from-white to-[#fbe9ea] text-[#d70015] hover:to-[#f7d7da]",
-    ghost: "text-[#1d1d1f] hover:bg-[#f0f0f2]",
+    default: "border border-slate-300 bg-transparent text-slate-800 hover:bg-slate-100",
+    primary: "bg-slate-900 text-white hover:bg-slate-700",
+    danger: "border border-red-300 bg-red-100 text-red-800 hover:bg-red-50",
+    ghost: "text-slate-600 hover:bg-slate-100",
   };
   return (
     <button
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded-full px-4 py-1.5 text-[13px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${tones[tone]} ${className}`}
+      className={`rounded-full px-4 py-1.5 text-[13.5px] font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${tones[tone]} ${className}`}
     >
       {children}
     </button>
@@ -107,14 +113,14 @@ export function Chip({
   title?: string;
 }) {
   const tones: Record<string, string> = {
-    slate: "bg-slate-100 text-slate-700",
+    slate: "border border-slate-200 text-slate-700",
     blue: "bg-blue-50 text-blue-700",
     amber: "bg-amber-50 text-amber-800",
   };
   return (
     <span
       title={title}
-      className={`inline-block rounded-sm px-1.5 py-0.5 text-xs ${tones[tone] ?? tones.slate}`}
+      className={`inline-block rounded-full px-2.5 py-0.5 font-mono text-xs ${tones[tone] ?? tones.slate}`}
     >
       {children}
     </span>
@@ -128,7 +134,7 @@ export const Loading = ({ what = "data" }: { what?: string }) => (
 export function ErrorBox({ error }: { error?: string }) {
   if (!error) return null;
   return (
-    <div className="border-l-2 border-red-700 bg-red-50 p-3 text-sm text-red-800">
+    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
       {error}{" "}
       <span className="text-red-600">(showing the last good data if any)</span>
     </div>

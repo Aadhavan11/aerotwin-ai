@@ -405,9 +405,9 @@ TypeScript types with `npx openapi-typescript http://localhost:8000/openapi.json
 | `POST /scenario/inject` | `ScenarioEvent` | `{event_id, effects: [...], twin_changes: [...]}` | Shamit |
 | `POST /scenario/reset` | `{name: "golden"}` | `{ok}` | Shamit |
 | `POST /sim/step` | `{hours}` | `{sim_now, ingested}` | Shamit |
-| `POST /agents/run` | `{goal, scope: {tails?: [], horizon_h?}, mode: "llm"|"scripted"}` | `AgentRun` (returns immediately with `running`; poll) | Shamit |
+| `POST /agents/run` | `{goal, scope: {tails?: [], horizon_h?}, mode: "llm"|"scripted", screen?: ScreenContext}` (the screen reaches LLM agents as `scope.screen`, without its text) | `AgentRun` (returns immediately with `running`; poll) | Shamit |
 | `GET /agents/runs/{id}` | | `AgentRun` (steps grow while running) | Shamit |
-| `POST /copilot/chat` | `ChatRequest` | `ChatResponse` | Shamit |
+| `POST /copilot/chat` | `ChatRequest` (optional `screen: ScreenContext` = what the person is looking at: `{page, path, role, tail, selected, sim_now, text}`) | `ChatResponse` | Shamit |
 | `GET /workorders` | | `WorkOrder[]` | Shamit |
 | `POST /workorders/{id}/decision` | `{decision: "approve"|"reject", user, note}` | `WorkOrder` | Shamit |
 | `GET /audit` | | `AuditEntry[]` | Shamit |

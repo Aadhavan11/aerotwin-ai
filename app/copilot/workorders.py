@@ -156,6 +156,16 @@ def draft_from_plan(plan: Plan, *, actor: str = "agent:coordinator", tails: Opti
     """
     wanted = set(tails) if tails else None
     by_id = {t.id: t for t in (tasks or [])}
+    if not by_id:
+        # Callers that do not pass the tasks (the agent tools) would otherwise get a generic title from the component kind, which can
+        # disagree with the task the plan is actually about (a scheduled oil and chip check titled "borescope inspection"): look them up.
+        try:
+            from app.solver import service
+            from app.solver.tasks import derive_tasks
+
+            by_id = {t.id: t for t in derive_tasks(service.get_state()[0])}
+        except Exception:  # noqa: BLE001  no state available (unit tests, mock mode): keep the generic wording
+            by_id = {}
     out: list[WorkOrder] = []
     notes: list[str] = []
     with _LOCK:
@@ -209,6 +219,9 @@ def draft_from_plan(plan: Plan, *, actor: str = "agent:coordinator", tails: Opti
             wo = WorkOrder(
                 id=_new_id(), tail=a.tail, task_id=a.task_id, station=a.station, start=a.start, end=a.end,
                 description=_describe(a, task), status="pending_approval", plan_id=plan.id, evidence=evidence,
+                title=(task.title if task is not None else (card["title"] if card else "Maintenance task")),
+                part=(task.required_part if task is not None else None), part_qty=(task.part_qty if task is not None and task.required_part else 0),
+                order_part=bool(a.part_source),
             )
             _save(wo)
             existing.append(wo)
@@ -271,3 +284,165 @@ def complete_due(now: datetime) -> list[WorkOrder]:
             twin.apply_maintenance(comp[0], comp[1], w.end)
         audit.record("system", "work_order_completed", w.id, f"{w.task_id} finished at {w.station}", w.end)
     return due
+
+
+# --------------------------------------------------------------------------
+# Editing a request before it is decided
+# --------------------------------------------------------------------------
+def _task_and_assignment(wo: WorkOrder):
+    from app.solver import service
+    from app.solver.tasks import derive_tasks
+
+    state, source = service.get_state()
+    task = next((t for t in derive_tasks(state) if t.id == wo.task_id), None)
+    current, _ = service.ensure_plans(state, source)
+    a = next((x for x in current.assignments if x.task_id == wo.task_id), None)
+    return state, task, a
+
+
+def _aware(t: datetime) -> datetime:
+    from app.solver.common import aware
+
+    return aware(t)
+
+
+def options(work_order_id: str) -> dict:
+    """What a person may change on this request: when the aircraft is on the ground at the station, the deadline, the technician's shift, the part picture."""
+    from app.solver.common import DEFAULT_MAX_EXT_H
+    from app.solver.windows import ground_windows
+
+    wo = get_order(work_order_id)
+    if wo is None:
+        raise WorkOrderError("not_found", f"no work order {work_order_id!r}", 404)
+    state, task, a = _task_and_assignment(wo)
+    now = _aware(state.now)
+    wins = [w for w in ground_windows(state.legs, now, state.aircraft) if w.tail == wo.tail and w.station == wo.station
+            and (task is None or _aware(w.start) < _aware(task.deadline))]
+    tech = None
+    if a and a.technician_id:
+        for st in state.stations:
+            t = next((t for t in st.technicians if t.id == a.technician_id), None)
+            if t is not None:
+                tech = {"id": t.id, "skills": list(t.skills), "shift_start": _iso(t.shift_start), "shift_end": _iso(t.shift_end), "available": t.available}
+    part = None
+    if task is not None and task.required_part:
+        st = next((s for s in state.stations if s.iata == wo.station), None)
+        ps = next((p for p in (st.parts if st else []) if p.part == task.required_part), None)
+        part = {"name": task.required_part, "needed": task.part_qty, "on_hand": ps.qty if ps else 0, "eta_hours": ps.eta_hours if ps else 0.0,
+                "ship_from": ps.ship_from if ps else None, "ship_hours": ps.ship_hours if ps else 0.0, "ship_cost_usd": ps.ship_cost_usd if ps else 0.0}
+    return {
+        "now": _iso(now), "editable": wo.status == "pending_approval", "max_extension_h": DEFAULT_MAX_EXT_H,
+        "duration_h": task.duration_h if task else None, "deadline": _iso(task.deadline) if task else None,
+        "windows": [{"start": _iso(w.start), "end": _iso(w.end), "hours": round(w.hours, 2)} for w in wins],
+        "technician": tech, "part": part,
+    }
+
+
+def check_timing(wo: WorkOrder, start: datetime, end: datetime) -> list[str]:
+    """Problems with moving the job to [start, end]. Empty = fine. Deadline, duration, the aircraft being on the ground at the station
+    (a short extension past the window is allowed, as in the planner) and the technician's shift are checked; they are the rules the planner itself keeps."""
+    from app.solver.common import DEFAULT_MAX_EXT_H
+    from app.solver.windows import ground_windows
+    from datetime import timedelta
+
+    state, task, a = _task_and_assignment(wo)
+    now = _aware(state.now)
+    start, end = _aware(start), _aware(end)
+    out: list[str] = []
+    if end <= start:
+        return ["The end must be after the start."]
+    if start < now:
+        out.append("The start is in the past (the simulation clock is " + _iso(now) + ").")
+    if task is not None:
+        if (end - start) < timedelta(hours=task.duration_h) - timedelta(minutes=1):
+            out.append(f"The job needs {task.duration_h:g} h; this window is {(end - start).total_seconds() / 3600:.1f} h.")
+        if end > _aware(task.deadline):
+            out.append(f"It must finish before the deadline, {_iso(task.deadline)} (from the conservative remaining life).")
+    ok = False
+    for w in ground_windows(state.legs, now, state.aircraft):
+        if w.tail == wo.tail and w.station == wo.station and _aware(w.start) <= start and end <= _aware(w.end) + timedelta(hours=DEFAULT_MAX_EXT_H):
+            ok = True
+    if not ok:
+        out.append(f"{wo.tail} is not on the ground at {wo.station} for that whole time (it is flying or elsewhere). Pick a time inside one of its ground windows.")
+    if a and a.technician_id:
+        for st in state.stations:
+            t = next((t for t in st.technicians if t.id == a.technician_id), None)
+            if t is not None and not (_aware(t.shift_start) <= start and end <= _aware(t.shift_end)):
+                out.append(f"Technician {t.id} is on shift {_iso(t.shift_start)} to {_iso(t.shift_end)}; that time is outside it.")
+    return out
+
+
+def edit(work_order_id: str, user: str, *, title: Optional[str] = None, work: Optional[str] = None, description: Optional[str] = None, part: Optional[str] = None,
+         part_qty: Optional[int] = None, order_part: Optional[bool] = None, start: Optional[datetime] = None, end: Optional[datetime] = None,
+         note: str = "") -> WorkOrder:
+    """Change the request before it is decided. Only a pending order can be edited; a changed time must pass ``check_timing``."""
+    who = (user or "").strip()
+    if not who or who.lower() in ("system", "unknown") or who.lower().startswith("agent"):
+        raise WorkOrderError("invalid_actor", "a person's name is required to edit a work order", 422)
+    with _LOCK:
+        wo = get_order(work_order_id)
+        if wo is None:
+            raise WorkOrderError("not_found", f"no work order {work_order_id!r}", 404)
+        if wo.status != "pending_approval":
+            raise WorkOrderError("already_decided", f"{work_order_id} is already {wo.status}; only a pending request can be edited", 409)
+        upd: dict[str, Any] = {}
+        changes: list[str] = []
+        for key, val in (("title", title), ("work", work), ("description", description)):
+            if val is not None and val.strip() and val.strip() != getattr(wo, key):
+                upd[key] = val.strip()[:600]
+                changes.append(f"{key} changed")
+        if part is not None and (part.strip() or None) != wo.part:
+            upd["part"] = part.strip()[:60] or None
+            changes.append(f"part: {wo.part or 'none'} -> {upd['part'] or 'none'}")
+        if part_qty is not None and part_qty != wo.part_qty:
+            upd["part_qty"] = max(0, min(20, int(part_qty)))
+            changes.append(f"quantity: {wo.part_qty} -> {upd['part_qty']}")
+        if order_part is not None and order_part != wo.order_part:
+            upd["order_part"] = bool(order_part)
+            changes.append("part marked as needing to be ordered" if order_part else "part no longer needs to be ordered")
+        if (start is not None or end is not None) and ((start and _aware(start) != _aware(wo.start)) or (end and _aware(end) != _aware(wo.end))):
+            ns, ne = start or wo.start, end or wo.end
+            problems = check_timing(wo, ns, ne)
+            if problems:
+                raise WorkOrderError("invalid_timing", " ".join(problems), 422)
+            upd["start"], upd["end"] = _aware(ns), _aware(ne)
+            changes.append(f"time: {_iso(wo.start)}-{_iso(wo.end)} -> {_iso(ns)}-{_iso(ne)}")
+        if not changes:
+            return wo
+        when = persist.sim_now()
+        new = wo.model_copy(update={**upd, "edited_by": who, "edited_at": when})
+        _save(new)
+    audit.record(who, "work_order_edited", work_order_id, "; ".join(changes) + (f". Note: {note}" if note else ""), when)
+    return new
+
+
+def create_manual(user: str, *, tail: str, station: str, start: datetime, end: datetime, title: str, work: str = "", part: Optional[str] = None,
+                  part_qty: int = 0, order_part: bool = False, why: str = "") -> WorkOrder:
+    """A request entered by a person (not drafted by the agents): it waits for a decision like any other, and its time must fit the aircraft's ground time at the station."""
+    from app.solver import service
+
+    who = (user or "").strip()
+    if not who or who.lower() in ("system", "unknown") or who.lower().startswith("agent"):
+        raise WorkOrderError("invalid_actor", "a person's name is required to create a work order", 422)
+    title = (title or "").strip()[:120]
+    if not title:
+        raise WorkOrderError("invalid_request", "give the request a name", 422)
+    state, _ = service.get_state()
+    if not any(a.tail == tail for a in state.aircraft):
+        raise WorkOrderError("invalid_request", f"unknown aircraft {tail!r}", 422)
+    if not any(s.iata == station for s in state.stations):
+        raise WorkOrderError("invalid_request", f"unknown station {station!r}", 422)
+    start, end = _aware(start), _aware(end)
+    with _LOCK:
+        wo = WorkOrder(
+            id=_new_id(), tail=tail, task_id=f"M-{tail}-{len([w for w in _load_all() if w.task_id.startswith('M-')]) + 1}", station=station, start=start, end=end,
+            description=f"{title} on {tail} at {station}, {_iso(start)} to {_iso(end)}. Why: {(why or 'requested manually').strip()}. Requested by {who}. Advisory only; needs human approval.",
+            status="pending_approval", plan_id="manual", evidence=[EvidenceRef(kind="event", ref="manual", note=(why or "requested manually").strip()[:300])],
+            title=title, work=(work or "").strip()[:600], part=(part or "").strip()[:60] or None, part_qty=max(0, min(20, int(part_qty or 0))), order_part=bool(order_part),
+        )
+        problems = check_timing(wo, start, end)
+        if problems:
+            raise WorkOrderError("invalid_timing", " ".join(problems), 422)
+        _save(wo)
+    audit.record(who, "work_order_drafted", wo.id, f"manual request: {title} on {tail} at {station}")
+    return wo

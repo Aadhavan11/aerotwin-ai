@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import db, registry, settings
 from .api import core, mock
+from .auth import core as auth_core, messages as auth_messages, router as auth_router
 
 app = FastAPI(title="AeroTwin AI API", version=settings.VERSION,
               description="Advisory-only maintenance planning prototype on SIMULATED data. See CONTRACTS.md for the spec.")
@@ -21,7 +22,30 @@ _DEFAULT_CORS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:41
 _CORS = [o.strip() for o in os.environ.get("CORS_ORIGINS", _DEFAULT_CORS).split(",") if o.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=_CORS,
                    allow_methods=["*"], allow_headers=["*"], expose_headers=["X-Data-Source"])
+
+
+class _NoTrailingSlash:
+    """Serve `/plan/` the same as `/plan` instead of FastAPI's 307, whose Location points at the internal host and breaks fetch behind the proxy."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and len(scope["path"]) > 1 and scope["path"].endswith("/"):
+            scope = {**scope, "path": scope["path"].rstrip("/") or "/"}
+            if scope.get("raw_path"):
+                scope["raw_path"] = scope["raw_path"].rstrip(b"/") or b"/"
+        await self.inner(scope, receive, send)
+
+
+app.add_middleware(auth_core.AuthGate)  # off unless AUTH_REQUIRED=1
+app.add_middleware(_NoTrailingSlash)  # outermost: the gate and the routes both see `/plan`, never `/plan/`
 db.init_db()
+if auth_core.enabled():
+    auth_core.seed()
+    auth_messages.seed()
+app.include_router(auth_router.router)
+app.include_router(auth_messages.router)
 app.include_router(core.router)
 
 for group, (path, who) in registry.GROUPS.items():

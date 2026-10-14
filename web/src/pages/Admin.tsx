@@ -4,6 +4,7 @@ import type { AuditEntry, HealthInfo, MetricsBundle } from "../api/types";
 import { Btn, Card, Chip, ErrorBox, Kpi, Loading } from "../components/ui";
 import { downloadCsv } from "../lib/derive";
 import { fmtZ } from "../lib/format";
+import { Compose, SentList } from "./Messages";
 
 const ML_LABELS: Record<string, string> = {
   model_version: "Model version",
@@ -82,6 +83,16 @@ export default function Admin() {
         <Kpi label="Simulation clock" value={fmtZ(h.sim_now)} hint={`API ${h.version}`} />
       </div>
 
+      <Card title="Send a message" right={<span className="text-xs text-slate-500">arrives unread in the recipient's inbox</span>}>
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+          <Compose />
+          <div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">Recently sent</div>
+            <SentList />
+          </div>
+        </div>
+      </Card>
+
       <div className="grid gap-4 xl:grid-cols-2">
         <Card title="Services">
           <table className="w-full text-sm">
@@ -152,7 +163,7 @@ export default function Admin() {
                 </tbody>
               </table>
               <details className="mt-3 text-xs text-slate-500">
-                <summary className="cursor-pointer text-slate-900 underline">All {Object.keys(ml).length} recorded values</summary>
+                <summary className="cursor-pointer text-blue-600">All {Object.keys(ml).length} recorded values</summary>
                 <table className="mt-2 w-full">
                   <tbody>
                     {Object.entries(ml)

@@ -78,6 +78,21 @@ def _logistics(task: Task, a: Optional[Assignment], stations: dict[str, Station]
     return out
 
 
+def _cost(task: Task, a: Optional[Assignment], stations: dict[str, Station]) -> Optional[dict]:
+    """Estimated cost of the planned job from the simulated price list (app/solver/costs.py)."""
+    if a is None:
+        return None
+    from app.solver import costs
+
+    ship = 0.0
+    st = stations.get(a.station)
+    if a.part_source and st is not None and task.required_part:
+        ship = next((float(p.ship_cost_usd) for p in st.parts if p.part == task.required_part), 0.0)
+    return {**costs.job_cost(task, a, ship), "hours": round(costs.job_hours(a), 2), "crew": costs.CREW_SIZE,
+            "labor_rate_usd_h": costs.LABOR_RATE_USD_H, "bay_rate_usd_h": costs.BAY_RATE_USD_H,
+            "part_unit_usd": costs.PART_PRICE_USD.get(task.required_part) if task.required_part else None}
+
+
 def _order_for(task_id: str, orders: list[WorkOrder]) -> Optional[WorkOrder]:
     mine = [w for w in orders if w.task_id == task_id]
     for status in ("approved", "pending_approval"):
@@ -132,6 +147,7 @@ def build(tail: str) -> Optional[dict]:
             "work_order": wo.model_dump(mode="json") if wo else None,
             "approved_slot_moved": moved,
             "logistics": _logistics(t, a, stations),
+            "cost": _cost(t, a, stations),
         })
 
     # Suggestions: components that have no open task yet but are worn or trending toward their limit.
@@ -208,3 +224,97 @@ def queue() -> dict:
                                       or abs((_aware(a.start) - _aware(wo.start)).total_seconds()) > 60)),
         })
     return {"now": _iso(state.now), "plan_id": current.id, "rows": rows}
+
+
+
+# --------------------------------------------------------------------------
+# Suggested actions for the whole fleet: work that is NOT pending or required now but is better planned ahead
+# --------------------------------------------------------------------------
+def fleet_suggestions(limit: int = 8) -> dict:
+    """Things worth planning before they become urgent: components worn or trending toward their limit that have no task yet, routine checks that fall due in the
+    next three weeks (or fell inside the planning horizon but were not planned), each with the first ground window that fits and, when the aircraft already has a
+    job planned, a slot at the same station so the visit is shared. They are advice, not tasks: a person turns one into a request."""
+    from datetime import timedelta
+
+    from app.solver import service
+    from app.solver.cards import load_cards, scheduled_cards_for
+    from app.solver.tasks import derive_tasks
+    from app.solver.windows import ground_windows
+
+    state, source = service.get_state()
+    current, _ = service.ensure_plans(state, source)
+    now = _aware(state.now)
+    tasks = derive_tasks(state)
+    open_comp = {t.component_id for t in tasks}
+    open_titles = {(t.component_id, t.title) for t in tasks}
+    planned_at: dict[str, list] = {}
+    for a in current.assignments:
+        planned_at.setdefault(a.tail, []).append(a)
+    wins: dict[str, list] = {}
+    for w in ground_windows(state.legs, now, state.aircraft):
+        wins.setdefault(w.tail, []).append(w)
+    cards = load_cards()
+    out: list[dict] = []
+
+    def slot_for(tail: str, hours: float, before: datetime):
+        """The first ground window that fits `hours` and ends the job before `before`; a window at the station of an already planned job comes first."""
+        shared = {a.station: a for a in planned_at.get(tail, [])}
+        fits = []
+        for w in wins.get(tail, []):
+            start = _aware(w.start)
+            if (start + timedelta(hours=hours)) <= min(_aware(w.end) + timedelta(hours=3), before) and w.hours >= hours - 0.01:
+                fits.append((0 if w.station in shared else 1, start, w))
+        if not fits:
+            return None, None
+        _, start, w = sorted(fits, key=lambda x: (x[0], x[1]))[0]
+        hit = shared.get(w.station)
+        return ({"station": w.station, "start": _iso(start), "end": _iso(start + timedelta(hours=hours))},
+                (hit.task_id if hit else None))
+
+    for comp in state.components:
+        if comp.status == "in_maintenance":
+            continue
+        tail = comp.tail
+        fpd = _flights_per_day(state.legs, tail, now)
+        name = _component_name(comp.component_id)
+        # 1. worn or trending components that have no task yet
+        if comp.component_id not in open_comp and comp.rul_cycles is not None:
+            bar = 60.0 if comp.kind == "engine" else 400.0
+            if comp.rul_cycles.p10 < bar or comp.health < 0.5:
+                card = kb.default_card_for(comp.kind) or {}
+                hours = float(card.get("duration_h") or 2.0)
+                due = now + timedelta(days=max(0.5, comp.rul_cycles.p10 / fpd))
+                slot, shared = slot_for(tail, hours, due)
+                out.append({
+                    "id": f"inspect:{comp.component_id}", "kind": "inspect", "tail": tail, "component_id": comp.component_id, "component": name,
+                    "title": card.get("title") or "Inspect", "work": card.get("note") or "", "duration_h": hours, "part": card.get("part"),
+                    "act_before": _iso(due), "slot": slot, "shares_visit_with": shared, "health": comp.health, "rul_p10": comp.rul_cycles.p10,
+                    "why": (f"{name} is at {round(comp.health * 100)}% health with {comp.rul_cycles.p10:g} flights of conservative life left. It has no job yet; "
+                            f"at about {fpd:.1f} flights a day the work should be done before {_iso(due)[:10]}. Planning it now keeps it from becoming an urgent fix."),
+                })
+        # 2. routine checks falling due soon (beyond the planning horizon, or inside it but not planned)
+        if comp.last_maintenance is not None:
+            for card in scheduled_cards_for(comp.kind, cards):
+                due = _aware(comp.last_maintenance) + timedelta(days=card.interval_days or 0)
+                if not (now <= due <= now + timedelta(days=21)) or (comp.component_id, card.title) in open_titles:
+                    continue
+                slot, shared = slot_for(tail, float(card.duration_h), due + timedelta(hours=12))
+                out.append({
+                    "id": f"routine:{comp.component_id}:{card.id}", "kind": "routine", "tail": tail, "component_id": comp.component_id, "component": name,
+                    "title": card.title, "work": card.note or "", "duration_h": float(card.duration_h), "part": card.part,
+                    "act_before": _iso(due), "slot": slot, "shares_visit_with": shared, "health": comp.health,
+                    "rul_p10": comp.rul_cycles.p10 if comp.rul_cycles else None,
+                    "why": f"{card.title} on {tail} falls due {_iso(due)[:10]} ({card.interval_days} days after the last one). It is not pending yet; doing it with other work saves a separate visit.",
+                })
+    for x in out:
+        if x["shares_visit_with"] and x["slot"]:
+            x["why"] += f" {x['tail']} is already in the hangar at {x['slot']['station']} for another job in this window, so doing both in one visit saves a separate ground stop."
+    out.sort(key=lambda x: (0 if x["shares_visit_with"] else (1 if x["kind"] == "inspect" else 2), x["act_before"], x["tail"]))
+    seen_tail: dict[str, int] = {}
+    picked = []
+    for x in out:  # at most two per aircraft, so one aircraft does not fill the list
+        if seen_tail.get(x["tail"], 0) >= 2:
+            continue
+        seen_tail[x["tail"]] = seen_tail.get(x["tail"], 0) + 1
+        picked.append(x)
+    return {"now": _iso(now), "plan_id": current.id, "total": len(out), "suggestions": picked[:limit]}

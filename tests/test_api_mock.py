@@ -35,6 +35,7 @@ def client():
 def test_health_lists_modules(client):
     j = client.get("/health").json()
     assert j["ok"] and j["mock"] and set(j["modules"]) == {"twin", "solver", "whatif", "sim", "agents", "copilot", "insights"}
+    assert j["ml_data"] in ("nasa-cmapss-fd001", "synthetic-cmapss-shaped")
 
 
 @pytest.mark.parametrize("path,model", [("/fleet", FleetOverview), ("/aircraft/SIM-017", TwinView), ("/aircraft/SIM-005", TwinView), ("/stations", list[Station]), ("/legs?tail=SIM-017", list[Leg]),

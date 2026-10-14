@@ -5,7 +5,7 @@ import { Btn, Card, Chip, ErrorBox, Kpi, Loading, StatusPill } from "../componen
 import WorkOrderCard from "../components/WorkOrderCard";
 import { hoursText, ms, niceComponent, partText } from "../lib/derive";
 import { STATUS_ORDER, fmtZ } from "../lib/format";
-import { openAgentWorkspace } from "../lib/role";
+import AskPanel from "../components/AskPanel";
 
 /** Operations control: what needs a decision right now, which aircraft to watch, what the plan does, and what waiting would cost. */
 export default function Control() {
@@ -37,6 +37,7 @@ export default function Control() {
         </div>
       </div>
       <ErrorBox error={fleet.error ?? plan.error ?? orders.error} />
+      <AskPanel placeholder="Ask about the fleet, the plan or a decision…" suggestions={["Which work orders need a decision first?", "Which aircraft are most likely to need maintenance in the next 72 hours?", "Why is the plan scheduled this way?"]} />
 
       <div className="facts">
         <Kpi label="Decisions waiting" value={pending.length} tone={pending.length ? "amber" : "emerald"} hint="Work orders pending approval" />
@@ -57,9 +58,9 @@ export default function Control() {
             <div className="space-y-3 text-sm text-slate-500">
               <p>Nothing is waiting for approval. Work orders appear here when the agents draft them for an aircraft that needs service.</p>
               <div className="flex flex-wrap gap-2">
-                <Btn tone="primary" onClick={openAgentWorkspace}>
-                  Open the agent workspace
-                </Btn>
+                <Link to="/copilot?tab=agents&run=1">
+                  <Btn tone="primary">Run the agents</Btn>
+                </Link>
                 <Link to="/lab">
                   <Btn>Inject a fault in the lab</Btn>
                 </Link>
@@ -74,7 +75,7 @@ export default function Control() {
           )}
         </Card>
 
-        <Card title="Watch list" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/">All {f.aircraft.length} aircraft</Link>}>
+        <Card title="Watch list" right={<Link className="text-xs text-blue-600 hover:underline" to="/">All {f.aircraft.length} aircraft</Link>}>
           {watch.length === 0 ? (
             <p className="text-sm text-slate-500">Every aircraft is OK.</p>
           ) : (
@@ -91,7 +92,7 @@ export default function Control() {
                 {watch.map((a) => (
                   <tr key={a.tail} className="border-t border-slate-200">
                     <td className="py-1.5">
-                      <Link className="font-medium text-slate-900 underline hover:underline" to={`/aircraft/${a.tail}`}>
+                      <Link className="font-medium text-blue-600 hover:underline" to={`/aircraft/${a.tail}`}>
                         {a.tail}
                       </Link>
                       <div className="text-xs text-slate-500">
@@ -112,7 +113,7 @@ export default function Control() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
-        <Card title="Maintenance in the plan" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/planning">Open the plan</Link>}>
+        <Card title="Maintenance in the plan" right={<Link className="text-xs text-blue-600 hover:underline" to="/planning">Open the plan</Link>}>
           {jobs.length === 0 ? (
             <p className="text-sm text-slate-500">No maintenance is planned. When a component's conservative remaining life falls inside the planning horizon, the solver schedules it here.</p>
           ) : (
@@ -121,7 +122,7 @@ export default function Control() {
                 <li key={a.task_id} className="rounded-lg border border-slate-200 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span>
-                      <Link className="font-semibold text-slate-900 underline hover:underline" to={`/aircraft/${a.tail}`}>
+                      <Link className="font-semibold text-blue-600 hover:underline" to={`/aircraft/${a.tail}`}>
                         {a.tail}
                       </Link>{" "}
                       <span className="text-slate-600">at {a.station}</span>
@@ -165,15 +166,15 @@ export default function Control() {
                           <div className="text-xs text-slate-500">{niceComponent(e.component_id)}</div>
                         </td>
                         <td className="py-1.5 tabular-nums">
-                          <b className="text-slate-900">{hoursText(e.hours_to_fix)}</b>
+                          <b className="text-emerald-600">{hoursText(e.hours_to_fix)}</b>
                           <div className="text-xs text-slate-500">{hoursText(b?.hours_to_fix)} baseline</div>
                         </td>
                         <td className="py-1.5 tabular-nums">
-                          <b className="text-slate-900">{e.flights_before_fix ?? "n/a"}</b>
+                          <b className="text-emerald-600">{e.flights_before_fix ?? "n/a"}</b>
                           <div className="text-xs text-slate-500">{b?.flights_before_fix ?? "n/a"} baseline</div>
                         </td>
                         <td className="py-1.5 tabular-nums">
-                          <b className="text-slate-900">{hoursText(e.slack_to_deadline_h)}</b>
+                          <b className="text-emerald-600">{hoursText(e.slack_to_deadline_h)}</b>
                           <div className="text-xs text-slate-500">{hoursText(b?.slack_to_deadline_h)} baseline</div>
                         </td>
                       </tr>
@@ -184,7 +185,7 @@ export default function Control() {
             )}
           </Card>
 
-          <Card title="Recent activity" right={<Link className="text-xs text-slate-900 underline hover:underline" to="/admin">Full audit trail</Link>}>
+          <Card title="Recent activity" right={<Link className="text-xs text-blue-600 hover:underline" to="/admin">Full audit trail</Link>}>
             {recent.length === 0 ? (
               <p className="text-sm text-slate-500">No activity recorded yet.</p>
             ) : (

@@ -13,15 +13,15 @@ export const fmtH = (h: number) => `${Math.round(h * 10) / 10} h`;
 export const fmtUsd = (n: number) => `$${Math.round(n).toLocaleString()}`;
 
 export const STATUS_STYLE: Record<string, { dot: string; pill: string; label: string }> = {
-  ok: { dot: "#3a3a3f", pill: "bg-slate-100 text-slate-800", label: "OK" },
-  watch: { dot: "#a8650c", pill: "bg-amber-50 text-amber-800", label: "Watch" },
-  alert: { dot: "#b3261e", pill: "bg-red-50 text-red-800", label: "Alert" },
-  in_maintenance: { dot: "#8e8e93", pill: "bg-slate-100 text-slate-900", label: "In maintenance" },
-  aog: { dot: "#16191d", pill: "bg-slate-100 text-slate-900", label: "AOG" },
+  ok: { dot: "#10b981", pill: "bg-emerald-100 text-emerald-800", label: "OK" },
+  watch: { dot: "#f59e0b", pill: "bg-amber-100 text-amber-800", label: "Watch" },
+  alert: { dot: "#ef4444", pill: "bg-red-100 text-red-800", label: "Alert" },
+  in_maintenance: { dot: "#3b82f6", pill: "bg-blue-100 text-blue-800", label: "In maintenance" },
+  aog: { dot: "#7c3aed", pill: "bg-violet-100 text-violet-800", label: "AOG" },
 };
 export const STATUS_ORDER: Record<string, number> = { aog: 0, alert: 1, watch: 2, in_maintenance: 3, ok: 4 };
 export const AGENT_STYLE: Record<string, string> = {
-  health: "bg-slate-100 text-slate-700 font-mono", scheduling: "bg-slate-100 text-slate-700 font-mono", logistics: "bg-slate-100 text-slate-700 font-mono",
-  operations: "bg-slate-100 text-slate-700 font-mono", coordinator: "bg-[#16191d] text-white font-mono",
+  health: "bg-rose-100 text-rose-800", scheduling: "bg-sky-100 text-sky-800", logistics: "bg-amber-100 text-amber-800",
+  operations: "bg-violet-100 text-violet-800", coordinator: "bg-emerald-100 text-emerald-800",
 };
-export const STATION_COLORS = ["#111113", "#3a3a3f", "#56565c", "#6e6e73", "#86868b", "#a1a1a6", "#2a2a2e", "#48484d"];
+export const STATION_COLORS = ["#2563eb", "#059669", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#65a30d", "#dc2626"];

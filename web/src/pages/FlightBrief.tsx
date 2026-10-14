@@ -4,14 +4,15 @@ import type { FleetOverview, HealthInfo, Leg, PlanBundle, TwinView } from "../ap
 import { Btn, Card, Chip, ErrorBox, Loading, StatusPill } from "../components/ui";
 import { hoursText, legsOf, ms, niceComponent, partText } from "../lib/derive";
 import { STATUS_ORDER, fmtZ } from "../lib/format";
-import { openAgentWorkspace } from "../lib/role";
+import { openAsk } from "../lib/role";
+import AskPanel from "../components/AskPanel";
 
 const BANNER: Record<string, { box: string; head: string }> = {
-  ok: { box: "border-slate-300", head: "No open health alerts for this aircraft in the twin." },
+  ok: { box: "border-emerald-300", head: "No open health alerts for this aircraft in the twin." },
   watch: { box: "border-amber-300", head: "A component is on watch." },
   alert: { box: "border-red-300", head: "A health alert is open." },
-  in_maintenance: { box: "border-slate-800", head: "The aircraft is in maintenance." },
-  aog: { box: "border-slate-500", head: "The aircraft is on the ground (AOG)." },
+  in_maintenance: { box: "border-blue-500", head: "The aircraft is in maintenance." },
+  aog: { box: "border-violet-500", head: "The aircraft is on the ground (AOG)." },
 };
 
 /** Pilot / flight crew: one aircraft, in plain language. Advisory only. */
@@ -58,6 +59,7 @@ export default function FlightBrief() {
         </label>
       </div>
       <ErrorBox error={twin.error ?? legsAll.error} />
+      <AskPanel placeholder="Ask about this aircraft…" suggestions={["Is this aircraft ready to fly?", "What is the open maintenance item and when is it due?", "What happens if we delay the maintenance?"]} />
 
       <div className={`rounded-xl border-2 p-4 ${banner.box}`}>
         <div className="flex flex-wrap items-center gap-3">
@@ -89,7 +91,7 @@ export default function FlightBrief() {
           <Link to={`/aircraft/${tail}`}>
             <Btn tone="primary">Open the 3D twin</Btn>
           </Link>
-          <Btn onClick={openAgentWorkspace}>Ask the copilot</Btn>
+          <Btn onClick={() => openAsk()}>Ask the copilot</Btn>
         </div>
       </div>
 
@@ -112,7 +114,7 @@ export default function FlightBrief() {
                     <StatusPill status={c.status} />
                   </div>
                   <div className="mt-2 h-1.5 overflow-hidden rounded bg-slate-200" title={`Health ${Math.round(c.health * 100)}%`}>
-                    <div className={`h-full ${c.status === "ok" ? "bg-slate-800" : c.status === "watch" ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${Math.round(c.health * 100)}%` }} />
+                    <div className={`h-full ${c.status === "ok" ? "bg-emerald-500" : c.status === "watch" ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${Math.round(c.health * 100)}%` }} />
                   </div>
                   <div className="mt-2 text-xs text-slate-500">
                     Health {Math.round(c.health * 100)}% · anomaly score {c.anomaly_score.toFixed(2)}

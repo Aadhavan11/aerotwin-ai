@@ -20,7 +20,7 @@ from collections import deque
 from typing import Optional
 
 from app.contracts.models import ChatRequest, ChatResponse, EvidenceRef
-from app.copilot import audit, llm
+from app.copilot import audit, llm, screen as screen_ctx
 from app.copilot.tools import Toolbox, normalize_tail
 
 log = logging.getLogger(__name__)
@@ -269,6 +269,26 @@ def chat(req: ChatRequest, *, toolbox: Optional[Toolbox] = None, client=None, mo
 def _answer(req: ChatRequest, toolbox: Optional[Toolbox], client, mode: Optional[str]) -> ChatResponse:
     box = toolbox or Toolbox()
     hist = SESSIONS.setdefault(req.session_id, deque(maxlen=HISTORY_TURNS * 2))
+    seen = screen_ctx.answer(req.message, req.screen)  # questions about the screen itself, or "this aircraft", answered from what is on screen
+    if seen is not None:
+        text, ev = seen
+        hist.append({"role": "user", "content": req.message})
+        hist.append({"role": "assistant", "content": text})
+        LAST_MODE.update(mode="screen", note="answered from the screen context")
+        return ChatResponse(answer=text, evidence=ev)
+    try:  # a plain request to edit or create a maintenance request: propose it (never apply it), with or without a language model
+        from app.copilot import actions
+
+        acted = actions.parse_scripted(req.message, getattr(req.screen, "text", "") if req.screen else "")
+    except Exception as exc:  # noqa: BLE001  fall through to the normal answer
+        log.warning("action parser failed: %s", exc)
+        acted = None
+    if acted is not None:
+        text, props = acted
+        hist.append({"role": "user", "content": req.message})
+        hist.append({"role": "assistant", "content": text})
+        LAST_MODE.update(mode="scripted", note="proposed a change to a maintenance request; it waits for the person to allow it")
+        return ChatResponse(answer=text, evidence=[EvidenceRef(kind="event", ref="request", note="proposal, not applied")] if props else [], proposed_actions=props)
     use_llm = mode == "llm" or (mode is None and llm.llm_available())
     if use_llm:
         resp = _chat_llm(req, box, hist, client)
@@ -298,13 +318,16 @@ def _chat_llm(req: ChatRequest, box: Toolbox, hist: deque, client) -> Optional[C
         LAST_MODE.update(mode="scripted", note=f"LLM client unavailable ({type(exc).__name__}); used scripted answers")
         return None
     system = llm.SAFETY.format(role="maintenance copilot") + " " + llm.COPILOT_PROMPT
+    on_screen = screen_ctx.describe(req.screen)
+    if on_screen:
+        system += "\n\n" + on_screen + "\nYou can see the screen described above and you know everything the person can see on it. Answer questions about the screen directly from it."
     messages = [*list(hist), {"role": "user", "content": req.message}]
     res = llm.run_tool_loop(client, system=system, messages=messages, tools=box.tools())
     if res.error or not res.text:
         log.warning("copilot LLM failed (%s); using scripted mode", res.error or "empty answer")
         LAST_MODE.update(mode="scripted", note=f"LLM call failed ({str(res.error or 'empty answer')[:120]}); used scripted answers")
         return None
-    history_text = [m["content"] for m in messages if isinstance(m.get("content"), str)]
+    history_text = [m["content"] for m in messages if isinstance(m.get("content"), str)] + screen_ctx.sources(req.screen)  # numbers on screen are legitimate
     bad = llm.unsupported_numbers(res.text, res.sources(history_text))
     if bad:
         log.warning("copilot answer contains numbers no tool returned %s; using scripted mode", bad)
@@ -316,4 +339,4 @@ def _chat_llm(req: ChatRequest, box: Toolbox, hist: deque, client) -> Optional[C
             raw.extend(c.output.get("evidence", []))
     evidence = _to_evidence(raw, [(c.tool, c.input) for c in res.calls])
     return ChatResponse(answer=res.text, evidence=evidence, missing_info=list(box.missing),
-                        proposed_work_orders=list(box.proposed))
+                        proposed_work_orders=list(box.proposed), proposed_actions=list(box.actions))
