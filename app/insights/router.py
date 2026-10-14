@@ -2,6 +2,8 @@
 
     GET    /insights/data-quality
     GET    /insights/reliability
+    GET    /insights/reliability/pack
+    GET    /insights/ata
     POST   /insights/weather            {station,start,duration_h,severity}
     GET    /insights/disruptions
     DELETE /insights/weather/{id}
@@ -78,3 +80,17 @@ def leg_profile(leg_id: str):
     except ValueError as exc:
         return _err(422, "invalid_leg", str(exc))
     return {"simulated": True, "leg_id": leg.id, "tail": leg.tail, "dep": leg.dep, "arr": leg.arr, **asdict(profile)}
+
+
+@router.get("/insights/reliability/pack")
+def reliability_pack_report():
+    from app.insights import reliability_pack
+
+    return reliability_pack.pack()
+
+
+@router.get("/insights/ata")
+def ata_table():
+    from app.taxonomy import ata
+
+    return ata.table()
