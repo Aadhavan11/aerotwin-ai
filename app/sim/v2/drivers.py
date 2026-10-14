@@ -13,7 +13,10 @@ from app.sim.profile import FlightProfile
 PHASES = ("taxi_out", "takeoff", "climb", "cruise", "descent", "landing", "taxi_in")
 TAXI_SPEED_KMH = 20.0
 TURNAROUND_MIN = 35.0
-BASE_CYCLES_PER_DAY = 3.0
+# Single calendar constant: flown legs (cycles) per aircraft per calendar day at world utilisation 1.0. The runner, World and
+# reliability pack all use it, so 365 * LEGS_PER_DAY = 2190 cycles == 365 calendar days for every tail.
+LEGS_PER_DAY = 6.0
+BASE_CYCLES_PER_DAY = LEGS_PER_DAY
 
 # station -> (humidity %, dust index 0..1)
 STATION_ENV = {
@@ -120,7 +123,8 @@ def build_context(
     pc = prev if prev is not None and prev.n == n else None
     cyc = (pc.flight_cycles if pc is not None else np.zeros(n, dtype=np.int64)) + 1
     env = [STATION_ENV[s] for s in arr_stations]
-    day_inc = 1.0 / (BASE_CYCLES_PER_DAY * util)
+    # fleet cycles advance in lockstep, so calendar time is uniform: per-tail utilisation scatter does not stretch the clock
+    day_inc = np.full(n, 1.0 / (BASE_CYCLES_PER_DAY * float(utilisation)))
     return OperatingContext(
         flight_hours=flight_h,
         taxi_out_min=ph("taxi_out"), takeoff_min=ph("takeoff"), climb_min=ph("climb"), cruise_min=ph("cruise"),

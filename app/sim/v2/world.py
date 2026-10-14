@@ -36,6 +36,7 @@ from app.sim.v2.core import Fleet
 from app.sim.v2.coupling import CouplingGraph
 from app.sim.v2.drivers import OperatingContext, build_context
 from app.sim.v2.faults import FaultInjector
+from app.sim.v2.models.tires import PARAMS as TIRE_PARAMS
 from app.sim.v2.maintenance import (CheckDef, InspectionRecord, InstallRegistry, MaintenanceEngine, MelDeferral,
                                     PartInstance, Removal, ScheduledCheckGenerator)
 
@@ -55,21 +56,23 @@ class KindPolicy:
     check_days: float      # scheduled inspection interval, calendar days
     defer_ok: bool = False  # inspection findings may be deferred under MEL category C
     finding_action: str | None = None  # None: repair if hi > REPAIR_ABOVE else replace
+    finding_below: float | None = None  # per-kind override of FINDING_BELOW (None: use the module default)
 
 
-# Priors, not calibrated.
+# Priors, not calibrated. finding_below tuned so a year of nominal operations lands in the prior bands in
+# docs/RELIABILITY.md: hydraulics / electrical / gear degrade slowly, findings are actioned only when clearly worn.
 POLICY: dict[str, KindPolicy] = {
     "engine": KindPolicy(0.15, "overhaul", 45.0),
     "brakes": KindPolicy(0.10, "replace", 30.0),
-    "landing_gear": KindPolicy(0.10, "replace", 60.0),
-    "hydraulics": KindPolicy(0.15, "replace", 45.0),
+    "landing_gear": KindPolicy(0.10, "replace", 60.0, finding_below=0.3),
+    "hydraulics": KindPolicy(0.15, "replace", 45.0, finding_below=0.3),
     "avionics": KindPolicy(0.10, "replace", 90.0, defer_ok=True),
     "apu": KindPolicy(0.15, "overhaul", 60.0, defer_ok=True),
-    "tires": KindPolicy(0.15, "overhaul", 7.0, finding_action="overhaul"),
+    "tires": KindPolicy(0.15, "overhaul", 7.0, finding_action="overhaul", finding_below=0.2),
     "ecs": KindPolicy(0.15, "overhaul", 90.0, defer_ok=True),
-    "electrical": KindPolicy(0.15, "replace", 60.0),
+    "electrical": KindPolicy(0.15, "replace", 60.0, finding_below=0.3),
 }
-FINDING_BELOW = 0.6        # inspection finding is actioned only if hi is below this
+FINDING_BELOW = 0.4        # inspection finding is actioned only if hi is below this (was 0.6: mild ageing was removed)
 REPAIR_ABOVE = 0.3         # finding with hi above this is repaired, else replaced
 NFF_WINDOW = 60            # cycles: repeat-defect window for intermittent avionics BITE reports
 NFF_BITE_DELTA = 5         # BITE count increase within the window that triggers a pilot-reported removal
@@ -96,7 +99,7 @@ class World:
     def __init__(self, seed: int, tails: Sequence[str], legs_or_profiles: Any = None, stochastic: bool = True,
                  coupling: bool = True, faults: bool = True, utilisation: float = 1.0, auto_maintain: bool = True) -> None:
         self.seed = int(seed)
-        self.utilisation = float(utilisation)  # multiplies per-tail utilisation (cycles per calendar day); 1.0 = ~3 flights/day
+        self.utilisation = float(utilisation)  # multiplies drivers.LEGS_PER_DAY (cycles per calendar day); 1.0 = 6 legs/day
         self.auto_maintain = bool(auto_maintain)  # False: only explicit actions (live service) change components
         self.tails = list(tails)
         self.stochastic = bool(stochastic)
@@ -234,6 +237,20 @@ class World:
             ev["detected"] = bool(recs[0].detected)
         self.events.append(ev)
 
+    def _wear_driven(self, kind: str, i: int) -> bool:
+        """True when a consumable (tires, brakes) is at its wear / retread limit and nothing else is wrong: no active
+        injected fault and (tires) no cut damage or pressure loss. Such a change is a planned ``wear_limit`` removal."""
+        if kind not in ("tires", "brakes"):
+            return False
+        if any(self.injector.onset[(kind, m.id)][i] >= 0 for m in self.injector._modes.get(kind, [])):
+            return False
+        st = self.fleet.state[kind]
+        if kind == "brakes":
+            return True
+        pr = TIRE_PARAMS
+        h_p = (float(st["p_cold"][i]) / pr["P_SET_PSI"] - pr["P_LOW_FRAC"]) / (1.0 - pr["P_LOW_FRAC"])
+        return float(st["cut_dmg"][i]) < 0.2 and h_p > 0.5
+
     def _maintain(self, ctx: OperatingContext) -> None:
         fl = self.fleet
         for k in self.kinds:
@@ -243,7 +260,9 @@ class World:
             hi, failed = st["hi"], st["failed"]
             done: set[int] = set()
             for i in np.flatnonzero(failed):
-                self._do(k, int(i), "replace", "failure", "failed in service", ctx)
+                wear = self._wear_driven(k, int(i))
+                self._do(k, int(i), "replace", "wear_limit" if wear else "failure",
+                         "wear/retread limit reached" if wear else "failed in service", ctx)
                 done.add(int(i))
             for i in np.flatnonzero(~failed & (hi < pol.wear_below)):
                 i = int(i)
@@ -264,14 +283,16 @@ class World:
                     # condition-based shop-visit threshold. Without this every borescope on a half-worn engine would trigger
                     # an on-wing repair that resets part of its wear, so engines would never reach a shop visit.
                     defect = k != "engine" or any(self.injector.onset[(k, m.id)][i] >= 0 for m in self.injector._modes.get(k, []))
-                    if detected and h < FINDING_BELOW and defect:
+                    if detected and h < (FINDING_BELOW if pol.finding_below is None else pol.finding_below) and defect:
                         t = int(self.unit_tail[k][i])
                         already = any(m.kind == k and m.unit == i for m in self.maintenance.mel.open_items())
                         if pol.defer_ok and h > REPAIR_ABOVE and not already:
                             self.maintenance.mel.defer(k, i, "C", self._tail_now(t), description="deferred inspection finding", tail=self.tails[t])
                         elif not already:
                             act = pol.finding_action or ("repair" if h > REPAIR_ABOVE else "replace")
-                            self._do(k, i, act, "inspection_finding", "inspection finding", ctx)
+                            wear = self._wear_driven(k, i)
+                            self._do(k, i, act, "wear_limit" if wear else "inspection_finding",
+                                     "wear limit reached at inspection" if wear else "inspection finding", ctx)
                     break
         self._mel_expiry(ctx)
 

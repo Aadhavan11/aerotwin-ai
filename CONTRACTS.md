@@ -59,6 +59,11 @@ class DataQuality(BaseModel):
     status: Literal["ok", "degraded", "bad"]
     reasons: list[str] = []          # e.g. "sensor s11 flat for 20 cycles", "value out of training range"
 
+class FeatureContribution(BaseModel):
+    feature: str                                  # e.g. "pad_wear_mm.slope" or "age"
+    sensor: Optional[str] = None                  # the telemetry channel the feature is computed from; None for "age"
+    effect_cycles: float                          # change of the RUL p50 (cycles) caused by this feature's value vs a typical value
+
 class HealthScore(Stamped):
     tail: str
     component_id: str
@@ -69,6 +74,7 @@ class HealthScore(Stamped):
     data_quality: DataQuality
     model_version: str
     top_signals: list[str] = []                # sensors driving the score (explainability)
+    explanation: Optional[list[FeatureContribution]] = None   # per-feature contributions; set only by HEALTH_MODEL=simtrained
 
 class TelemetryRow(Stamped):
     tail: str

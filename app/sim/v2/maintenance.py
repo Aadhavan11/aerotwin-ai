@@ -16,8 +16,10 @@ import numpy as np
 from app.sim.v2.core import ACTIONS, Fleet, StreamRng
 
 PROVENANCE = "SIMULATED"
-REMOVAL_REASONS = ("scheduled", "failure", "inspection_finding", "nff", "deferred_defect_rectification", "opportunistic")
-_PLANNED = ("scheduled", "opportunistic", "deferred_defect_rectification")
+# "wear_limit": consumable (tires, brakes) change because the wear / retread limit was reached with no fault, cut or leak
+# involved. It is a planned, condition-based removal, so it is never counted as unscheduled.
+REMOVAL_REASONS = ("scheduled", "wear_limit", "failure", "inspection_finding", "nff", "deferred_defect_rectification", "opportunistic")
+_PLANNED = ("scheduled", "wear_limit", "opportunistic", "deferred_defect_rectification")
 COST_CLASS = {"inspect": "inspect", "repair": "repair", "overhaul": "overhaul", "replace": "replace"}
 DEFAULT_Q = {"inspect": 1.0, "repair": 0.6, "overhaul": 0.15, "replace": 0.0}
 NFF_HEALTH = 0.85  # removed for failure/finding while health index above this => no fault found

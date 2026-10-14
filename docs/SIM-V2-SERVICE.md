@@ -32,7 +32,7 @@ unchanged and byte-identical when the flag is off (`tests/test_sim_v2_service.py
 * Worker thread, off the request path; SQLite tables `sim_runs`, `sim_checkpoints` (`CREATE TABLE IF NOT EXISTS`, additive).
 * Output `data/sim_runs/<id>/` (git-ignored via `data/`): `parts/telemetry_*.csv.gz`, `ckpt_*.npz`, `removals.csv.gz`,
   `ground_truth.json` (hidden truth), `events.json`, `manifest.json`. Override the base dir with `SIM_RUNS_DIR`.
-* 1 run-year = 2,190 world cycles (6 legs/day via utilisation 2.0): 525,600 telemetry rows for 24 tails, ~18 s on a laptop.
+* 1 run-year = 2,190 world cycles (6 legs/day = `drivers.LEGS_PER_DAY`, world utilisation 1.0; 2,190 cycles = 365 calendar days): 525,600 telemetry rows for 24 tails, ~18 s on a laptop.
   Checkpoints every `checkpoint_every` cycles (default 365); resume and re-runs are bit-identical.
 * pyarrow is NOT in requirements.txt; csv.gz is used unless it is installed (untested branch here).
 * Under `MOCK=1` the sim group is served by the mock router, which has no `/sim/runs`.

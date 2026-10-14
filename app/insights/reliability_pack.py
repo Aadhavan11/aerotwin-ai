@@ -34,6 +34,7 @@ from typing import Any, Iterable, Sequence
 
 from app import settings
 from app.sim.clock import START
+from app.sim.v2.drivers import LEGS_PER_DAY
 from app.taxonomy import ata
 
 PROVENANCE = "SIMULATED"
@@ -47,10 +48,9 @@ PREMATURE_HEALTH = 0.5
 REPEAT_N = 3
 REPEAT_DAYS = 90
 CONFIDENCE = 0.95
-LEGS_PER_DAY = 6.0
 REMOVAL_ACTIONS = ("replace", "overhaul")
 BACKFILL_YEARS = 1.0
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 DISCLAIMER = "SIMULATED data; ATA-style, simplified, fictional part numbers. Advisory only, not a certified reliability analysis."
 
 

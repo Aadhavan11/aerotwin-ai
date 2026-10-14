@@ -34,11 +34,10 @@ from typing import Any, Callable
 import numpy as np
 
 from app import settings
+from app.sim.v2.drivers import LEGS_PER_DAY
 from app.sim.v2.live import age_world, initial_wear
 from app.sim.v2.world import PROVENANCE, World
 
-LEGS_PER_DAY = 6.0
-BASE_LEGS_PER_DAY = 3.0  # drivers.BASE_CYCLES_PER_DAY at utilisation 1.0
 CYCLES_PER_YEAR = int(round(365 * LEGS_PER_DAY))
 DEFAULT_SEGMENT = 365  # cycles (~2 months) between checkpoints
 RUNS_DIR = Path(os.environ.get("SIM_RUNS_DIR", str(settings.ROOT / "data" / "sim_runs")))
@@ -81,7 +80,7 @@ def build_world(spec: dict[str, Any]) -> World:
         tails = [f"SIM-{i:03d}" for i in range(1, fleet + 1)]
     else:
         tails = list(fleet)
-    w = World(seed, tails, stochastic=True, utilisation=LEGS_PER_DAY / BASE_LEGS_PER_DAY, auto_maintain=True)
+    w = World(seed, tails, stochastic=True, utilisation=1.0, auto_maintain=True)
     if spec.get("initial_wear", True):
         age_world(w, initial_wear(state, w))
     return w
