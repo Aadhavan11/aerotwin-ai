@@ -45,6 +45,8 @@ toward the initial flaw by `q`. `overhaul`: new seal pack (leak zero), fatigue a
 crack reset to initial flaw. `replace`: resample all unit samples. The maintenance-layer inspection POD
 (`pod_curve` in `maintenance.py`) is a second, separate detection model used by scheduled checks.
 
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
+
 ## Data used
 None. No gear load, seal, or crack-growth dataset is in the repository.
 
@@ -57,8 +59,8 @@ None. No gear load, seal, or crack-growth dataset is in the repository.
 * Load factor is a linear function of sink rate and weight; no gust, crosswind, drift or bounce.
 * The fatigue and crack paths are independent damage channels with no interaction.
 * Rate priors (leak, fatigue, crack) are intended to land in an industry-plausible-looking band, not fitted.
-* In ML tests, landing_gear has very many cap rows (96% in distribution), so headline coverage looks good while
-  coverage on below-cap rows is poor (`docs/ML-GENERIC.md`).
+* In ML tests, landing_gear has very many cap rows (93% in distribution), so headline coverage looks good while
+  coverage on below-cap rows is poor, 19% (`docs/ML-GENERIC.md`).
 * Hard-landing threshold is scaled to the profile generator's sink-rate range (2-4 ft/s), not to a certification limit.
 
 ## Validation performed and its circularity

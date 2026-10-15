@@ -1,4 +1,6 @@
-"""Battery and generator degradation priors; NASA battery calibration comes later.
+"""Battery and generator degradation priors. A fit against the NASA battery cells is committed
+(``calibration/electrical_fit.json``) and loaded by ``_apply_fit``; it overrides 3 of 36 parameters
+(resistance_fade, capacity_noise, resistance_noise).
 
 Rates target roughly 6200 nominal flights (~12k FH). The calendar watermark is bookkeeping,
 not damage: maintenance preserves it to avoid recharging elapsed fleet calendar time.

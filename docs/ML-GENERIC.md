@@ -24,8 +24,8 @@ degradation laws, not how well it would predict real components. Nothing here is
 * In-distribution regime: per-unit external stress (`stress_ext`) uniform in [1.0, 3.0], utilisation x0.8-1.3,
   ambient offset -8..+8 C. **Held-out stress regime** (shifted): stress [3.5, 5.5], utilisation x1.4-1.8, +18 C,
   +15 pp payload, +10 pp landing weight, brake energy x1.35, sink rate x1.3, extra wet runways, arrivals at dusty stations.
-  Note `stress_ext` has little or no effect on some kinds in the v2 models (brakes, landing gear, ECS), so those are
-  mostly shifted by the operating profile.
+  `stress_ext` multiplies wear in every kind including brakes (mechanical wear), landing gear (seal leak, fatigue, crack growth)
+  and ECS (valve hours and event rate); the shift also changes the operating profile (energy, weights, wet runways, dust).
 * Channels: only `TELEMETRY_KEYS[kind]` (two per kind: the wear signal and one extra), exactly what the live service
   emits; v2's other channels and the hidden truth are not used. 30-cycle window features per channel: mean, slope, last,
   std, min, max, plus age (cycles since restoration in training; the last row's `cycle` at serving time, which equals it only if
@@ -43,6 +43,9 @@ calibration and test points; consecutive rows of one unit are not independent an
 exchangeability, so the guarantee holds only approximately in-distribution and not at all under shift (see below).
 
 ## Results (hold-out; SIMULATED data; MAE in cycles; target coverage 80%)
+**Retrained 2026-10-14** (artifacts written 17:43, `generic_meta.json`, after the phase-1 simulator changes: realistic removal rates,
+no-fault-found returns, infant mortality). The simulator changed, so every number below was refreshed and differs from the earlier
+tables; do not compare with older copies of this document.
 Rule model figures are on up to 300 evenly spaced windows per set (its estimate is clipped at the cap); the
 sim-trained figures are on the full hold-out. "At cap" is the share of rows whose true RUL is the cap (>= 400),
 where predicting a large number is easy; the RUL<cap columns are the harder rows.
@@ -50,46 +53,50 @@ where predicting a large number is easy; the RUL<cap columns are the harder rows
 ### In-distribution hold-out units (unseen seeds, same regime)
 | kind | rows / units | at cap | MAE (all) | MAE (RUL<cap) | rule MAE (all) | p10-p90 raw | conformal (CQR) | CQR, RUL<cap rows | rule cov. | anomaly AUC | rule AUC |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| apu | 7794 / 31 | 53% | 21.6 | 41.2 | 54.8 | 86% | 86% | 72% | 52% | 0.68 | 0.44 |
-| avionics | 17108 / 32 | 63% | 55.4 | 103.2 | 67.3 | 89% | 89% | 76% | 62% | 0.93 | 0.45 |
-| brakes | 9306 / 30 | 65% | 25.2 | 65.3 | 47.5 | 87% | 87% | 68% | 67% | 0.99 | 0.52 |
-| ecs | 27163 / 32 | 93% | 8.8 | 71.3 | 14.3 | 95% | 95% | 72% | 93% | 0.91 | 0.58 |
-| electrical | 7709 / 29 | 55% | 16.9 | 33.5 | 49.4 | 84% | 84% | 70% | 69% | 0.74 | 0.55 |
-| hydraulics | 9163 / 30 | 65% | 11.5 | 26.2 | 42.1 | 86% | 86% | 72% | 66% | 0.77 | 0.78 |
-| landing_gear | 28427 / 32 | 96% | 3.8 | 68.7 | 6.1 | 97% | 97% | 31% | 96% | 0.76 | 0.32 |
-| tires | 3139 / 32 | 0% | 36.9 | 36.9 | 124.3 | 65% | 78% | 78% | 10% | 0.74 | 0.52 |
+| apu | 12159 / 32 | 45% | 32.4 | 53.6 | 61.9 | 76% | 79% | 64% | 44% | 0.71 | 0.48 |
+| avionics | 17398 / 32 | 70% | 21.5 | 52.8 | 36.7 | 92% | 92% | 77% | 71% | 0.92 | 0.47 |
+| brakes | 14107 / 32 | 69% | 20.1 | 59.3 | 36.2 | 88% | 88% | 65% | 70% | 0.99 | 0.57 |
+| ecs | 28045 / 32 | 93% | 7.8 | 59.1 | 12.1 | 95% | 95% | 75% | 94% | 0.92 | 0.50 |
+| electrical | 13445 / 32 | 51% | 15.3 | 26.8 | 53.8 | 86% | 86% | 76% | 65% | 0.63 | 0.44 |
+| hydraulics | 17202 / 32 | 71% | 10.5 | 31.4 | 37.6 | 89% | 89% | 68% | 72% | 0.80 | 0.59 |
+| landing_gear | 26532 / 32 | 93% | 10.9 | 129.2 | 11.0 | 93% | 93% | 19% | 93% | 0.72 | 0.44 |
+| tires | 8514 / 31 | 0% | 12.8 | 12.8 | 62.3 | 81% | 83% | 83% | 26% | 0.84 | 0.56 |
 
 ### Held-out stress regime (hot, heavy, dusty, high utilisation, higher stress)
 | kind | rows / units | at cap | MAE (all) | MAE (RUL<cap) | rule MAE (all) | p10-p90 raw | conformal (CQR) | CQR, RUL<cap rows | rule cov. | anomaly AUC | rule AUC |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| apu | 8246 / 32 | 7% | 69.4 | 74.3 | 60.5 | 76% | 76% | 74% | 7% | 0.66 | 0.62 |
-| avionics | 20642 / 32 | 53% | 92.1 | 95.3 | 87.8 | 86% | 86% | 80% | 54% | 0.77 | 0.44 |
-| brakes | 5510 / 29 | 45% | 33.6 | 56.8 | 66.9 | 80% | 80% | 67% | 46% | 0.95 | 0.93 |
-| ecs | 21616 / 32 | 87% | 19.4 | 141.7 | 30.5 | 92% | 92% | 44% | 86% | 0.88 | 0.61 |
-| electrical | 9357 / 32 | 0% | 95.5 | 95.5 | 67.2 | 53% | 53% | 53% | 13% | 0.84 | 0.79 |
-| hydraulics | 5931 / 31 | 2% | 73.8 | 75.2 | 69.9 | 47% | 47% | 46% | 2% | 0.64 | 0.63 |
-| landing_gear | 23750 / 32 | 87% | 10.9 | 55.4 | 18.8 | 92% | 92% | 56% | 89% | 0.75 | 0.52 |
-| tires | 2939 / 32 | 0% | 26.0 | 26.0 | 115.2 | 63% | 81% | 81% | 7% | 0.64 | 0.57 |
+| apu | 10910 / 32 | 10% | 59.9 | 66.6 | 49.3 | 61% | 64% | 60% | 12% | 0.60 | 0.61 |
+| avionics | 19638 / 32 | 66% | 45.2 | 78.0 | 49.5 | 82% | 82% | 62% | 65% | 0.80 | 0.40 |
+| brakes | 10002 / 32 | 56% | 29.0 | 58.7 | 54.5 | 84% | 84% | 66% | 57% | 0.97 | 0.73 |
+| ecs | 24736 / 32 | 85% | 20.6 | 133.5 | 30.0 | 89% | 89% | 34% | 86% | 0.90 | 0.57 |
+| electrical | 11654 / 32 | 1% | 67.0 | 67.4 | 68.0 | 68% | 68% | 68% | 15% | 0.68 | 0.74 |
+| hydraulics | 11803 / 32 | 12% | 63.2 | 70.8 | 61.7 | 39% | 39% | 32% | 12% | 0.69 | 0.65 |
+| landing_gear | 26101 / 32 | 88% | 10.4 | 56.5 | 19.4 | 90% | 90% | 64% | 90% | 0.71 | 0.40 |
+| tires | 11590 / 32 | 0% | 19.6 | 19.6 | 69.3 | 55% | 57% | 57% | 11% | 0.73 | 0.63 |
 
 Matched-row comparisons (sim-trained scored on exactly the rows the rule model was scored on) are in
 `generic_meta.json` under `rule_model.simtrained_same_rows`.
 
 ## Honest reading
-* In distribution the sim-trained models have a lower RUL MAE than the rule model on all 8 kinds (clearly for apu, brakes,
-  electrical, hydraulics, tires; narrowly for avionics, ecs, landing_gear, where most rows sit at the cap). The rule model's
-  fixed limits and linear wear do not match the v2 degradation, so this says as much about the demo rule as about the learned model.
+* In distribution the sim-trained models have a lower RUL MAE than the rule model on 7 of 8 kinds (clearly for apu, avionics,
+  brakes, electrical, hydraulics, tires; by 4 cycles for ecs, where 93% of rows sit at the cap) and tie on landing_gear (10.9 vs
+  11.0, 93% at the cap). The rule model's fixed limits and linear wear do not match the v2 degradation, so this says as much about
+  the demo rule as about the learned model.
 * Headline coverage is flattered by rows at the cap (easy to cover). On rows with RUL below the cap, CQR coverage in
-  distribution is 68-78% for 7 kinds and **31% for landing_gear** (a model that says "cap" for a part that is in fact
-  failing within 400 cycles is confidently wrong, and the interval does not widen enough).
-* Under the stress shift the picture is worse: coverage on below-cap rows falls to 44-56% for ecs, electrical, hydraulics
-  and landing_gear, and for apu, avionics, electrical and hydraulics the rule model has the lower MAE. Conformal calibration
-  on in-distribution units does not repair covariate shift. Do not trust the 80% label outside the training regime.
-* Anomaly detection is a supervised fault-present classifier; AUC 0.68-0.99 in distribution, 0.64-0.95 under shift.
-  Thresholds (max F1 on calibration seeds) give high false-positive rates for landing_gear and ecs in distribution (11-43%)
-  and for brakes, ecs, landing_gear and apu under shift (34-78%). The rule model's anomaly score is near chance on these labels
-  (it was not designed to detect them), so that AUC comparison is not a fair test of the rule model.
-* Health regression error is tiny (MAE < 0.04) because health is a smooth function of the wear signal.
-* About 30 hold-out units per kind from 4 seeds; row counts overstate the effective sample size.
+  distribution is 64-83% for 7 kinds and **19% for landing_gear** (a model that says "cap" for a part that is in fact
+  failing within 400 cycles is confidently wrong, and the interval does not widen enough; MAE on its below-cap rows is 129 cycles).
+* Under the stress shift the picture is worse: coverage on below-cap rows falls to 34% for ecs and 32% for hydraulics (57-68%
+  for the other kinds), overall coverage is 39% for hydraulics and 57% for tires, and for apu and hydraulics the rule model has the
+  lower MAE. Conformal calibration on in-distribution units does not repair covariate shift. Do not trust the 80% label outside
+  the training regime.
+* Anomaly detection is a supervised fault-present classifier; AUC 0.63-0.99 in distribution, 0.60-0.97 under shift
+  (apu, electrical and tires are the weakest). Thresholds (max F1 on calibration seeds) give false-positive rates of 16-32% for
+  avionics, electrical, hydraulics and landing_gear in distribution, and 20-65% for apu, avionics, brakes, ecs and landing_gear
+  under shift. The rule model's anomaly score is near or below chance on these labels in distribution (AUC 0.44-0.59; 0.40-0.74
+  under shift; it was not designed to detect them), so that AUC comparison is not a fair test of the rule model.
+* Health regression error is small (MAE <= 0.07 in distribution, <= 0.04 shifted) because health is a smooth function of the
+  wear signal.
+* About 31-32 hold-out units per kind from 4 seeds; row counts overstate the effective sample size.
 
 ## Sim versus real
 The only comparison of the simulator with real data available in the repo is `docs/SIM-V2-CALIBRATION.md`
@@ -97,9 +104,10 @@ The only comparison of the simulator with real data available in the repo is `do
 real-world accuracy should be inferred from it.
 
 ## Reproduce
-The committed artifacts were generated against the v2 simulator as it stood on 2026-10-14 (uncommitted edits to `app/sim/v2/*` were in flight); any change to the simulator changes the data, so regenerate with the command below and re-read the tables.
+The committed artifacts were retrained on 2026-10-14 against the v2 simulator after the phase-1 changes (training took about 2 minutes);
+any later change to the simulator changes the data, so regenerate with the command below and re-read the tables.
 `python -m app.ml.train_generic` (about 2-3 minutes, writes `app/ml/artifacts/generic_<kind>.joblib` and
-`generic_meta.json`; `--tiny` for the small test configuration). Committed artifacts total 1.90 MB (lzma-compressed joblib, 8 files + meta).
+`generic_meta.json`; `--tiny` for the small test configuration). Committed artifacts total 1.89 MB (lzma-compressed joblib, 8 files + meta).
 Tests: `tests/test_ml_generic.py` (tiny configuration, trains in about 20 s), `tests/test_conformal.py`.
 
 ## Serving `age` verification (live path)

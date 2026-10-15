@@ -60,7 +60,7 @@ The 100 test engines were never used to fit or calibrate anything, and they are 
 
 - Trained and tested on C-MAPSS FD001 (one operating condition, one fault mode). Not validated on airline data, other operating conditions or other fault modes.
 - The RUL band is tree spread widened by measured residuals. It covers more than the nominal 80% in aggregate, which is deliberate (the scheduler uses p10 as a hard deadline), but it is not a guaranteed interval for any single engine.
-- Individual engines can be off: the last-window RUL error has a typical size of about 11 cycles. The model is more accurate near end of life (3.8 cycles) than early.
+- Individual engines can be off: the last-window RUL error has a typical size of about 11 cycles. The model's error is smaller near end of life (3.8 cycles) than early. All figures are on simulated C-MAPSS engines.
 - Anomaly recall of 0.72 means about 3 in 10 late-life windows are not flagged by the anomaly model alone; the `rul_p10 < 30` rule in `status_from` also raises `alert`.
 - Brakes, landing gear, hydraulics and avionics use rule-based demo models with synthetic limits.
 - `HOURS_PER_CYCLE = 2.0` in `twin/state.py` is an assumption (the simulator flies 2 h legs) that fills component hours from cycles.

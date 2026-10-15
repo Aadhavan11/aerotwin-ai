@@ -121,7 +121,7 @@ not an independent check. R/R0 improved because `resistance_fade` was fitted to 
   The rig's pressure rises with leak and low precharge, opposite to the model; this is probably a load-controlled bench
   artefact, but it was not resolved, so pump pressure sensitivity remains a prior.
 * Valve wear is invisible in cycle-mean features here; dynamic features were not tried.
-* Rig noise (lab sensors, averaged 60-6000 samples) is far below the priors, so the noise "calibration" left
+* Rig noise (lab sensors, averaged 60-6000 samples) is far below the priors, so the noise fit left
   hydraulics unchanged. Real fleet sensor noise is unknown.
 * The cells are 2 Ah 18650 cells, 4 units, 1 temperature, 1 current profile. The 5.5 pp held-out fade error and
   the wide resistance interval are the honest uncertainty. The three battery overrides are small-sample relative

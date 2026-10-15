@@ -44,6 +44,8 @@ Hazards: see `LIBRARY` in `app/sim/v2/faults.py`.
 recomputed from the margin after the action. World policy can defer some findings under MEL category C
 (`defer_ok` in `POLICY`).
 
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
+
 ## Data used
 None. No public APU run-to-failure data exists in the repository, and none was used.
 
@@ -56,7 +58,7 @@ None. No public APU run-to-failure data exists in the repository, and none was u
 * Starts and hours per flight come from the synthetic schedule (taxi and turnaround minutes), not APU usage logs.
 * No separate load-compressor, generator or bleed model; only a margin-loss abstraction.
 * Margin limit and span (demo values) set the failure point; shocks and starter wear do not feed one another.
-* Under the shifted regime ML coverage for APU is 76% and the rule model has the lower MAE (`docs/ML-GENERIC.md`).
+* Under the shifted regime ML coverage for APU is 64% and the rule model has the lower MAE (`docs/ML-GENERIC.md`).
 * The `rpm_pct` channel is a deterministic function of health plus noise; it adds no independent information.
 
 ## Validation performed and its circularity

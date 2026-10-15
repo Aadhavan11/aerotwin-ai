@@ -1,6 +1,6 @@
 import numpy as np
 
-from app.sim.v2.faults import LIBRARY, FaultInjector, FaultMode, modes_for, sensor_fault_layer
+from app.sim.v2.faults import LIBRARY, NO_ONSET, FaultInjector, FaultMode, modes_for, sensor_fault_layer
 
 KINDS = ["engine", "brakes", "tires", "landing_gear", "hydraulics", "electrical", "avionics", "apu", "ecs"]
 
@@ -19,7 +19,7 @@ def test_hazard_statistics():
     st = {"age_cycles": np.zeros(n)}
     for c in range(T):
         inj.step("k", st, c)
-    frac = float((inj.onset[("k", "m")] >= 0).mean())
+    frac = float((inj.onset[("k", "m")] != NO_ONSET).mean())
     expect = 1 - np.exp(-0.01 * T)
     assert abs(frac - expect) < 0.03
 
@@ -36,7 +36,7 @@ def test_severity_ramp_monotone_and_ground_truth():
             assert np.all(s >= prev) and s.max() <= 1.0
             prev = s.copy()
         gt = inj.ground_truth()
-        assert len(gt) == int((inj.onset[("k", "m")] >= 0).sum()) > 0
+        assert len(gt) == int((inj.onset[("k", "m")] != NO_ONSET).sum()) > 0
         for g in gt:
             tr = [v for _, v in g["severity_trajectory"]]
             assert g["provenance"] == "SIMULATED" and g["onset_cycle"] == g["severity_trajectory"][0][0]
@@ -55,7 +55,7 @@ def test_clear_logs_and_resets():
     st: dict = {}
     inj.step("k", st, 0)
     inj.clear("k", [1], 4, st)
-    assert st["fault_m"][1] == 0 and inj.onset[("k", "m")][1] == -1
+    assert st["fault_m"][1] == 0 and inj.onset[("k", "m")][1] == NO_ONSET
     assert [g["cleared_cycle"] for g in inj.ground_truth() if g["unit"] == 1] == [4]
 
 

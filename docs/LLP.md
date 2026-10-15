@@ -1,9 +1,12 @@
 # LLP tracking and shop-visit forecast (SIMULATED)
 
 Code: `app/ops/llp.py` (model), `app/ops/llp_api.py` (routes, auto-mounted by `app/insights/router.py`).
-All data is SIMULATED; part numbers/serials are fictional; limits are documented priors. Advisory only.
+All data is SIMULATED; part numbers/serials are fictional; limits are assumed priors (no citation). Advisory only; not for airworthiness or maintenance-planning decisions.
 Every payload carries `"simulated": true`, `"provenance": "SIMULATED"`, `disclaimer`, `as_of` (sim clock, ISO UTC) and
 `basis` ("twin" or "seeded simulated fleet"). Routes are GET only, open to every signed-in role (no `GUARDS` rule).
+
+## Relation to the engine model's LLP counter
+The v2 engine model keeps ONE surrogate counter per engine (`llp_cycles_remaining`, limit 25,000 flights, `app/sim/v2/models/engine.py`) that can fail the unit inside the simulation. This tracker holds FOUR engine LLPs (20,000-30,000 cycles) per engine and does not read that counter; the engine model does not read this tracker. Both draw limits from `LLP_CYCLE_LIMITS`, nothing else is shared, and they can disagree.
 
 ## Parts per aircraft (12)
 

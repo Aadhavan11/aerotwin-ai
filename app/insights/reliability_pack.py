@@ -73,7 +73,7 @@ UNIT_DEFINITIONS: dict[str, str] = {
 }
 METRICS_UNIT = "per-tail system aggregate"
 BACKFILL_YEARS = 1.0
-CACHE_VERSION = 3
+CACHE_VERSION = 4
 DISCLAIMER = "SIMULATED data; ATA-style, simplified, fictional part numbers. Advisory only, not a certified reliability analysis."
 
 
@@ -412,7 +412,9 @@ _MEM: dict[str, dict[str, Any]] = {}
 
 
 def config_hash(seed: int, years: float, fleet: Any = None) -> str:
-    cfg = {"v": CACHE_VERSION, "seed": int(seed), "years": float(years), "fleet": fleet, "legs_per_day": LEGS_PER_DAY, "initial_wear": True}
+    from app.sim.v2.manifest import params_hash
+
+    cfg = {"params": params_hash(), "v": CACHE_VERSION, "seed": int(seed), "years": float(years), "fleet": fleet, "legs_per_day": LEGS_PER_DAY, "initial_wear": True}
     return hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:16]
 
 
@@ -481,6 +483,8 @@ def live_world() -> Any | None:
 
 def pack(include_weibull: bool = True) -> dict[str, Any]:
     """The reliability pack for the live v2 world if available, else the cached deterministic 1-year backfill."""
+    from app.sim.v2.manifest import build_manifest, stable_view
+
     w = live_world()
     if w is not None:
         ds = from_world(w, {"basis": "live", "engine": "v2"})
@@ -489,4 +493,7 @@ def pack(include_weibull: bool = True) -> dict[str, Any]:
         ds.source = {**ds.source, "engine": "v2", "cache_key": config_hash(settings.SEED, BACKFILL_YEARS)}
     out = compute(ds)
     out["weibull"] = weibull_fits(ds) if include_weibull else []
+    out["manifest"] = stable_view(build_manifest({"basis": ds.source.get("basis"), "seed": settings.SEED,
+                                                  "years": BACKFILL_YEARS, "cache_key": config_hash(settings.SEED, BACKFILL_YEARS)},
+                                                 created_at=None))
     return out

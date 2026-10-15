@@ -21,6 +21,11 @@ unchanged and byte-identical when the flag is off (`tests/test_sim_v2_service.py
   Eight cycles are projected on a state copy so an event shows in telemetry immediately.
 * Limits: the first `inject` on a never-stepped world and rows of the 8 projected cycles use projected, not stepped, state.
 
+## Maintenance semantics worth knowing
+* `World._do` clears ALL active hidden faults of a unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`) regardless of the action's `q`. A work order that restores a unit therefore also removes every injected fault, including ones unrelated to the finding; `q` only scales the wear state. A no-fault-found return leaves faults untouched, and a maintenance-induced fault (3-4% of repairs / overhauls) is drawn after the clear.
+* Coupling `engine>ecs` reads a tail's first engine unit only (engine_1).
+* The engine model's single LLP counter (about 25,000 flights) is separate from the four-LLP-per-engine tracker in `app/ops/llp.py`; neither reads the other (`docs/SIM-V2-ENGINE.md`).
+
 ## Backfill runner (`app/sim/v2/runner.py`, routes in `runs_api.py`, mounted by `app/sim/router.py`)
 | route | role | |
 |---|---|---|

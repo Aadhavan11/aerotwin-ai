@@ -49,6 +49,8 @@ parameters, zero wear, RTO count and ages. This is an abstraction (real heat-sin
 `failed` and `hi` are recomputed from the new wear. In the world policy, brake wear removals are labelled `wear_limit`
 (planned) when no fault is active.
 
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
+
 ## Data used
 None. No public run-to-failure or fleet brake-wear dataset exists in the repository, and none was used
 (`docs/SIM-V2-CALIBRATION.md` covers hydraulics and battery only).
@@ -62,6 +64,7 @@ None. No public run-to-failure or fleet brake-wear dataset exists in the reposit
 
 ## Known limitations
 * One lumped heat-sink for all braked wheels; no wheel-to-wheel scatter, no brake-temperature-monitor dynamics beyond one peak per cycle.
+* Cold + wet (stress scenario `wet_winter`, -10 C, 60% wet): wear per cycle rises about 15-20% (wet energy and `WET_FACTOR` outweigh the halved Arrhenius oxidation term at a ~25 C lower peak). Checked over 3 seeds (`tests/test_sim_v2_fault_effects.py`); no term was rebalanced.
 * Wear is near-linear in applications; real wear regimes (carbon wear vs temperature, cold-brake wear) are not resolved.
 * Maintenance by scaling wear with `q` is not how brakes are actually serviced.
 * Hydraulic coupling is a scalar stress multiplier, not pressure-dependent braking.

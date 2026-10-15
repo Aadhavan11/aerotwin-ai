@@ -23,7 +23,7 @@ Fleet shape: one unit per tail per kind, except `engine` (2 per tail). Each unit
 
 Every parameter in the cards is placed in exactly one of three columns.
 
-* **assumed**: a value chosen by the authors. The code comments call these "literature prior, unverified"; no specific
+* **assumed**: a value chosen by the authors. The code comments now say "assumed (no citation)" (older text said "literature prior, unverified"); no specific
   citation is recorded in the repository, so treat them as engineering guesses of plausible order of magnitude.
   Nothing was compared with data. Most parameters are here.
 * **sensor-shape-checked**: a public dataset was used to check that a sensor reacts to a condition with the sign and

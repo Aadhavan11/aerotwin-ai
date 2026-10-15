@@ -1,4 +1,4 @@
-# SIM-V2 engine model (C-MAPSS-calibrated surrogate)
+# SIM-V2 engine model (C-MAPSS-fitted surrogate)
 
 Code: `app/sim/v2/models/engine.py` (`@register("engine")`), fit: `python -m app.calib.engine`
 (writes `app/sim/v2/calibration/engine_fit.json`), validation: `python -m app.calib.engine --validate`
@@ -21,7 +21,7 @@ kept under `data/external/nasa_cmapss/extracted/`, git-ignored; override with `A
 * Faults: `state['fault_hpt_blade_erosion']`, `state['fault_compressor_fouling']` (severity 0..1) are tracked as
   running peaks (health never recovers without maintenance), consume life, shift sensors along prior loading
   directions (fd001 end-of-life shift times a physical sensor mask) and cut EGT margin. `stress_ext` multiplies wear.
-* LLP: cycle counter against a limit (20000 prior); exhaustion fails the unit. Overhaul does not reset it, replace does.
+* LLP: one cycle counter against a limit of 25,000 flights (`ENGINE_MODEL_LLP_LIMIT_CYCLES` = the HPC-rotor entry of `LLP_CYCLE_LIMITS`, assumed, no citation; initial use <= 30% of the limit); exhaustion fails the unit. Overhaul does not reset it, replace does. This is a single surrogate counter, not the four-part LLP set of `docs/LLP.md` (see below).
 * `maintain`: inspect (flag only), repair (keeps 0.5+0.5q of progress), overhaul (keeps 0.6q, faults x0.2),
   replace (resample unit, zero everything). `EngineModel.set_variant` selects fd001..fd004 fits (default fd001).
 
@@ -44,6 +44,7 @@ per fleet-year. Measured (seeds 7, 8, 6 years, fleet.py staggered start, `World`
 engines; at 18k flights and 2,190 flights/tail-year the arithmetic above is what the model must give.
 
 ## Validation (100 simulated FD001-variant engines, seed 7, v1 flight profiles; real = FD001 train)
+**In-sample:** the reference rows (FD001 train) are the same rows the sensor curves, noise and life distribution were fitted on, so every AUC / KS / Wasserstein / cycles-to-failure figure below compares the surrogate with its own fitting data. It shows the fit reproduces its training marginals, not out-of-sample behaviour, and not any real engine.
 | check | result |
 |---|---|
 | Cycles to failure, sim vs real | 199.0 / 43.0 vs 206.3 / 46.3 (mean / sd) |
@@ -72,6 +73,14 @@ scores 1.5, which is in-sample and optimistic. Sim MAE 13.2 is therefore somewha
   context distributions shift life accordingly.
 * The scorer is FD001-trained; running it on FD002-4 variants is not meaningful.
 * Polynomial curves are only valid on p in [0,1]; progress is clipped there.
+
+## Two LLP notions (they do not read each other)
+* **Engine model** (`engine.py`, state `llp_used` / `llp_limit`, channel `llp_cycles_remaining`): ONE counter per engine unit, limit 25,000 flights, advanced one flight at a time (x about 1.1 at full thrust). Exhaustion latches `failed`. It exists so the engine has a hard life-limit failure path inside the simulation.
+* **Ops tracker** (`app/ops/llp.py`, `docs/LLP.md`): FOUR LLPs per engine (fan disk 30,000, HPC rotor 25,000, HPT disk 20,000, LPT shaft 30,000) plus four airframe parts, each with its own pre-owned stagger and calendar limit, fed from the live fleet cycle counters.
+* Relationship: both take limits from `app.sim.constants.LLP_CYCLE_LIMITS` (the engine model uses the HPC-rotor value), but neither reads the other's state. `llp_cycles_remaining` is not shown by `/ops/llp`, and a replacement recorded in the ops tracker does not reset the engine model's counter. The two can therefore disagree about when an engine is limited.
+
+## Coupling to ECS
+`engine>ecs` (`app/sim/v2/coupling.py`) maps each tail's ECS unit to the FIRST engine unit of that tail (engine_1) only; engine_2 health never reaches the ECS. See `docs/model-cards/ecs.md`.
 
 ## Shop visits and removal reasons
 The world's condition-based engine shop visit (health index below 0.15, the EGT-margin / performance proxy) is recorded with reason

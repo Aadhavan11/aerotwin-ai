@@ -28,7 +28,7 @@ Values: see PARAMS in `app/sim/v2/models/ecs.py`.
 `flight_hours`, `dust_index`, `humidity_pct`, `oat_c`, `stress_ext`.
 
 ## Coupling
-In: `engine>ecs` (engine health loss, engine_1 of the tail) and `apu>ecs` (ground APU hours). Out: none.
+In: `engine>ecs` (engine health loss of the tail's FIRST engine unit only, `engine_1`; the unit map picks the first source unit per tail, so engine_2 never reaches the ECS) and `apu>ecs` (ground APU hours). Out: none.
 Edge gains and clamps: `default_edges()` in `app/sim/v2/coupling.py`.
 
 ## Fault modes
@@ -45,6 +45,8 @@ scaled by `q^(1/bearing_exponent)` so bearing wear scales by `q`. `overhaul`: th
 cleared, bearing hours zeroed. `replace`: resample unit. Cached health arrays are recomputed for the selected units only.
 World policy can defer some findings under MEL category C.
 
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
+
 ## Data used
 None. No public ECS or pack run-to-failure data exists in the repository.
 
@@ -55,7 +57,7 @@ None. No public ECS or pack run-to-failure data exists in the repository.
 
 ## Known limitations
 * ECS is mostly at the cap in ML tests (93% in distribution), so headline ML metrics are dominated by easy rows;
-  below-cap coverage is 72% in distribution and 44% under shift (`docs/ML-GENERIC.md`).
+  below-cap coverage is 75% in distribution and 34% under shift (`docs/ML-GENERIC.md`).
 * Unscheduled removals in the 1-year backfill sit at the low end of their assumed band (`docs/RELIABILITY.md`).
 * Fouling is a closed-form saturating curve; contamination events, cleaning effects and pack-specific differences are not modelled.
 * Coupling to engine and APU is a scalar stress factor, not bleed temperature or flow.

@@ -157,3 +157,35 @@ def test_sim_run_routes_are_ops_admin_only(tmp_path, monkeypatch):
         assert c.get("/sim/runs/abc").status_code != 403
         assert c.post("/sim/runs/abc/resume").status_code != 403
     monkeypatch.setattr(core, "_conn", None)
+
+
+def test_manifest_route(rn, monkeypatch):
+    c = _client(rn, monkeypatch)
+    assert c.get("/sim/runs/nope/manifest").status_code == 404
+    rid = rn.create(start=False, **SMALL)
+    assert c.get(f"/sim/runs/{rid}/manifest").status_code == 404  # created, not yet run
+    rn.execute(rid)
+    r = c.get(f"/sim/runs/{rid}/manifest")
+    assert r.status_code == 200 and r.headers["x-data-source"] == "SIMULATED"
+    on_disk = json.loads((Path(rn._row(rid)["out_dir"]) / "manifest.json").read_text())
+    assert r.json() == on_disk
+    assert "reproducibility" in r.json()
+
+
+def test_manifest_route_is_ops_admin_only(tmp_path, monkeypatch):
+    from app.auth import core
+    from app.main import app
+    monkeypatch.setattr(core, "DB_FILE", tmp_path / "auth.sqlite")
+    monkeypatch.setattr(core, "_conn", None)
+    monkeypatch.setattr(core, "_fails", {})
+    monkeypatch.setattr(core, "_master_mtime", 0.0)
+    monkeypatch.setenv("AUTH_REQUIRED", "1")
+    monkeypatch.setenv("AUTH_DEMO_PASSWORD", "demo-pass-1")
+    core.seed()
+    c = TestClient(app)
+    assert c.get("/sim/runs/abc/manifest").status_code == 401
+    assert c.post("/auth/login", json={"username": "crew", "password": "demo-pass-1"}).status_code == 200
+    assert c.get("/sim/runs/abc/manifest").status_code == 403
+    assert c.post("/auth/login", json={"username": "operations", "password": "demo-pass-1"}).status_code == 200
+    assert c.get("/sim/runs/abc/manifest").status_code == 404  # authorised; unknown run
+    monkeypatch.setattr(core, "_conn", None)

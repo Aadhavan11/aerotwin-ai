@@ -62,7 +62,7 @@ class KindPolicy:
 # Priors, not calibrated. finding_below tuned so a year of nominal operations lands in the prior bands in
 # docs/RELIABILITY.md: hydraulics / electrical / gear degrade slowly, findings are actioned only when clearly worn.
 POLICY: dict[str, KindPolicy] = {
-    "engine": KindPolicy(0.15, "overhaul", 45.0),
+    "engine": KindPolicy(0.15, "overhaul", 45.0, finding_action="repair"),  # a finding is repaired on wing; the shop visit is the hi < 0.15 performance path
     "brakes": KindPolicy(0.10, "replace", 30.0),
     "landing_gear": KindPolicy(0.10, "replace", 60.0, finding_below=0.3),
     "hydraulics": KindPolicy(0.15, "replace", 45.0, finding_below=0.3),
@@ -271,7 +271,10 @@ class World:
         now = START + timedelta(days=float(ctx.calendar_days[t]))
         hi0 = float(st["hi"][unit])
         if action not in ("inspect", NFF_RETURN):   # a no-fault-found return leaves faults, MEL items and state untouched
-            self.injector.clear(kind, [unit], self.fleet.cycle, st)
+            # An on-wing engine repair (borescope blade blend / compressor wash) only clears fouling: eroded blades stay eroded
+            # until a shop visit, so hpt_blade_erosion keeps acting (the model also caps the health a repair gives back).
+            wash_only = kind == "engine" and action == "repair"
+            self.injector.clear(kind, [unit], self.fleet.cycle, st, modes=["compressor_fouling"] if wash_only else None)
             self.maintenance.mel.close(kind, unit, now)
         if action == NFF_RETURN:
             recs = self.maintenance.shop_check(self.fleet, kind, [unit], reason="nff", now=now, reason_text=text)
@@ -307,7 +310,7 @@ class World:
         injected fault and (tires) no cut damage or pressure loss. Such a change is a planned ``wear_limit`` removal."""
         if kind not in ("tires", "brakes"):
             return False
-        if any(self.injector.onset[(kind, m.id)][i] >= 0 for m in self.injector._modes.get(kind, [])):
+        if any(self.injector.active(kind, m.id, i) for m in self.injector._modes.get(kind, [])):
             return False
         st = self.fleet.state[kind]
         if kind == "brakes":
@@ -352,7 +355,7 @@ class World:
                     # engines: a borescope finding is a defect (an active fault), not mere wear; wear is handled by the
                     # condition-based shop-visit threshold. Without this every borescope on a half-worn engine would trigger
                     # an on-wing repair that resets part of its wear, so engines would never reach a shop visit.
-                    defect = k != "engine" or any(self.injector.onset[(k, m.id)][i] >= 0 for m in self.injector._modes.get(k, []))
+                    defect = k != "engine" or any(self.injector.active(k, m.id, i) for m in self.injector._modes.get(k, []))
                     if detected and h < (FINDING_BELOW if pol.finding_below is None else pol.finding_below) and defect:
                         t = int(self.unit_tail[k][i])
                         already = any(m.kind == k and m.unit == i for m in self.maintenance.mel.open_items())
@@ -471,7 +474,11 @@ class World:
         return build_context([p for p, _ in pairs], self.tails, self.seed, [_arr_name(a) for _, a in pairs], utilisation=self.utilisation)
 
     def inject_fault(self, kind: str, unit: int, mode_id: str, severity: float = 1.0) -> None:
-        """Force fault ``mode_id`` on one unit at ``severity`` (0..1) right now; recorded as ground truth."""
+        """Force fault ``mode_id`` on one unit at ``severity`` (0..1) right now; recorded as ground truth.
+
+        The onset is back-dated by the cycles the ramp needs to reach ``severity`` (it may lie before cycle 0: the injector marks
+        "no fault" with ``NO_ONSET``, not a negative number), so the fault is active at that severity immediately and keeps
+        ramping to 1 over the documented ramp length."""
         from app.sim.v2.faults import GroundTruthFault, LIBRARY
         mode = LIBRARY[mode_id]
         if mode.kind != kind:
@@ -479,7 +486,7 @@ class World:
         sev = float(np.clip(severity, 0.0, 1.0))
         inj, cyc = self.injector, self.fleet.cycle
         key = (kind, mode_id)
-        if inj.onset[key][unit] >= 0 and float(inj.severity(kind, mode, cyc)[unit]) >= sev:
+        if inj.active(kind, mode_id, unit) and float(inj.severity(kind, mode, cyc)[unit]) >= sev:
             return
         lo, hi = 0, max(int(mode.ramp_cycles) * 20, 1)
         if float(mode.severity(hi)) >= sev:

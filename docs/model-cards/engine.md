@@ -1,4 +1,4 @@
-# Model card: engine (C-MAPSS-calibrated surrogate)
+# Model card: engine (C-MAPSS-fitted surrogate)
 
 Code: `app/sim/v2/models/engine.py` (`@register("engine")`). Fit: `app/sim/v2/calibration/engine_fit.json`
 (`python -m app.calib.engine`). Longer method text: `docs/SIM-V2-ENGINE.md`. Status: SIMULATED, research surrogate.
@@ -34,21 +34,26 @@ In multi-condition variants (FD002, FD004) one of 6 fitted conditions is drawn p
 from flight phase.
 
 ## Coupling
-In: none. Out: `engine>ecs` (extra ECS stress from `1 - hi`; the edge maps a tail to its first engine unit, engine_1).
+In: none. Out: `engine>ecs` (extra ECS stress from `1 - hi`; the edge maps a tail to its first engine unit, engine_1, only; engine_2 health is not coupled).
 
 ## Fault modes
 | id | ATA chapter / section | effect |
 |---|---|---|
-| `hpt_blade_erosion` | 72 / 72-50 | consumes life, shifts sensors along a prior loading mask, cuts EGT margin |
+| `hpt_blade_erosion` | 72 / 72-50 | consumes life (`fault_progress_hpt` 0.6 of life at severity 1, was 0.5), accelerates core wear by `(1/0.6)^3` = 4.6x at severity 1, shifts sensors along a prior loading mask, cuts EGT margin |
 | `compressor_fouling` | 72 / 72-30 | consumes life, shifts HPC-related sensors, cuts `hpc_eff_pct` |
 
 Hazards, ramp shape and driver gains: see `LIBRARY` in `app/sim/v2/faults.py`. Severity is tracked as a running peak.
 
 ## Maintenance semantics
-`inspect` flags only (no state change). `repair` keeps `repair_keep + (1 - repair_keep) * q` of progress.
+`inspect` flags only (no state change). `repair` (on-wing borescope blade blend / compressor wash) keeps `repair_keep + (1 - repair_keep) * q`
+of progress AND of every fault peak, with `repair_keep` 0.85: the maximum health gain of one repair is `1 - repair_keep` = 0.15 (was 0.5 on progress and
+faults: one repair raised hi 0.39 -> 0.66). A repair clears compressor fouling (wash) but not blade erosion (`World._do`, wash-only): eroded blades
+stay eroded until a shop visit, so a severity-1 erosion reaches the `hi < 0.15` performance shop visit after about 800-1250 cycles.
 `overhaul` keeps `overhaul_keep * q` of progress and scales faults down. `replace` resamples the unit and zeroes
 everything including the LLP counter; `overhaul` does not reset LLP. World policy (`POLICY`, `world.py`): shop visit
 (overhaul) below a health threshold; borescope findings act only on an active fault. Values: see PARAMS.
+
+`World._do` clears ALL active hidden faults of the unit on `overhaul` / `replace` (`FaultInjector.clear`), regardless of `q`; an engine `repair` clears only `compressor_fouling`. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
 
 ## Data used
 | item | status |

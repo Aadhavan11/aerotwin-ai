@@ -10,6 +10,8 @@ A synthetic fleet (24 tails by default, 6 flight legs per day each) driven throu
 planning, reliability, risk and ML layers on top. It exists to exercise software and workflows. It is not a digital
 twin of any real aircraft, operator or manufacturer, and nothing in it has regulatory meaning.
 
+**Not for airworthiness decisions.** No output of this system may be used for any airworthiness, dispatch, maintenance-planning or life-limit decision. No airline, manufacturer, MRO or regulator data was used, there is no affiliation with or endorsement by any of them, and part numbers, serials, tail names and life limits are fictional or assumed.
+
 ## 2. Structural limits
 
 * **Lumped units.** One state per tail per kind (engines: two per tail). Brakes: one state for all braked wheels
@@ -24,11 +26,17 @@ twin of any real aircraft, operator or manufacturer, and nothing in it has regul
 * **Synthetic schedule.** Flights come from a synthetic generator; the clock advances `1 / LEGS_PER_DAY` days per
   cycle (6 legs/day). Utilisation scatter between tails does not stretch the clock. Real rotations, seasonality,
   night-stop patterns and flight-length mix are absent.
+* **Two LLP notions.** The v2 engine model carries ONE surrogate life-limit counter per engine (about 25,000 flights, HPC-rotor
+  value) that can fail the unit; `app/ops/llp.py` tracks FOUR LLPs per engine (20,000-30,000 cycles) plus airframe parts. They do not
+  read each other and can disagree (`docs/SIM-V2-ENGINE.md`, `docs/LLP.md`).
+* **Maintenance clears every fault.** `World._do` clears ALL active hidden faults of a unit on any non-inspect action regardless of
+  the action's `q`; a partial repair still removes every injected fault (`docs/SIM-V2-SERVICE.md`).
+* **Engine-to-ECS coupling uses one engine.** `engine>ecs` maps a tail's ECS unit to its first engine unit (engine_1) only.
 * **No regulatory meaning.** The ATA-style codes are simplified (`app/taxonomy/ata.py`), the MEL register is a
   fictional catalogue (`docs/MEL.md`), life limits in `docs/LLP.md` are priors. None of it is an MMEL/MEL, MPD, AD,
   SB, manual or life-limit source. It must not support any airworthiness, dispatch or maintenance decision.
 * **Assumed priors.** Apart from the engine surrogate and three battery values (below), every model parameter is an
-  assumed prior marked "literature prior, unverified" in code with no recorded citation. Rates were additionally
+  assumed prior (code comments say "assumed (no citation)"; older text said "literature prior, unverified") with no recorded citation. Rates were additionally
   tuned so one simulated year lands in assumed removal bands (`docs/RELIABILITY.md`); the bands are priors too,
   so the check is partly self-referential.
 
@@ -53,13 +61,15 @@ From `docs/ML-GENERIC.md`:
   The score measures recovery of the simulator's own degradation laws. It is not an accuracy claim about real components.
 * The rule-based demo model it is compared with uses fixed limits and linear wear that do not match v2 degradation,
   so "learned beats rule" is largely a statement about the rule.
+* The artifacts were retrained on 2026-10-14 after the simulator changed (removal rates, no-fault-found returns, infant
+  mortality); older figures no longer apply.
 * Headline coverage is flattered by rows at the RUL cap. On below-cap rows, conformal coverage in distribution is
-  68-78% for seven kinds and 31% for landing_gear (target 80%).
-* Under the held-out stress regime coverage on below-cap rows falls to 44-56% for ecs, electrical, hydraulics and
-  landing_gear, and for apu, avionics, electrical and hydraulics the rule model has the lower MAE. Conformal
-  calibration on in-distribution units does not repair covariate shift; the 80% label does not hold outside training.
-* About 30 hold-out units per kind from 4 seeds; row counts overstate effective sample size. Anomaly thresholds give high
-  false-positive rates for some kinds (landing_gear, ecs; under shift also brakes and apu).
+  64-83% for seven kinds and 19% for landing_gear (target 80%).
+* Under the held-out stress regime coverage on below-cap rows falls to 34% for ecs and 32% for hydraulics (57-68% for the
+  others), and for apu and hydraulics the rule model has the lower MAE. Conformal calibration on in-distribution units
+  does not repair covariate shift; the 80% label does not hold outside training.
+* About 31-32 hold-out units per kind from 4 seeds; row counts overstate effective sample size. Anomaly thresholds give high
+  false-positive rates for some kinds (16-32% for avionics, electrical, hydraulics, landing_gear; under shift up to 65%).
 * The engine RUL scorer (FD001) has held-out MAE 10.8 cycles on real C-MAPSS test engines and 13.2 on simulator
   windows; it is not meaningful on FD002-FD004 variants.
 * Serving `age` is verified only against the twin's own cycle accounting; pre-worn units start with low age and worn
@@ -101,12 +111,12 @@ comparison to an independent public dataset), **strong** (out-of-sample predicti
 | Engine RUL scorer works on C-MAPSS | held-out FD001 test MAE 10.8 | moderate for C-MAPSS only |
 | Hydraulics sensor response matches reality | UCI rig sensitivities; 0 parameters changed; sign conflict on leak and precharge | weak |
 | Hydraulics failure timing | nominal-life prior only | none |
-| Battery fade shape is realistic | 4 lab cells, held-out error about 5.5 pp, shapes not distinguishable | weak |
+| Battery fade shape is plausible | 4 lab cells, held-out error about 5.5 pp, shapes not distinguishable | weak |
 | Battery resistance coupling value | fitted to the same 4 cells, wide interval | weak (in-sample) |
 | Brakes, tires, gear, APU, ECS, avionics rates and limits | assumed priors and plausible-band tests | none |
 | Cross-kind coupling | assumed gains, tested for mechanics only | none |
 | Reliability pack formulas (rate, Garwood CI, MTBUR, NFF) are computed correctly | unit tests, code | strong for arithmetic only; says nothing about the inputs |
-| Removal rates are plausible | prior bands, one pinned seed, other seeds can exceed | weak |
+| Removal rates are plausible | assumed bands; median over 5 seeds inside the band and at least 4 of 5 seeds inside (`tests/test_sim_v2_removal_bands.py`) | weak (bands are priors too) |
 | Sim-trained ML beats the rule model in distribution | sim hold-out seeds | weak (circular) |
 | ML 80% interval holds | in-distribution at cap-dominated rows; fails under shift | weak; none under shift |
 | Plan costs and risk probabilities | assumed prices and distributions | none |

@@ -17,7 +17,9 @@ are not modelled (see below).
 Latents: `eta_loss` (efficiency, clipped Wiener increments so monotone), `leak` (gamma increments), `precharge_loss`,
 `acid_number` (contamination proxy), `filter_dp_kpa`. Per-unit rate parameters are lognormal around PARAMS. The driver
 multiplies Arrhenius temperature acceleration, a payload/derate pressure-cycle factor, `stress_ext`, an acid-number term
-and the `pump_cavitation` fault rate. `damage = eta_loss + leak_weight*leak + precharge_weight*precharge_loss`,
+and the `pump_cavitation` fault rate (stress-scenario review: `effect_mult` 0.7 -> 0.35, because a severity-1 fault only took hi 0.98 -> 0.90 in 700
+cycles and never reached a removal; now hi < 0.3 within roughly 300-700 cycles and a removal within about 1000, see `docs/SCENARIOS.md`).
+`damage = eta_loss + leak_weight*leak + precharge_weight*precharge_loss`,
 clipped to [0,1]; `hi = 1 - damage`; failure at `hi <= 0`. Pressure falls linearly with damage between healthy and limit.
 Values: see PARAMS in `app/sim/v2/models/hydraulics.py` (`PRIOR_PARAMS` keeps the unfitted values).
 
@@ -34,7 +36,7 @@ In: none. Out: `hydraulics>brakes`, `hydraulics>landing_gear` (damage sum `eta_l
 ## Fault modes
 | id | ATA chapter / section | effect |
 |---|---|---|
-| `pump_cavitation` | 29 / 29-10 | efficiency-loss rate boost, exponential ramp |
+| `pump_cavitation` | 29 / 29-10 | efficiency-loss drift multiplied by `(1/m)^3`, `m = 1 - (1 - 0.35) * severity` (severity 1: 23x, severity 0.3: 1.9x); case-drain flow rises with severity x `eta_loss`; exponential ramp |
 | `line_leak` | 29 / 29-10 | leak-rate boost (affects case drain, fluid quantity) |
 
 Hazards: see `LIBRARY` in `app/sim/v2/faults.py`.
@@ -43,6 +45,8 @@ Hazards: see `LIBRARY` in `app/sim/v2/faults.py`.
 `inspect`: increments an inspection counter only. `repair`: all latents and virtual age multiplied by `q`; filter dp
 set to zero. `overhaul`: latents zeroed (retained fraction 0), unit rate parameters kept. `replace`: also resamples
 rate parameters and zeroes ages. Note `overhaul` and `replace` differ only in resampling and age reset.
+
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
 
 ## Data used
 UCI hydraulic condition-monitoring rig (ZeMA, 2205 cycles, 144 label cells, 1449 stable cycles; 160 bar lab bench with
@@ -58,18 +62,18 @@ on the rig, opposite to the model; model sensors 12x (pressure) to 70x (temperat
 | all rates (`eta_drift`, `leak_scale`, `acid_rate`, `precharge_rate`, `filter_rate`), `life_cycles`, spreads, weights, `activation_k`, `heat_eta`, thermal terms, failure Weibull terms, sensor gains | `pressure_noise`, `temp_noise` (rig noise below prior floor; prior kept), `heat_eta` and `leak_weight`/`precharge_weight` (rig sign conflict or non-significant; prior kept) | none |
 
 ## Known limitations
-* No fleet or flight hydraulics data; rates are literature-style priors with a nominal life of about 2000 flights.
+* No fleet or flight hydraulics data; rates are assumed priors (no citation) with a nominal life of about 9000 flights (phase-1 rescale).
 * Rig pressure moves opposite to the model for leak and precharge; unresolved (probably bench load control), so pump
   pressure sensitivity is a prior.
 * `acid_wear` (acid-number-to-pump coupling) is marked weakest in the code.
 * Lab rig is a stepped fault design; degradation rates and failure timing are not estimable from it.
 * Sensor noise in the model is a stated floor, not a measured fleet value.
-* Module docstring still says calibration "comes later"; the committed fit exists but did not change values.
+* The committed fit (`hydraulics_fit.json`, loaded by `_apply_fit`) records two overrides equal to the priors: 0 of 36 parameters changed. The module docstring now says so.
 
 ## Validation performed and its circularity
 Before/after distributional comparison with rig data (KS and Wasserstein; fitted equals prior, so before = after) and
 detectability analysis; these show what the rig can and cannot support, not model accuracy. ML results in
-`docs/ML-GENERIC.md` are circular. Under a shifted stress regime hydraulics coverage is 47% against an 80% target.
+`docs/ML-GENERIC.md` are circular. Under a shifted stress regime hydraulics coverage is 39% overall (32% on below-cap rows) against an 80% target.
 
 ## Reproduce
 ```

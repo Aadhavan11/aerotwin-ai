@@ -45,6 +45,8 @@ age times `q`; `overhaul`: ages zeroed and BITE count cleared; `replace`: resamp
 `maintenance.py` (`NFF_HEALTH`) and `world.py` (`NFF_WINDOW`, `NFF_BITE_DELTA`); these NFF values are under revision,
 so read the code. World policy defers some findings under MEL category C.
 
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
+
 ## Data used
 None. No public avionics run-to-failure or field BITE data exists in the repository.
 
@@ -58,7 +60,7 @@ None. No public avionics run-to-failure or field BITE data exists in the reposit
 * The unscheduled removal count (including NFF) sits at the upper edge of its assumed band in `docs/RELIABILITY.md` and other seeds exceed it.
 * NFF fractions are a design parameter, not an estimate of real NFF rates.
 * Single-box aggregation ignores LRU redundancy, software, and common-cause effects.
-* In shifted-regime ML tests avionics has the second-highest MAE and the rule model is competitive (`docs/ML-GENERIC.md`).
+* In shifted-regime ML tests avionics has a mid-to-high MAE (45 cycles; the rule model's is 50) and 82% overall coverage, 62% on below-cap rows (`docs/ML-GENERIC.md`).
 
 ## Validation performed and its circularity
 Property tests (determinism, monotone damage, NFF semantics, hard-limit logic) and the removal-band test (prior band,

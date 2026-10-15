@@ -1,4 +1,5 @@
-"""Monotone hydraulic degradation priors; calibration against UCI hydraulic data comes later.
+"""Monotone hydraulic degradation priors. A fit against the UCI hydraulic test-rig data is committed
+(``calibration/hydraulics_fit.json``) and loaded by ``_apply_fit``; its two recorded overrides (pressure_noise, temp_noise) equal the priors, so 0 of 36 parameters changed.
 
 Rates target roughly 9000 nominal flights (~18k FH at 2 FH/flight), not validated service-life predictions.
 Filter differential pressure is excess above a fresh filter (zero kPa).
@@ -7,6 +8,11 @@ Life scaling (assumed, no citation): the first version used 2000 flights (~4k FH
 removals per 24 tails per year (MTBUR ~3.9k FH), far below pump/system MTBUR of order 10^4 FH. All per-flight damage
 rates below were divided by 4.5 (life 2000 -> 9000 flights) so every channel keeps its shape as a function of life
 fraction; none of these rates was changed by data (docs/SIM-V2-CALIBRATION.md: 0 of 36 hydraulics parameters).
+Pump cavitation (``fault_pump_cavitation``): cavitation erodes the pump, so the efficiency-loss drift is multiplied by
+``(1/m(sev))**3`` with ``m(sev) = 1 - (1 - effect_mult) * sev``. ``effect_mult`` was 0.7 (severity 1 -> 2.9x drift: hi
+0.98 -> 0.90 in 700 cycles, no removal) and is 0.35 after the stress-scenario review (severity 1 -> 23x drift: hi below
+the 0.3 finding threshold in roughly 300-700 cycles, so the next 45-day inspection detects it, removal within ~1000
+cycles; severity 0.3 -> 1.9x). Case-drain flow also rises with severity x efficiency loss (worn pump internals).
 Wear-out shape: the earlier reference Weibull shape 6.0 (CV ~0.2) was near-deterministic wear-out, unlike
 pumps/valves/lines whose mixed contamination, leak and wear causes give beta of order 2-3. ``param_sigma`` is raised
 0.25 -> 0.45 and the reference shape set to the measured value of the model under accelerated stress.
@@ -21,7 +27,7 @@ import numpy as np
 
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
-from app.sim.v2.faults import fault_rate
+from app.sim.v2.faults import fault_level, fault_rate
 
 PARAMS: dict[str, float] = {
     "pressure_healthy": 20700.0,  # assumed (no citation): GENERIC healthy pressure, kPa.
@@ -125,7 +131,9 @@ class HydraulicsModel:
         return {
             "pump_pressure_kpa": PARAMS["pressure_healthy"] - span * self._damage(state) + PARAMS["pressure_noise"] * rng.standard_normal(ctx.n),
             "fluid_temp_c": self._temperature(state, ctx) + PARAMS["temp_noise"] * rng.standard_normal(ctx.n),
-            "case_drain_flow_lpm": PARAMS["drain_base"] + PARAMS["drain_leak"] * state["leak"] + PARAMS["drain_noise"] * rng.standard_normal(ctx.n),
+            # a cavitating pump erodes its internals: case-drain flow rises with severity x efficiency loss (no new constant)
+            "case_drain_flow_lpm": (PARAMS["drain_base"] + PARAMS["drain_leak"] * (state["leak"] + fault_level(state, "pump_cavitation") * state["eta_loss"])
+                                    + PARAMS["drain_noise"] * rng.standard_normal(ctx.n)),
             "fluid_qty_pct": PARAMS["qty_base"] - PARAMS["qty_precharge"] * state["precharge_loss"] - PARAMS["qty_leak"] * state["leak"] + PARAMS["qty_noise"] * rng.standard_normal(ctx.n),
             "filter_dp_kpa": state["filter_dp_kpa"] + PARAMS["filter_noise"] * rng.standard_normal(ctx.n),
         }

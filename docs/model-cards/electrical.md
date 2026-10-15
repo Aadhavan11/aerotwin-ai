@@ -45,6 +45,8 @@ Hazards: see `LIBRARY` in `app/sim/v2/faults.py`.
 `overhaul`: latents zeroed (unit parameters kept). `replace`: also resamples unit parameters and zeroes ages.
 The calendar watermark is preserved so maintenance does not "recharge" elapsed time.
 
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
+
 ## Data used
 NASA PCoE Li-ion battery cells B0005/B0006/B0007/B0018 (24 degC, 168/168/168/132 discharges; lab cycling,
 `data/external/nasa_battery_5/`, git-ignored). Findings: fade shape not distinguishable between linear/exponential/knee

@@ -80,15 +80,15 @@ runtime ~80 s for the five 24-tail years).
 
 | kind | band | BEFORE seeds 1/7/99/1234/4242 (min / median / max) | AFTER seeds 1/7/99/1234/4242 (min / median / max) |
 |---|---|---|---|
-| hydraulics | 5-15 | 26/21/26/27/17 (17 / 26 / 27) | 9/9/13/13/12 (9 / 12 / 13) |
+| hydraulics | 5-15 | 26/21/26/27/17 (17 / 26 / 27) | 6/7/10/13/7 (6 / 7 / 13) |
 | electrical | 5-15 | 18/27/19/17/22 (17 / 19 / 27) | 6/11/8/8/13 (6 / 8 / 13) |
 | landing_gear | 1-5 | 15/12/14/18/14 (12 / 14 / 18) | 5/1/4/0/4 (0 / 4 / 5) |
 | apu | 6-20 | 17/17/16/24/17 (16 / 17 / 24) | 11/12/10/12/12 (10 / 12 / 12) |
 | ecs | 4-15 | 7/4/11/5/11 (4 / 7 / 11) | 8/5/12/6/14 (5 / 8 / 14) |
 | avionics (aggregate, incl. NFF) | 25-80 | 86/82/76/80/84 (76 / 82 / 86) | 66/68/57/60/79 (57 / 66 / 79) |
-| engine (on-wing unscheduled incl. performance) | 0-3 | 0/0/0/1/0 (0 / 0 / 1) | 0/0/0/1/0 (0 / 0 / 1) |
-| brakes | 0-20 (planned share > 0.7) | 4/4/8/3/6 (3 / 6 / 8) | 7/9/7/5/6 (5 / 7 / 9) |
-| tires | 0-60 (planned share > 0.7) | 32/37/34/25/38 (25 / 34 / 38) | 31/39/40/31/47 (31 / 39 / 47) |
+| engine (on-wing unscheduled incl. performance) | 0-3 | 0/0/0/1/0 (0 / 0 / 1) | 2/0/2/0/2 (0 / 2 / 2) |
+| brakes | 0-20 (planned share > 0.7) | 4/4/8/3/6 (3 / 6 / 8) | 8/9/5/5/7 (5 / 7 / 9) |
+| tires | 0-60 (planned share > 0.7) | 32/37/34/25/38 (25 / 34 / 38) | 32/39/41/31/47 (31 / 39 / 47) |
 
 NFF share of unscheduled removals (all five seeds pooled, AFTER): avionics ~0.42 (HIGH); hydraulics / electrical / ecs / apu ~0.17
 pooled, 0 to 0.5 per kind and seed because counts are small (MODERATE); brakes / landing_gear / tires / engine < 0.05 (LOW). The
@@ -104,6 +104,13 @@ test asserts avionics 0.2-0.65, moderate 0.03-0.35, mechanical <= 0.12 and mecha
   year was an MTBUR of ~3.9k FH; pumps/systems are of order 10^4 FH. `param_sigma` 0.25 -> 0.45 and the reference Weibull shape
   `failure_shape_accel` 6.0 -> 3.0 (measured 2.9): 6.0 meant a near-deterministic wear-out (CV ~0.2), whereas mixed contamination,
   leak and wear causes give beta of order 2-3.
+* **Stress-scenario review (fault effects)**: `pump_cavitation` `effect_mult` 0.7 -> 0.35 (severity-1 drift 2.9x -> 23x; natural
+  onsets, about one per two pumps per year, now reach the 0.15 wear threshold in ~500 cycles and are removed as planned
+  condition-based work, which is why the hydraulics unscheduled median moves 12 -> 7, still inside 5-15 with 5/5 seeds inside).
+  `hpt_blade_erosion` progress share 0.5 -> 0.6, core wear accelerated (1/0.6)^3, on-wing engine repair keeps 0.85 of all damage
+  (max gain 0.15) and clears only fouling, engine findings are repaired (not replaced) so shop visits come through the
+  `performance` path: engine unscheduled median 0 -> 2 per 24 tails per year (band 0-3, 5/5 seeds inside). Brakes / tires move by
+  at most 2 per seed through the hydraulics stress coupling. Measured with the five seeds above; bands unchanged.
 * **Electrical**: per-flight fade divided by 3.1 (life 2000 -> 6200 flights); calendar fade (sqrt days) unchanged;
   `param_sigma` 0.25 -> 0.40; `failure_shape_accel` 4.5 -> 2.8 (measured 2.8).
 * **APU**: `start_loss_c` 0.024 -> 0.015, `hour_loss_c` 0.012 -> 0.0075.

@@ -41,10 +41,14 @@ Hazards and ramps: see `LIBRARY` in `app/sim/v2/faults.py`. Note the model also 
 (`FOD_RATE`) independent of the fault library.
 
 ## Maintenance semantics
+Cold and wet (`wet_winter`): tread loss per cycle rises a few percent (wet factor on the landing term only); pressure loss falls because permeation follows `exp(LEAK_TEMP_COEF * (OAT - 15))` (about 0.5x at -10 C), so the *unscheduled* tire count can fall while wear-driven removals rise. `p_cold` is a cold-referenced pressure, so there is no extra cold under-inflation wear term (assumption, `docs/SCENARIOS.md`).
+
 `inspect`: nitrogen top-up of cold pressure to nominal (a state change) and finer tread reading. `repair`: partial tread
 and cut recovery scaled by `REPAIR_TREAD_FRAC` and `q`. `overhaul`: retread, resets tread, cuts, pressure, increments
 `retreads`; beyond `RETREAD_MAX` the carcass is condemned and only `replace` helps. `replace`: resample, zero everything.
 World policy treats tread-limit removals as `wear_limit` (planned) and cuts, leaks and flats as findings/failures.
+
+`World._do` clears ALL active hidden faults of the unit on any non-`inspect` action (`repair`, `overhaul`, `replace`; `FaultInjector.clear`), regardless of `q`: a `repair` that keeps part of the wear state still removes every injected fault. `q` scales wear only. A no-fault-found return leaves faults untouched. Maintenance-induced faults are drawn after the clear (`docs/RELIABILITY.md`).
 
 ## Data used
 None. No tire wear or retread dataset is in the repository.

@@ -5,6 +5,7 @@ Mounted by app/sim/router.py. Role limits (ops/admin) are enforced by the AuthGa
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -66,3 +67,13 @@ def export_run(run_id: str) -> FileResponse:
     media = "application/vnd.apache.parquet" if path.suffix == ".parquet" else "application/gzip"
     return FileResponse(path, media_type=media, filename=f"sim_run_{run_id}{''.join(path.suffixes)}",
                         headers={"X-Data-Source": "SIMULATED"})
+
+
+@router.get("/sim/runs/{run_id}/manifest")
+def run_manifest(run_id: str) -> FileResponse:
+    """The run's reproducibility manifest.json; 404 when the run is unknown or has not written one yet."""
+    row = _get(_runner()._row, run_id)
+    path = Path(row["out_dir"]) / "manifest.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="manifest not available")
+    return FileResponse(path, media_type="application/json", headers={"X-Data-Source": "SIMULATED"})
