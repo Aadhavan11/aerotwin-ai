@@ -8,6 +8,8 @@ import math
 import os
 from datetime import datetime, timedelta, timezone
 
+from app.sim.constants import DEFAULT_LEGS_PER_DAY as _DEFAULT_LEGS_PER_DAY
+
 UTC = timezone.utc
 
 SEED = int(os.getenv("SEED", "1234"))
@@ -15,7 +17,7 @@ SEED = int(os.getenv("SEED", "1234"))
 # --- tunables (all synthetic demo values) ---
 DEFAULT_MAX_EXT_H = 3.0          # max ground-time extension per job; beyond this a slot is not allowed
 DEFAULT_HORIZON_H = 120.0        # planning horizon for utilisation metrics (5 days)
-DEFAULT_LEGS_PER_DAY = 4.0       # used only when an aircraft's known rotation is too short to estimate a rate
+DEFAULT_LEGS_PER_DAY = _DEFAULT_LEGS_PER_DAY  # shared constant (app.sim.v2.constants); used only when an aircraft's known rotation is too short to estimate a rate
 RUL_THRESHOLD_CYCLES = 60.0      # components with RUL p10 below this get a task
 UNSCHEDULED_PENALTY = 10_000.0   # added to objective_value per unscheduled task (so infeasible plans rank worse)
 

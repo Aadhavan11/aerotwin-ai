@@ -4,7 +4,15 @@ Latent state: strut-seal pressure loss (gamma process), Miner fatigue damage fro
 latent Paris-law crack length that is only observable through maintain('inspect') with a probability-of-detection
 curve vs crack size. A hard-landing flag (effective sink rate above a threshold) makes an inspection required.
 
-Every constant in PARAMS is a literature prior, unverified: nothing here is calibrated against fleet data.
+On-wing servicing (assumed, no citation): strut-seal pressure loss and hard-landing leak increments are corrected on the
+aircraft by recharging the strut (nitrogen / fluid servicing) at the next inspection, so they do NOT cause a removal; the
+strut is removed only for a severe finding (fatigue damage, crack growth, an overload landing from the fault library's
+``hard_landing_damage`` mode, or a leak so fast that the unit reaches its pressure limit before the next inspection). Before this, a leak-driven
+finding was handled as a replacement, giving ~15 unscheduled gear removals per 24 tails per year (one per ~6k FH)
+although real gear removals are mostly scheduled overhauls ~10 years apart. Servicing is a physical model feature
+(``SERVICE_LEAK_KPA``), not a policy threshold.
+
+Every constant in PARAMS is an assumed prior (no citation): nothing here is calibrated against fleet data.
 """
 
 from __future__ import annotations
@@ -15,41 +23,42 @@ from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_add, fault_rate
 
-# All values: literature prior, unverified.
+# All values: assumed (no citation).
 PARAMS: dict[str, float] = {
-    "P_NOM_KPA": 1800.0,        # nominal servicing strut pressure, kPa (matches v1 healthy); literature prior, unverified
-    "P_LIMIT_KPA": 1200.0,      # strut pressure at which the strut is out of limits, kPa (matches v1 limit); literature prior, unverified
-    "P_LIMIT_SD_KPA": 30.0,     # per-unit spread of the pressure limit, kPa; literature prior, unverified
-    "LEAK_SHAPE": 0.5,          # gamma shape per cycle of the seal-leak increment; literature prior, unverified
-    "LEAK_SCALE_KPA": 0.15,     # gamma scale of the leak increment, kPa (mean 0.075 kPa/cycle -> ~8000 cycle life); literature prior, unverified
-    "LEAK_SIGMA": 0.3,          # lognormal sigma of per-unit seal quality; literature prior, unverified
-    "LEAK_COLD_COEF": 0.01,     # fractional leak growth per C below 15 C (seal stiffening); literature prior, unverified
-    "AGE_COEF": 0.5,            # leak growth with virtual age (seal ageing); literature prior, unverified
-    "AGE_REF_CYCLES": 8000.0,   # virtual age scale for AGE_COEF, cycles; literature prior, unverified
-    "HARD_LEAK_KPA": 0.5,       # extra pressure loss from a hard landing, kPa; literature prior, unverified
-    "G_BASE": 1.0,              # static load factor at touchdown; literature prior, unverified
-    "G_PER_FPS": 0.17,          # added load factor per ft/s of sink rate at reference weight; literature prior, unverified
-    "W_REF": 0.85,              # reference landing weight fraction; literature prior, unverified
-    "SINK_NOISE_SIGMA": 0.12,   # lognormal sigma of effective sink rate (gusts, flare technique); literature prior, unverified
-    "HARD_SINK_FPS": 4.6,       # hard-landing threshold, ft/s (scaled to the profile generator's 2-4 ft/s range); literature prior, unverified
-    "G_REF": 1.5,               # reference load factor of the fatigue spectrum; literature prior, unverified
-    "S_N_EXPONENT": 5.0,        # S-N curve slope for Miner damage; literature prior, unverified
-    "N_REF": 40000.0,           # cycles to failure at the reference load factor; literature prior, unverified
-    "FATIGUE_SIGMA": 0.25,      # lognormal sigma of per-unit fatigue strength; literature prior, unverified
-    "CRACK_A0_MM": 0.5,         # median initial flaw size, mm; literature prior, unverified
-    "CRACK_A0_SIGMA": 0.3,      # lognormal sigma of initial flaw size; literature prior, unverified
-    "CRACK_A_CRIT_MM": 25.0,    # critical crack length, mm; literature prior, unverified
-    "PARIS_C": 8.1e-5,          # Paris coefficient in mm/cycle for a^1.5 growth at reference load (m=3 -> ~30000 cycles from a0); literature prior, unverified
-    "PARIS_SIGMA": 0.3,         # lognormal sigma of per-unit Paris coefficient (material scatter); literature prior, unverified
-    "PARIS_M": 3.0,             # Paris exponent on stress intensity range; literature prior, unverified
-    "POD_A50_MM": 3.0,          # crack length detected with 50% probability at inspection, mm; literature prior, unverified
-    "POD_SLOPE": 0.4,           # log-logistic POD slope parameter in ln(mm); literature prior, unverified
-    "PRESS_SD_KPA": 5.0,        # strut pressure sensor noise, kPa; literature prior, unverified
-    "G_SD": 0.03,               # shock load sensor noise, g; literature prior, unverified
-    "EXT_NOM_MM": 400.0,        # static strut extension at nominal pressure, mm; literature prior, unverified
-    "EXT_PER_KPA": 0.15,        # extension lost per kPa of pressure loss, mm; literature prior, unverified
-    "EXT_SD_MM": 1.5,           # extension sensor noise, mm; literature prior, unverified
-    "OVERHAUL_FRAC": 0.3,       # fatigue damage fraction kept by overhaul (times q); literature prior, unverified
+    "P_NOM_KPA": 1800.0,        # nominal servicing strut pressure, kPa (matches v1 healthy); assumed (no citation)
+    "P_LIMIT_KPA": 1200.0,      # strut pressure at which the strut is out of limits, kPa (matches v1 limit); assumed (no citation)
+    "P_LIMIT_SD_KPA": 30.0,     # per-unit spread of the pressure limit, kPa; assumed (no citation)
+    "LEAK_SHAPE": 0.5,          # gamma shape per cycle of the seal-leak increment; assumed (no citation)
+    "LEAK_SCALE_KPA": 0.15,     # gamma scale of the leak increment, kPa (mean 0.075 kPa/cycle -> ~8000 cycle life); assumed (no citation)
+    "LEAK_SIGMA": 0.3,          # lognormal sigma of per-unit seal quality; assumed (no citation)
+    "LEAK_COLD_COEF": 0.01,     # fractional leak growth per C below 15 C (seal stiffening); assumed (no citation)
+    "AGE_COEF": 0.5,            # leak growth with virtual age (seal ageing); assumed (no citation)
+    "AGE_REF_CYCLES": 8000.0,   # virtual age scale for AGE_COEF, cycles; assumed (no citation)
+    "HARD_LEAK_KPA": 0.5,       # extra pressure loss from a hard landing, kPa; assumed (no citation)
+    "G_BASE": 1.0,              # static load factor at touchdown; assumed (no citation)
+    "G_PER_FPS": 0.17,          # added load factor per ft/s of sink rate at reference weight; assumed (no citation)
+    "W_REF": 0.85,              # reference landing weight fraction; assumed (no citation)
+    "SINK_NOISE_SIGMA": 0.12,   # lognormal sigma of effective sink rate (gusts, flare technique); assumed (no citation)
+    "HARD_SINK_FPS": 4.6,       # hard-landing threshold, ft/s (scaled to the profile generator's 2-4 ft/s range); assumed (no citation)
+    "G_REF": 1.5,               # reference load factor of the fatigue spectrum; assumed (no citation)
+    "S_N_EXPONENT": 5.0,        # S-N curve slope for Miner damage; assumed (no citation)
+    "N_REF": 40000.0,           # cycles to failure at the reference load factor; assumed (no citation)
+    "FATIGUE_SIGMA": 0.25,      # lognormal sigma of per-unit fatigue strength; assumed (no citation)
+    "CRACK_A0_MM": 0.5,         # median initial flaw size, mm; assumed (no citation)
+    "CRACK_A0_SIGMA": 0.3,      # lognormal sigma of initial flaw size; assumed (no citation)
+    "CRACK_A_CRIT_MM": 25.0,    # critical crack length, mm; assumed (no citation)
+    "PARIS_C": 8.1e-5,          # Paris coefficient in mm/cycle for a^1.5 growth at reference load (m=3 -> ~30000 cycles from a0); assumed (no citation)
+    "PARIS_SIGMA": 0.3,         # lognormal sigma of per-unit Paris coefficient (material scatter); assumed (no citation)
+    "PARIS_M": 3.0,             # Paris exponent on stress intensity range; assumed (no citation)
+    "POD_A50_MM": 3.0,          # crack length detected with 50% probability at inspection, mm; assumed (no citation)
+    "POD_SLOPE": 0.4,           # log-logistic POD slope parameter in ln(mm); assumed (no citation)
+    "PRESS_SD_KPA": 5.0,        # strut pressure sensor noise, kPa; assumed (no citation)
+    "G_SD": 0.03,               # shock load sensor noise, g; assumed (no citation)
+    "EXT_NOM_MM": 400.0,        # static strut extension at nominal pressure, mm; assumed (no citation)
+    "EXT_PER_KPA": 0.15,        # extension lost per kPa of pressure loss, mm; assumed (no citation)
+    "EXT_SD_MM": 1.5,           # extension sensor noise, mm; assumed (no citation)
+    "SERVICE_LEAK_KPA": 60.0,   # pressure loss at which an inspection servicing recharges the strut on wing, kPa (~3% of nominal); assumed (no citation)
+    "OVERHAUL_FRAC": 0.3,       # fatigue damage fraction kept by overhaul (times q); assumed (no citation)
 }
 
 
@@ -81,7 +90,7 @@ class LandingGearModel:
         st: State = _sample(n, rng)
         st["crack_mm"] = st["crack_a0"].copy()
         st.update(
-            leak_kpa=np.zeros(n), fatigue=np.zeros(n), hard_count=np.zeros(n), inspection_due=np.zeros(n, dtype=bool),
+            leak_kpa=np.zeros(n), fatigue=np.zeros(n), hard_count=np.zeros(n), n_serviced=np.zeros(n), inspection_due=np.zeros(n, dtype=bool),
             crack_detected=np.zeros(n, dtype=bool), last_g=np.full(n, PARAMS["G_BASE"]), last_hard=np.zeros(n, dtype=bool),
             stress_ext=np.ones(n),
             age_cycles=np.zeros(n), age_hours=np.zeros(n), age_virtual=np.zeros(n), hi=np.ones(n), failed=np.zeros(n, dtype=bool),
@@ -146,6 +155,13 @@ class LandingGearModel:
             pod = 1.0 / (1.0 + np.exp(-(np.log(a) - np.log(p["POD_A50_MM"])) / p["POD_SLOPE"]))
             state["crack_detected"][idx] = state["crack_detected"][idx] | (u < pod)
             state["inspection_due"][idx] = False
+            # on-wing servicing: recharge a strut that has lost pressure (seal wear itself, age_virtual, is not reset)
+            svc = idx[state["leak_kpa"][idx] >= p["SERVICE_LEAK_KPA"]]
+            if svc.size and not state["failed"][svc].all():
+                svc = svc[~state["failed"][svc]]   # an out-of-limit strut has already failed: it is removed, not serviced
+                state["leak_kpa"][svc] = 0.0
+                state["n_serviced"][svc] += 1.0
+                state["hi"][svc] = _hi(state, svc)
             return
         if action == "repair":
             state["leak_kpa"][idx] *= q
@@ -166,7 +182,7 @@ class LandingGearModel:
             for key, val in fresh.items():
                 state[key][idx] = val
             state["crack_mm"][idx] = fresh["crack_a0"]
-            for key in ("leak_kpa", "fatigue", "hard_count", "age_cycles", "age_hours", "age_virtual"):
+            for key in ("leak_kpa", "fatigue", "hard_count", "n_serviced", "age_cycles", "age_hours", "age_virtual"):
                 state[key][idx] = 0.0
             state["crack_detected"][idx] = False
             state["inspection_due"][idx] = False

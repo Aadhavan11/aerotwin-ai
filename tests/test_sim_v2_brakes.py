@@ -68,7 +68,7 @@ def test_registered_and_v1_channels():
 
 def test_params_documented_as_prior():
     src = open(brakes_mod.__file__).read()
-    assert src.count("literature prior, unverified") >= len(brakes_mod.PARAMS)
+    assert src.count("assumed (no citation)") >= len(brakes_mod.PARAMS)
 
 
 def test_life_distribution_band_prior():

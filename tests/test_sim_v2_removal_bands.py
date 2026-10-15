@@ -1,24 +1,32 @@
-"""Simulator removal-rate bands: 24 tails, one year (2190 cycles), seed 1234, ``auto_maintain=True``.
+"""Simulator removal-rate bands over five seeds: 24 tails, one year (2190 cycles), ``auto_maintain=True``.
 
-Construction is the reliability pack's (``build_world({"seed": 1234, "fleet": 24})``, initial_wear=True).
-landing_gear is 2-20: a prior chosen by the lead; 18 per ~105k FH (one per ~5.8k FH) is acceptable.
-"planned" means ``not removal.unscheduled`` (scheduled, wear_limit, opportunistic, deferred_defect_rectification).
+Construction is the reliability pack's (``build_world({"seed": s, "fleet": 24})``, initial_wear=True).
+Counts are *unscheduled* removals (``replace`` / ``overhaul`` / ``nff_return`` with ``removal.unscheduled``: failure,
+inspection_finding, nff, performance); "planned" means ``not removal.unscheduled`` (scheduled, wear_limit, opportunistic,
+deferred_defect_rectification).
 
-The bands below are industry-plausible PRIORS (typical MTBUR orders of magnitude), NOT calibration against any
-operator's data. Removals are ``replace``/``overhaul`` actions (on-wing repairs excluded), as in the reliability pack.
+The bands are ASSUMED priors (typical MTBUR orders of magnitude, no citation), NOT calibration against any operator's data,
+and were not tuned on a single seed: for every kind the MEDIAN over SEEDS must lie inside the band and at least 4 of the 5
+seeds must. Per-seed numbers: docs/RELIABILITY.md.
 """
 import dataclasses
+import statistics
 from collections import Counter
 
 import pytest
 
 from app.sim.v2.runner import build_world
 
-REMOVAL_ACTIONS = ("replace", "overhaul")
-BANDS = {
-    "hydraulics": (8, 30), "electrical": (6, 25), "landing_gear": (2, 20), "apu": (6, 25), "ecs": (5, 20),
-    "avionics": (25, 80), "engine": (0, 4), "brakes": (0, 20), "tires": (0, 60),
+REMOVAL_ACTIONS = ("replace", "overhaul", "nff_return")
+SEEDS = (1, 7, 99, 1234, 4242)
+TAILS = 24
+SCALE = 24 / TAILS
+BANDS = {   # unscheduled removals per 24 tails per year
+    "hydraulics": (5, 15), "electrical": (5, 15), "landing_gear": (1, 5), "apu": (6, 20), "ecs": (4, 15),
+    "avionics": (25, 80), "engine": (0, 3), "brakes": (0, 20), "tires": (0, 60),
 }
+MODERATE_NFF = ("hydraulics", "electrical", "ecs", "apu")
+MECHANICAL_NFF = ("brakes", "landing_gear", "tires", "engine")
 
 
 def _removals(world):
@@ -26,17 +34,55 @@ def _removals(world):
 
 
 @pytest.fixture(scope="module")
-def year():
-    w = build_world({"seed": 1234, "fleet": 24})
-    w.run(2190)
-    return _removals(w)
+def runs():
+    out = {}
+    for s in SEEDS:
+        w = build_world({"seed": s, "fleet": TAILS})
+        w.run(2190)
+        out[s] = _removals(w)
+    return out
+
+
+@pytest.fixture(scope="module")
+def year(runs):
+    return runs[1234]
 
 
 @pytest.mark.parametrize("kind", sorted(BANDS))
-def test_unscheduled_removals_in_prior_band(year, kind):
+def test_unscheduled_removals_median_in_prior_band(runs, kind):
     lo, hi = BANDS[kind]
-    n = sum(1 for r in year if r.kind == kind and r.unscheduled)
-    assert lo <= n <= hi, f"{kind}: {n} unscheduled removals outside prior band {lo}-{hi}"
+    per_seed = [SCALE * sum(1 for r in runs[s] if r.kind == kind and r.unscheduled) for s in SEEDS]
+    med = statistics.median(per_seed)
+    inside = sum(1 for n in per_seed if lo <= n <= hi)
+    assert lo <= med <= hi, f"{kind}: median {med} (per seed {per_seed}) outside prior band {lo}-{hi}"
+    assert inside >= 4, f"{kind}: only {inside}/5 seeds inside band {lo}-{hi}: {per_seed}"
+
+
+def test_nff_fraction_bands(runs):
+    """NFF share of unscheduled removals: avionics high, hydraulics/electrical/ecs/apu moderate, mechanical low."""
+    def share(kinds):
+        n = u = 0
+        for rs in runs.values():
+            for r in rs:
+                if r.kind in kinds and r.unscheduled:
+                    u += 1
+                    n += bool(r.nff)
+        return n / u if u else 0.0, u
+    av, _ = share(("avionics",))
+    mod, _ = share(MODERATE_NFF)
+    mech, _ = share(MECHANICAL_NFF)
+    assert 0.2 <= av <= 0.65, av
+    assert 0.03 <= mod <= 0.35, mod
+    assert mech <= 0.12, mech
+    assert mech < mod < av
+
+
+def test_nff_returns_unit_unchanged_and_not_a_failure(runs):
+    rs = [r for rs_ in runs.values() for r in rs_ if r.nff]
+    assert rs
+    for r in rs:
+        assert r.action == "nff_return" and r.removal_reason == "nff" and r.unscheduled and r.new_serial is None
+        assert r.health_before == r.health_after
 
 
 @pytest.mark.parametrize("kind", ["brakes", "tires"])

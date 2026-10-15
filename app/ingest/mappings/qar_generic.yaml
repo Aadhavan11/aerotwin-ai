@@ -1,0 +1,36 @@
+# Generic template. Adapt the column names and enum maps to your export. Not tied to any vendor format.
+name: qar_generic
+target: qar
+delimiter: ','
+encoding: utf-8
+missing_markers:
+- ''
+- N/A
+- n/a
+- '-'
+- 'NULL'
+timezone:
+  mode: utc
+  default_offset: +00:00
+provenance: operator-export
+columns:
+  tail:
+    source: tail
+    type: str
+    required: true
+  ts:
+    source: ts
+    type: datetime
+    required: true
+  parameter:
+    source: parameter
+    type: str
+    required: true
+  value:
+    source: value
+    type: float
+    required: true
+  unit:
+    source: unit
+    type: str
+    required: false

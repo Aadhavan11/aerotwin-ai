@@ -32,3 +32,5 @@ web/public/models/*.gltf
 .anthropic-key
 .master-password
 .google-client-id
+
+out/

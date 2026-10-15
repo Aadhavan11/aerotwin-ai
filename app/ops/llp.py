@@ -23,6 +23,7 @@ from typing import Any, Iterable, Optional, Sequence
 import numpy as np
 
 from app import settings
+from app.sim.constants import DEFAULT_LEGS_PER_DAY, LLP_CYCLE_LIMITS
 
 PROVENANCE = "SIMULATED"
 DISCLAIMER = "SIMULATED data; fictional part numbers and documented prior limits. Advisory only, not a maintenance planning source."
@@ -32,7 +33,7 @@ DAYS_PER_MONTH = 30.4375
 HORIZON_MONTHS = 12
 MIN_CPD = 0.05
 MAX_DAYS = 36500.0  # clamp for date arithmetic
-DEFAULT_CPD = 4.0  # flights/day when a tail has no legs
+DEFAULT_CPD = DEFAULT_LEGS_PER_DAY  # flights/day when a tail has no legs (shared constant)
 EGT_MARGIN_NEW_C = 70.0
 EGT_MARGIN_FLOOR_C = 15.0
 EGT_LOSS_PRIOR_C_PER_CYCLE = 0.007
@@ -44,14 +45,14 @@ LLP_SPREAD = 0.08  # planning spread (+/-) on the LLP-driven shop-visit flights
 
 # key -> (label, ATA chapter, scope, limit cycles, calendar limit years, part no stem)
 CATALOG: dict[str, dict[str, Any]] = {
-    "fan_disk": {"label": "Fan disk", "ata": "72-20", "scope": "engine", "limit": 30000.0, "years": 25.0, "pn": "FX-F"},
-    "hpc_rotor": {"label": "HPC rotor stage", "ata": "72-30", "scope": "engine", "limit": 25000.0, "years": 22.0, "pn": "FX-C"},
-    "hpt_disk": {"label": "HPT disk", "ata": "72-50", "scope": "engine", "limit": 20000.0, "years": 20.0, "pn": "FX-T"},
-    "lpt_shaft": {"label": "LPT shaft", "ata": "72-50", "scope": "engine", "limit": 30000.0, "years": 25.0, "pn": "FX-S"},
-    "mlg_leg_l": {"label": "MLG leg, left", "ata": "32-11", "scope": "aircraft", "limit": 25000.0, "years": 20.0, "pn": "FX-GL"},
-    "mlg_leg_r": {"label": "MLG leg, right", "ata": "32-11", "scope": "aircraft", "limit": 25000.0, "years": 20.0, "pn": "FX-GR"},
-    "nlg_leg": {"label": "Nose gear leg", "ata": "32-21", "scope": "aircraft", "limit": 30000.0, "years": 20.0, "pn": "FX-GN"},
-    "mlg_retract_actuator": {"label": "MLG retraction actuator", "ata": "32-31", "scope": "aircraft", "limit": 20000.0, "years": 15.0, "pn": "FX-GA"},
+    "fan_disk": {"label": "Fan disk", "ata": "72-20", "scope": "engine", "limit": LLP_CYCLE_LIMITS["fan_disk"], "years": 25.0, "pn": "FX-F"},
+    "hpc_rotor": {"label": "HPC rotor stage", "ata": "72-30", "scope": "engine", "limit": LLP_CYCLE_LIMITS["hpc_rotor"], "years": 22.0, "pn": "FX-C"},
+    "hpt_disk": {"label": "HPT disk", "ata": "72-50", "scope": "engine", "limit": LLP_CYCLE_LIMITS["hpt_disk"], "years": 20.0, "pn": "FX-T"},
+    "lpt_shaft": {"label": "LPT shaft", "ata": "72-50", "scope": "engine", "limit": LLP_CYCLE_LIMITS["lpt_shaft"], "years": 25.0, "pn": "FX-S"},
+    "mlg_leg_l": {"label": "MLG leg, left", "ata": "32-11", "scope": "aircraft", "limit": LLP_CYCLE_LIMITS["mlg_leg_l"], "years": 20.0, "pn": "FX-GL"},
+    "mlg_leg_r": {"label": "MLG leg, right", "ata": "32-11", "scope": "aircraft", "limit": LLP_CYCLE_LIMITS["mlg_leg_r"], "years": 20.0, "pn": "FX-GR"},
+    "nlg_leg": {"label": "Nose gear leg", "ata": "32-21", "scope": "aircraft", "limit": LLP_CYCLE_LIMITS["nlg_leg"], "years": 20.0, "pn": "FX-GN"},
+    "mlg_retract_actuator": {"label": "MLG retraction actuator", "ata": "32-31", "scope": "aircraft", "limit": LLP_CYCLE_LIMITS["mlg_retract_actuator"], "years": 15.0, "pn": "FX-GA"},
 }
 ENGINE_KEYS = tuple(k for k, v in CATALOG.items() if v["scope"] == "engine")
 AIRCRAFT_KEYS = tuple(k for k, v in CATALOG.items() if v["scope"] == "aircraft")

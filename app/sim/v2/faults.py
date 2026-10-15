@@ -27,6 +27,10 @@ from app.sim import sensor_faults as sensor_fault_layer
 from app.sim.v2.core import StreamRng
 
 PROVENANCE = "SIMULATED"
+# Explicit "no fault" marker for ``FaultInjector.onset``. A real onset may be negative: ``World.inject_fault`` back-dates the
+# onset by the cycles a fault needs to reach the requested severity, which before that many cycles have elapsed lies before
+# cycle 0. (A plain -1 sentinel made such early injections silently inert.)
+NO_ONSET = int(np.iinfo(np.int64).min)
 
 
 @dataclass(frozen=True)
@@ -103,10 +107,13 @@ LIBRARY: dict[str, FaultMode] = {m.id: m for m in (
        detect_channels=("tire_pressure_psi", "tread_depth_mm"), effect_key="tread_loss_mm", effect_mult=2.0),
     _m("strut_seal_leak", "landing_gear", "32", 3e-4, age_ref_cycles=8000, ramp_cycles=400,
        detect_channels=("strut_pressure_kpa", "strut_extension_mm"), effect_key="leak_kpa", effect_mult=0.75),
-    _m("hard_landing_damage", "landing_gear", "32", 1e-4, driver="sink_rate_fps", driver_gain=0.3, ramp_cycles=3,
-       detect_channels=("shock_load_g", "strut_extension_mm"), effect_key="fatigue", effect_shift=0.2),
+    # Overload landing (beyond a routine hard landing): the strut is condemned at the next inspection (effect 0.8 of life).
+    # base_hazard 1e-4 -> 4e-5 (assumed, no citation): ~4 events per 24 tails per year, with effect_shift 0.2 -> 0.8 so a
+    # finding leads to a removal. Routine hard landings stay inspection + on-wing servicing (see landing_gear.py).
+    _m("hard_landing_damage", "landing_gear", "32", 4e-5, driver="sink_rate_fps", driver_gain=0.3, ramp_cycles=3,
+       detect_channels=("shock_load_g", "strut_extension_mm"), effect_key="fatigue", effect_shift=0.8),
     _m("pump_cavitation", "hydraulics", "29", 3e-4, age_ref_cycles=5000, ramp_cycles=250, shape="exponential",
-       detect_channels=("pump_pressure_kpa", "fluid_temp_c"), effect_key="eta_loss", effect_mult=0.7),
+       detect_channels=("pump_pressure_kpa", "fluid_temp_c"), effect_key="eta_loss", effect_mult=0.35),
     _m("line_leak", "hydraulics", "29", 4e-4, age_ref_cycles=7000, ramp_cycles=300,
        detect_channels=("fluid_qty_pct", "case_drain_flow_lpm"), effect_key="leak", effect_mult=0.6),
     _m("cell_short", "electrical", "24", 1.5e-4, age_ref_cycles=4000, ramp_cycles=120, shape="exponential",
@@ -133,7 +140,7 @@ def modes_for(kind: str) -> list[FaultMode]:
 
 
 # ---- helpers concrete models call to consume ``state['fault_<mode>']`` (all return neutral values when absent) ----
-RATE_EXPONENT = 3.0  # literature prior, unverified: an effect_mult m<1 on a *measured* quantity boosts degradation rate by (1/m)**3
+RATE_EXPONENT = 3.0  # assumed (no citation): an effect_mult m<1 on a *measured* quantity boosts degradation rate by (1/m)**3
 
 
 def fault_level(state: dict[str, np.ndarray], mode_id: str, idx: Any = None) -> np.ndarray | float:
@@ -181,7 +188,7 @@ class FaultInjector:
         self.enabled = dict(enabled or {})
         self._modes = {k: [m for m in self.library.values() if m.kind == k] for k in counts}
         self._rng = {(m.kind, m.id): StreamRng(self.seed, f"fault.{m.kind}.{m.id}") for ms in self._modes.values() for m in ms}
-        self.onset = {(m.kind, m.id): np.full(counts[k], -1, dtype=np.int64) for k, ms in self._modes.items() for m in ms}
+        self.onset = {(m.kind, m.id): np.full(counts[k], NO_ONSET, dtype=np.int64) for k, ms in self._modes.items() for m in ms}
         self._cleared: dict[tuple[str, str, int], int] = {}
         self._log: list[dict[str, Any]] = []
         self._open: dict[tuple[str, str, int], dict[str, Any]] = {}
@@ -189,9 +196,16 @@ class FaultInjector:
     def _on(self, mode_id: str) -> bool:
         return self.enabled.get(mode_id, True)
 
+    def active(self, kind: str, mode_id: str, unit: Any = None) -> Any:
+        """True where a fault of ``mode_id`` is present (onset set, possibly back-dated before cycle 0)."""
+        a = self.onset[(kind, mode_id)] != NO_ONSET
+        return a if unit is None else a[unit]
+
     def severity(self, kind: str, mode: FaultMode, cycle: int) -> np.ndarray:
         on = self.onset[(kind, mode.id)]
-        return np.where(on >= 0, mode.severity(np.maximum(cycle - on, 0)), 0.0)
+        act = on != NO_ONSET
+        since = np.where(act, cycle - np.where(act, on, cycle), 0)
+        return np.where(act, mode.severity(np.maximum(since, 0)), 0.0)
 
     def step(self, kind: str, state: dict[str, np.ndarray], cycle: int, ctx: Any = None, age: np.ndarray | None = None) -> None:
         """Sample onsets for this cycle and write severity arrays into ``state``. Call once per cycle per kind, before the model step."""
@@ -205,7 +219,7 @@ class FaultInjector:
                 drv = getattr(ctx, mode.driver, None) if (ctx is not None and mode.driver) else None
                 h = mode.hazard(age, 0.0 if drv is None else drv)
                 p = -np.expm1(-h)
-                new = (u < p) & (self.onset[key] < 0)
+                new = (u < p) & (self.onset[key] == NO_ONSET)
                 if new.any():
                     self.onset[key][new] = cycle
                     for i in np.flatnonzero(new):
@@ -214,7 +228,7 @@ class FaultInjector:
                         self._open[(kind, mode.id, int(i))] = rec
             sev = self.severity(kind, mode, cycle)
             state[f"fault_{mode.id}"] = sev
-            for i in np.flatnonzero(self.onset[key] >= 0):
+            for i in np.flatnonzero(self.onset[key] != NO_ONSET):
                 rec = self._open.get((kind, mode.id, int(i)))
                 if rec is not None:
                     rec["severity_trajectory"].append([int(cycle), float(sev[i])])
@@ -227,8 +241,8 @@ class FaultInjector:
                 continue
             on = self.onset[(kind, mode.id)]
             for i in idx:
-                if on[i] >= 0:
-                    on[i] = -1
+                if on[i] != NO_ONSET:
+                    on[i] = NO_ONSET
                     rec = self._open.pop((kind, mode.id, int(i)), None)
                     if rec is not None:
                         rec["cleared_cycle"] = int(cycle)
@@ -260,5 +274,5 @@ class FaultInjector:
         return h.hexdigest()
 
 
-__all__ = ["FaultInjector", "FaultMode", "GroundTruthFault", "LIBRARY", "fault_add", "fault_level", "fault_log_loss", "fault_mult",
+__all__ = ["FaultInjector", "FaultMode", "GroundTruthFault", "LIBRARY", "NO_ONSET", "fault_add", "fault_level", "fault_log_loss", "fault_mult",
            "fault_rate", "modes_for", "sensor_fault_layer"]

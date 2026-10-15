@@ -1,0 +1,41 @@
+# Generic template. Adapt the column names and enum maps to your export. Not tied to any vendor format.
+# LONG format: one parameter/value per row, grouped by (tail, ts, phase).
+name: acms_generic
+target: acms
+delimiter: ','
+encoding: utf-8
+missing_markers:
+- ''
+- N/A
+- n/a
+- '-'
+- 'NULL'
+timezone:
+  mode: utc
+  default_offset: +00:00
+provenance: operator-export
+columns:
+  tail:
+    source: tail
+    type: str
+    required: true
+  ts:
+    source: ts
+    type: datetime
+    required: true
+  phase:
+    source: phase
+    type: str
+    required: false
+  parameter:
+    source: parameter
+    type: str
+    required: true
+  value:
+    source: value
+    type: float
+    required: true
+group_by:
+- tail
+- ts
+- phase

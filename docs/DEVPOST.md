@@ -17,7 +17,10 @@ Predict the failure. Plan the fix. A person approves it.
 (Alternative: "A digital twin that plans aircraft maintenance for you")
 
 ## Elevator pitch (about 200 characters)
-AeroTwin AI predicts which aircraft components will fail, finds the maintenance slot that fits flights, parts, technicians and hangars, and drafts work orders. A person approves every one.
+AeroTwin AI estimates remaining life for simulated aircraft components, finds the maintenance slot that fits flights, parts, technicians and hangars, and drafts work orders. A person approves every one.
+
+## Scope and honesty
+All aircraft data in this project is simulated. No airline, manufacturer or operator data was used, part numbers and life limits are fictional, and nothing here is for airworthiness, dispatch or maintenance decisions (see `docs/LIMITATIONS.md`).
 
 ## Main track
 AI/ML: agents, assistants and data pipelines that take real tasks off someone's plate. No side challenges.
@@ -28,7 +31,7 @@ Aircraft maintenance is a coordination problem. A component starts to degrade, b
 AeroTwin AI serves the people who make those decisions: maintenance control and operations planners first, and the engineers, technicians, pilots, dispatchers and administrators who depend on the plan. A person stays in control: every maintenance request waits for human approval.
 
 ## What it does
-- **Predicts.** A health model estimates each component's remaining life with uncertainty (a conservative p10, a median p50, an optimistic p90) and flags abnormal sensor behavior. The aircraft twin shows the whole aircraft, then flies the camera in on the engine in trouble, marks the section the sensors point to, and lists every sensor against its healthy baseline.
+- **Estimates (on simulated data).** A health model estimates each component's remaining life with uncertainty (a conservative p10, a median p50, an optimistic p90) and flags abnormal sensor behavior. The aircraft twin shows the whole aircraft, then flies the camera in on the engine in trouble, marks the section the sensors point to, and lists every sensor against its healthy baseline.
 - **Simulates.** A digital twin of 24 simulated aircraft (16 A320-class, 8 B737-class, 8 stations, 144 monitored components, 480 scheduled legs). A scenario lab injects a fault, delays a part, closes a hangar or removes a technician.
 - **Plans.** A constraint solver (OR-Tools CP-SAT) finds the slot that fits flights, ground windows, parts, technicians and hangar space; the conservative p10 deadline is a hard constraint. The plan is shown as an hourly day calendar, one column per aircraft.
 - **Re-plans.** When the world changes the plan is recomputed in a fraction of a second and the change is explained.

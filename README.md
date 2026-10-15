@@ -7,6 +7,7 @@ something changes (a fault, a delayed part, a closed hangar), and re-plans maint
 order. Built in 36 hours at Hacklanta 2026 by Shamit, Aashirth, Pardhu and Aadhavan (AI/ML track). Concept by Aadhavan.
 
 **Everything about aircraft health is simulated and labeled SIMULATED. The system is advisory only; it certifies nothing.**
+No airline, manufacturer, MRO or regulator data is used and there is no affiliation with any of them. Tail numbers, part numbers, serials and life limits are fictional or assumed. It is not for airworthiness, dispatch or maintenance decisions. Read [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md) before trusting any number; reviewer reading order: [`docs/INDEX.md`](docs/INDEX.md).
 Devpost text: [`docs/DEVPOST.md`](docs/DEVPOST.md). Event rules and checklist: [`docs/HACKLANTA-RULES.md`](docs/HACKLANTA-RULES.md). Demo script: [`docs/DEMO-SCRIPT.md`](docs/DEMO-SCRIPT.md).
 
 **Live demo:** https://shamitbasu.com/hacklanta (a shared public instance on simulated data: every visitor shares one simulation, so reset it under System if it looks different). It asks you to sign in: pick a demo account on the sign-in screen (one per position), create an account and choose your position, or use Google. Details: [docs/AUTH.md](docs/AUTH.md). Local runs have no sign-in unless `AUTH_REQUIRED=1`.

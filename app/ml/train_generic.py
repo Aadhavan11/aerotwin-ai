@@ -177,6 +177,12 @@ def _regime_world(seed: int, tails: list[str], maintain: bool, shifted: bool, ut
     return _W(seed, tails, stochastic=True, auto_maintain=maintain, utilisation=util)
 
 
+# Accelerated-life factor per kind: the v2 hydraulics / electrical / apu wear rates were slowed (docs/RELIABILITY.md) so a
+# nominal-stress unit no longer runs to failure inside the training horizon. The per-unit external stress is multiplied by the
+# same factor so the training worlds still span healthy -> failed (stress_ext is a hidden driver, not a feature).
+LIFE_COMPRESSION: dict[str, float] = {"hydraulics": 4.5, "electrical": 3.1, "apu": 1.6}
+
+
 def simulate_run(spec: RunSpec, cfg: GenConfig) -> list[UnitRecord]:
     """One world -> per-unit records for ``cfg.kinds``."""
     rng = np.random.default_rng([cfg.seed, spec.seed])
@@ -186,7 +192,7 @@ def simulate_run(spec: RunSpec, cfg: GenConfig) -> list[UnitRecord]:
     w = _regime_world(spec.seed, tails, spec.maintain, spec.shifted, util, oat_shift)
     lo, hi_ = cfg.shift_stress_range if spec.shifted else cfg.stress_range
     for k in cfg.kinds:
-        w.fleet.state[k]["stress_ext"][:] = rng.uniform(lo, hi_, size=w.counts[k])
+        w.fleet.state[k]["stress_ext"][:] = rng.uniform(lo, hi_, size=w.counts[k]) * LIFE_COMPRESSION.get(k, 1.0)
     T = cfg.maintained_horizon if spec.maintain else cfg.horizon
     index = {w.component_id(k, i): (k, i) for k in cfg.kinds for i in range(w.counts[k])}
     chans = {k: TELEMETRY_KEYS[k] for k in cfg.kinds}
@@ -209,7 +215,7 @@ def simulate_run(spec: RunSpec, cfg: GenConfig) -> list[UnitRecord]:
     restore: dict[tuple[str, int], list[int]] = {}
     for ev in w.events:
         k, i = ev["kind"], int(ev["unit"])
-        if ev["action"] == "inspect" or k not in cfg.kinds:
+        if ev["action"] in ("inspect", "nff_return") or k not in cfg.kinds:   # an NFF return does not restore the unit
             continue
         c = int(ev["cycle"])
         if not 1 <= c <= T:

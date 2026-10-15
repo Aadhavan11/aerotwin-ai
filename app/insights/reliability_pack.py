@@ -1,8 +1,17 @@
 """Industry-standard reliability metrics (MTBUR, MTBF, NFF rate, removal rate with Poisson CI, AMOS-style alerts, Pareto,
 repeat defects) computed from v2 World / backfill-runner outputs. SIMULATED data; advisory only.
 
-Definitions (all counts are *removals* = actions ``replace`` or ``overhaul``; on-wing repairs and inspections are not):
-* unscheduled removal: ``Removal.unscheduled`` (reason failure / inspection_finding / nff).
+Units: every metric is a **per-tail system aggregate** (``UNIT_DEFINITIONS``): brakes = 4 positions lumped, tires = 6 lumped,
+avionics = one box standing for many LRUs, hydraulics = the system's pumps/filters/lines, and so on. Rates are per aggregate
+unit, not per LRU / part number. Each per-kind row and Weibull row carries a ``unit_definition`` string.
+
+Definitions (all counts are *removals* = actions ``replace``, ``overhaul`` or ``nff_return``; on-wing repairs and
+inspections are not):
+* unscheduled removal: ``Removal.unscheduled`` (reason failure / inspection_finding / nff / performance).
+  ``performance`` = engine shop visit driven by EGT-margin / performance erosion: condition-triggered, so unscheduled
+  (counts in MTBUR) but not a confirmed failure (not in MTBF).
+* ``nff_return`` = no-fault-found: the unit goes to the shop, passes and is returned unchanged (same serial, TSN/CSN). It is
+  an unscheduled removal (MTBUR, NFF rate) and never a failure (MTBF).
 * MTBUR = exposure / unscheduled removals, in flight hours (FH) and flight cycles (FC); exposure is the sum over the
   units of the kind (per ATA chapter: sum over the kinds in the chapter, i.e. unit-hours).
 * MTBF = exposure / confirmed failures (reason ``failure`` and not NFF).
@@ -13,6 +22,8 @@ Definitions (all counts are *removals* = actions ``replace`` or ``overhaul``; on
   over the calendar span); the latest complete period is compared with mean + 3 sigma of the trailing window (<= 12
   earlier periods; "warning" at +2 sigma). At least ``MIN_EVENTS`` removals in the latest period are needed to alert.
 * repeat defect: >= 3 unscheduled removals of the same tail/position within 90 days.
+* Weibull: right-censored MLE per kind on the v2 removal / install-time records of the same dataset (failures =
+  unscheduled non-NFF removals; planned removals and in-service units censored at cycles since last restoration).
 
 Sources: a live ``World`` (``from_world``), a backfill run directory (``from_run_dir``; flight hours per cycle are
 inferred from the removed parts' tsn/csn because only removals are stored) or ``backfill`` (deterministic cached 1-year
@@ -48,9 +59,21 @@ PREMATURE_HEALTH = 0.5
 REPEAT_N = 3
 REPEAT_DAYS = 90
 CONFIDENCE = 0.95
-REMOVAL_ACTIONS = ("replace", "overhaul")
+REMOVAL_ACTIONS = ("replace", "overhaul", "nff_return")
+UNIT_DEFINITIONS: dict[str, str] = {
+    "engine": "per-engine system aggregate: one turbofan engine (2 per tail); a removal is a whole-engine shop visit",
+    "brakes": "per-tail system aggregate: the 4 main-wheel brake positions lumped as one unit",
+    "tires": "per-tail system aggregate: the 6 wheel positions (main + nose) lumped as one unit",
+    "landing_gear": "per-tail system aggregate: the main landing-gear strut group lumped as one unit",
+    "hydraulics": "per-tail system aggregate: pumps, filters and lines of the hydraulic system lumped as one unit",
+    "avionics": "per-tail system aggregate: one avionics box standing for many LRUs; rates are per aggregate, not per LRU",
+    "apu": "per-tail system aggregate: one APU (starter, generator, oil system lumped)",
+    "ecs": "per-tail system aggregate: air-conditioning packs and valves lumped as one unit",
+    "electrical": "per-tail system aggregate: battery and generator/IDG lumped as one unit",
+}
+METRICS_UNIT = "per-tail system aggregate"
 BACKFILL_YEARS = 1.0
-CACHE_VERSION = 2
+CACHE_VERSION = 4
 DISCLAIMER = "SIMULATED data; ATA-style, simplified, fictional part numbers. Advisory only, not a certified reliability analysis."
 
 
@@ -91,6 +114,32 @@ class Dataset:
     removals: list[RemovalRec]
     exposure: Exposure
     source: dict[str, Any] = field(default_factory=dict)
+    # (kind, life_cycles, failed) per completed life / suspension, cycles since last restoration (new or overhaul)
+    lives: list[tuple[str, float, bool]] = field(default_factory=list)
+
+
+def _lives(rows: Iterable[tuple[str, int, str, float, bool, bool]], in_service: Iterable[tuple[str, int, float]]) -> list[tuple[str, float, bool]]:
+    """Life records from chronological removals ``(kind, unit, action, csn, unscheduled, nff)`` + in-service ``(kind, unit, csn)``.
+
+    A ``replace`` restarts the slot's clock at 0 (new serial); an ``overhaul`` restarts it at the part's CSN (same serial);
+    ``nff_return`` leaves the unit and its clock untouched and produces no life record. A removal is a failure when it is
+    unscheduled and not NFF; planned removals and units still in service are suspensions.
+    """
+    base: dict[tuple[str, int], float] = {}
+    out: list[tuple[str, float, bool]] = []
+    for kind, unit, action, csn, unscheduled, nff in rows:
+        if action not in ("replace", "overhaul"):
+            continue
+        key = (kind, int(unit))
+        life = float(csn) - base.get(key, 0.0)
+        if life > 0:
+            out.append((kind, life, bool(unscheduled) and not nff))
+        base[key] = 0.0 if action == "replace" else float(csn)
+    for kind, unit, csn in in_service:
+        life = float(csn) - base.get((kind, int(unit)), 0.0)
+        if life > 0:
+            out.append((kind, life, False))
+    return out
 
 
 def _dt(s: str | None) -> datetime:
@@ -115,7 +164,10 @@ def from_world(world: Any, source: dict[str, Any] | None = None) -> Dataset:
     recs = [RemovalRec(r.kind, r.tail or f"unit{r.unit}", r.position, r.action, r.removal_reason, bool(r.unscheduled), bool(r.nff),
                        float(r.health_before), _dt(r.time), float(r.tsn_h), float(r.csn)) for r in world.removals()]
     ex = Exposure(dict(world.counts), dict(fh), dict(fc), days)
-    return Dataset(recs, ex, {"basis": "world", "cycles": int(world.cycle), "seed": int(world.seed), "tails": len(world.tails), **(source or {})})
+    lives = _lives(((r.kind, r.unit, r.action, r.csn, r.unscheduled, r.nff) for r in world.removals()),
+                   ((k, i, world.registry.parts[s].csn) for (k, i), s in world.registry.installed.items()))
+    return Dataset(recs, ex, {"basis": "world", "cycles": int(world.cycle), "seed": int(world.seed), "tails": len(world.tails), **(source or {})},
+                   lives)
 
 
 def from_run_dir(path: str | Path) -> Dataset:
@@ -135,6 +187,13 @@ def from_run_dir(path: str | Path) -> Dataset:
     from app.sim.v2.world import UNITS_PER_TAIL
 
     units = {k: len(tails) * UNITS_PER_TAIL.get(k, 1) for k in ata.KIND_SECTION}
+    # Only removals are stored: in-service units are censored at the run length (assumes new at cycle 0; approximate).
+    rows = []
+    if rp.exists():
+        with gzip.open(rp, "rt", newline="") as f:
+            rows = [(r["kind"], int(r["unit"]), r["action"], float(r.get("csn") or 0), _bool(r["unscheduled"]), _bool(r["nff"]))
+                    for r in csv.DictReader(f)]
+    lives = _lives(rows, ((k, i, float(cycles)) for k, n in units.items() for i in range(n)))
     tot_h = sum(r.tsn_h for r in recs)
     tot_c = sum(r.csn for r in recs)
     overall = tot_h / tot_c if tot_c > 0 else 2.0
@@ -147,7 +206,7 @@ def from_run_dir(path: str | Path) -> Dataset:
         fh[k] = fc[k] * ratio
     return Dataset(recs, Exposure(units, fh, fc, cycles / LEGS_PER_DAY),
                    {"basis": "run_dir", "cycles": cycles, "seed": man.get("spec", {}).get("seed"), "run_id": man.get("run_id"),
-                    "fh_per_cycle_inferred": True, "tails": len(tails)})
+                    "fh_per_cycle_inferred": True, "tails": len(tails)}, lives)
 
 
 # ---------------- statistics ----------------
@@ -262,7 +321,8 @@ def compute(ds: Dataset) -> dict[str, Any]:
         recs = [r for r in ds.removals if r.kind == k]
         m, series, counts, al = _group_metrics(recs, ex.fh.get(k, 0.0), ex.fc.get(k, 0.0), ex.days)
         ref = ata.ata_for(k)
-        per_kind.append({"kind": k, "ata_chapter": ref.chapter, "ata_section": ref.section, "units": int(ex.units.get(k, 0)), **m})
+        per_kind.append({"kind": k, "ata_chapter": ref.chapter, "ata_section": ref.section, "units": int(ex.units.get(k, 0)),
+                         "unit_definition": UNIT_DEFINITIONS.get(k, METRICS_UNIT), **m})
         alerts.append({"kind": k, "ata_chapter": ref.chapter, "status": al["status"], "period_days": PERIOD_DAYS,
                        "latest_rate_per_1000fh": _r(al["latest"], 4), "latest_count": counts[-1] if counts else None,
                        "threshold_per_1000fh": _r(al["threshold"], 4), "warning_per_1000fh": _r(al["warning_threshold"], 4),
@@ -296,7 +356,7 @@ def compute(ds: Dataset) -> dict[str, Any]:
     span = ex.days
     return {
         "as_of": (START + timedelta(days=span)).isoformat(), "simulated": True, "provenance": PROVENANCE, "disclaimer": DISCLAIMER,
-        "source": {**ds.source, "span_days": _r(span, 1)}, "taxonomy_label": ata.LABEL,
+        "source": {**ds.source, "span_days": _r(span, 1)}, "taxonomy_label": ata.LABEL, "metrics_unit": METRICS_UNIT,
         "metrics": {"per_kind": per_kind, "per_ata": per_ata},
         "pareto": pareto, "alerts": alerts, "repeat_defects": repeat_defects(ds.removals),
         "top_contributors": {"kinds": top, "tails": top_tails}, "unscheduled_removals_total": total,
@@ -329,11 +389,17 @@ def repeat_defects(removals: Iterable[RemovalRec], n: int = REPEAT_N, days: int 
     return out
 
 
-# ---------------- Weibull (existing fits, exposed not edited) ----------------
-def weibull_fits() -> list[dict[str, Any]]:
-    """Per-kind Weibull fits from ``app.insights.reliability`` (unmodified) for the pack."""
+# ---------------- Weibull ----------------
+def weibull_fits(ds: Dataset | None = None) -> list[dict[str, Any]]:
+    """Per-kind right-censored Weibull MLE on the dataset's v2 removal / install-time records.
+
+    Same dataset as the pack's MTBUR/MTBF, so the shapes are consistent with the removals shown next to them. With
+    ``ds=None`` the legacy v1 fit from ``app.insights.reliability.report()`` is returned (v1 callers only).
+    """
     from app.insights import reliability
 
+    if ds is not None:
+        return reliability.fit_lives(ds.lives, ds.exposure.units, UNIT_DEFINITIONS)
     try:
         return list(reliability.report()["kinds"])
     except Exception:  # noqa: BLE001  (the pack must not fail because the twin has no data)
@@ -346,7 +412,9 @@ _MEM: dict[str, dict[str, Any]] = {}
 
 
 def config_hash(seed: int, years: float, fleet: Any = None) -> str:
-    cfg = {"v": CACHE_VERSION, "seed": int(seed), "years": float(years), "fleet": fleet, "legs_per_day": LEGS_PER_DAY, "initial_wear": True}
+    from app.sim.v2.manifest import params_hash
+
+    cfg = {"params": params_hash(), "v": CACHE_VERSION, "seed": int(seed), "years": float(years), "fleet": fleet, "legs_per_day": LEGS_PER_DAY, "initial_wear": True}
     return hashlib.sha256(json.dumps(cfg, sort_keys=True).encode()).hexdigest()[:16]
 
 
@@ -367,12 +435,12 @@ def run_backfill(seed: int, years: float = BACKFILL_YEARS, fleet: Any = None) ->
 
 def _ds_to_json(ds: Dataset) -> dict[str, Any]:
     return {"removals": [{**r.__dict__, "time": r.time.isoformat()} for r in ds.removals],
-            "exposure": ds.exposure.__dict__, "source": ds.source}
+            "exposure": ds.exposure.__dict__, "source": ds.source, "lives": [[k, v, f] for k, v, f in ds.lives]}
 
 
 def _ds_from_json(j: dict[str, Any]) -> Dataset:
     recs = [RemovalRec(**{**r, "time": datetime.fromisoformat(r["time"])}) for r in j["removals"]]
-    return Dataset(recs, Exposure(**j["exposure"]), j["source"])
+    return Dataset(recs, Exposure(**j["exposure"]), j["source"], [(k, float(v), bool(f)) for k, v, f in j.get("lives", [])])
 
 
 def cached_backfill(seed: int | None = None, years: float = BACKFILL_YEARS, fleet: Any = None) -> Dataset:
@@ -415,6 +483,8 @@ def live_world() -> Any | None:
 
 def pack(include_weibull: bool = True) -> dict[str, Any]:
     """The reliability pack for the live v2 world if available, else the cached deterministic 1-year backfill."""
+    from app.sim.v2.manifest import build_manifest, stable_view
+
     w = live_world()
     if w is not None:
         ds = from_world(w, {"basis": "live", "engine": "v2"})
@@ -422,5 +492,8 @@ def pack(include_weibull: bool = True) -> dict[str, Any]:
         ds = cached_backfill()
         ds.source = {**ds.source, "engine": "v2", "cache_key": config_hash(settings.SEED, BACKFILL_YEARS)}
     out = compute(ds)
-    out["weibull"] = weibull_fits() if include_weibull else []
+    out["weibull"] = weibull_fits(ds) if include_weibull else []
+    out["manifest"] = stable_view(build_manifest({"basis": ds.source.get("basis"), "seed": settings.SEED,
+                                                  "years": BACKFILL_YEARS, "cache_key": config_hash(settings.SEED, BACKFILL_YEARS)},
+                                                 created_at=None))
     return out

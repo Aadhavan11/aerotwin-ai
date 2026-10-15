@@ -23,6 +23,7 @@ from pathlib import Path
 from app.contracts.models import Aircraft, ComponentState, DataQuality, FleetState, Leg, PartStock, Station, Technician
 from app.sim.clock import START
 from app.sim.telemetry import wear_profile
+from app.sim.constants import LEGACY_V1_ENGINE_COUNTER_CAP
 
 STATIONS = {
     'ATL': (33.64, -84.43), 'DFW': (32.90, -97.04), 'JFK': (40.64, -73.78), 'ORD': (41.98, -87.90),
@@ -168,7 +169,7 @@ def generate_fleet(seed=1234):
         for name, kind in KINDS.items():
             component_id = f'{tail}/{name}'
             if kind == 'engine':
-                since = round(ops.uniform(.15, 1.0) * min(cycles, 8200))
+                since = round(ops.uniform(.15, 1.0) * min(cycles, LEGACY_V1_ENGINE_COUNTER_CAP))
                 health = .95
             else:
                 start, life = wear_profile(seed, component_id, GENERIC[kind])

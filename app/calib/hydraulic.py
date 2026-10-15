@@ -200,7 +200,7 @@ def fit_all(data_dir: Path | None = None) -> dict[str, Any]:
     profile = rig["profile"]
     return {
         "meta": {
-            "tag": "fitted to a test rig, not an aircraft: relative sensitivities and noise only; rates remain literature priors",
+            "tag": "fitted to a test rig, not an aircraft: relative sensitivities and noise only; rates remain assumed priors (no citation)",
             "source": "UCI Condition monitoring of hydraulic systems (ZeMA gGmbH), CC BY 4.0",
             "n_cycles": int(len(profile)),
             "n_stable_cycles": int((profile[:, 4] == 0).sum()),

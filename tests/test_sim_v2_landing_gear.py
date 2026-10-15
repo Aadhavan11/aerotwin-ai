@@ -74,7 +74,7 @@ def test_registered_and_v1_channels():
 
 def test_params_documented_as_prior():
     src = open(MOD.__file__).read()
-    assert src.count("literature prior, unverified") >= len(MOD.PARAMS)
+    assert src.count("assumed (no citation)") >= len(MOD.PARAMS)
 
 
 def test_life_distribution_band_prior():

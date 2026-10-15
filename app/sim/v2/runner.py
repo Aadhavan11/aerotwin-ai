@@ -288,6 +288,8 @@ class Runner:
             c.execute("UPDATE sim_runs SET cycles_done=?, rows=? WHERE id=?", (cycle, rows, run_id))
 
     def _finish(self, run_id: str, out: Path, w: World, spec: dict[str, Any], total: int, rows: int) -> None:
+        from app.sim.v2.manifest import build_manifest
+
         recs = [dataclasses.asdict(r) for r in w.removals()]
         buf = io.StringIO()
         if recs:
@@ -301,6 +303,8 @@ class Runner:
         h = w.state_hash()
         (out / "manifest.json").write_text(json.dumps({
             "provenance": PROVENANCE, "run_id": run_id, "spec": spec, "cycles": total, "rows": rows, "removals": len(recs),
+            "reproducibility": build_manifest({"run_id": run_id, "seed": spec.get("seed"), "fleet_size": len(w.tails),
+                                               "years": self._row(run_id)["years"]}),
             "state_hash": h, "tails": w.tails, "note": "SIMULATED data; ground_truth.json is hidden truth, never telemetry"}, sort_keys=True))
         (out / "telemetry.csv.gz").unlink(missing_ok=True)
         (out / "telemetry.parquet").unlink(missing_ok=True)

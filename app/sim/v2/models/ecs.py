@@ -16,40 +16,40 @@ from app.sim.v2.drivers import OperatingContext
 from app.sim.v2.faults import fault_mult, fault_rate
 
 PARAMS = {
-    "fouling_inf": 0.8,  # literature prior, unverified
-    "fouling_tau_h": 4000.0,  # literature prior, unverified
-    "fouling_limit": 1.0,  # literature prior, unverified
-    "fouling_sigma": 0.1,  # literature prior, unverified
-    "dust_baseline": 0.5,  # literature prior, unverified
-    "humidity_reference_pct": 50.0,  # literature prior, unverified
-    "humidity_scale_pct": 200.0,  # literature prior, unverified
-    "humidity_min_factor": 0.5,  # literature prior, unverified
-    "bearing_scale_h": 12000.0,  # literature prior, unverified
-    "bearing_beta": 2.0,  # literature prior, unverified
-    "bearing_exponent": 2.0,  # literature prior, unverified
-    "valve_rate": 0.0002,  # literature prior, unverified
-    "valve_damage_step": 0.08,  # literature prior, unverified
-    "flow_nominal_kgs": 1.4,  # literature prior, unverified
-    "flow_valve_gain": 0.5,  # literature prior, unverified
-    "flow_fouling_gain": 0.2,  # literature prior, unverified
-    "outlet_healthy_c": 15.0,  # literature prior, unverified
-    "outlet_limit_c": 45.0,  # literature prior, unverified
-    "outlet_fouling_gain_c": 22.0,  # literature prior, unverified
-    "outlet_flow_gain_c": 20.0,  # literature prior, unverified
-    "oat_reference_c": 15.0,  # literature prior, unverified
-    "outlet_hot_gain": 0.05,  # literature prior, unverified
-    "acm_nominal_rpm": 40000.0,  # literature prior, unverified
-    "acm_wear_gain": 0.2,  # literature prior, unverified
-    "compressor_offset_c": 80.0,  # literature prior, unverified
-    "compressor_wear_gain_c": 10.0,  # literature prior, unverified
-    "door_nominal_pct": 50.0,  # literature prior, unverified
-    "door_max_pct": 100.0,  # literature prior, unverified
-    "door_valve_gain_pct": 40.0,  # literature prior, unverified
-    "outlet_noise_c": 0.1,  # literature prior, unverified
-    "flow_noise_kgs": 0.005,  # literature prior, unverified
-    "acm_noise_rpm": 30.0,  # literature prior, unverified
-    "compressor_noise_c": 0.2,  # literature prior, unverified
-    "door_noise_pct": 0.25,  # literature prior, unverified
+    "fouling_inf": 0.8,  # assumed (no citation)
+    "fouling_tau_h": 4000.0,  # assumed (no citation)
+    "fouling_limit": 1.0,  # assumed (no citation)
+    "fouling_sigma": 0.1,  # assumed (no citation)
+    "dust_baseline": 0.5,  # assumed (no citation)
+    "humidity_reference_pct": 50.0,  # assumed (no citation)
+    "humidity_scale_pct": 200.0,  # assumed (no citation)
+    "humidity_min_factor": 0.5,  # assumed (no citation)
+    "bearing_scale_h": 12000.0,  # assumed (no citation)
+    "bearing_beta": 2.0,  # assumed (no citation)
+    "bearing_exponent": 2.0,  # assumed (no citation)
+    "valve_rate": 0.0002,  # assumed (no citation)
+    "valve_damage_step": 0.08,  # assumed (no citation)
+    "flow_nominal_kgs": 1.4,  # assumed (no citation)
+    "flow_valve_gain": 0.5,  # assumed (no citation)
+    "flow_fouling_gain": 0.2,  # assumed (no citation)
+    "outlet_healthy_c": 15.0,  # assumed (no citation)
+    "outlet_limit_c": 45.0,  # assumed (no citation)
+    "outlet_fouling_gain_c": 22.0,  # assumed (no citation)
+    "outlet_flow_gain_c": 20.0,  # assumed (no citation)
+    "oat_reference_c": 15.0,  # assumed (no citation)
+    "outlet_hot_gain": 0.05,  # assumed (no citation)
+    "acm_nominal_rpm": 40000.0,  # assumed (no citation)
+    "acm_wear_gain": 0.2,  # assumed (no citation)
+    "compressor_offset_c": 80.0,  # assumed (no citation)
+    "compressor_wear_gain_c": 10.0,  # assumed (no citation)
+    "door_nominal_pct": 50.0,  # assumed (no citation)
+    "door_max_pct": 100.0,  # assumed (no citation)
+    "door_valve_gain_pct": 40.0,  # assumed (no citation)
+    "outlet_noise_c": 0.1,  # assumed (no citation)
+    "flow_noise_kgs": 0.005,  # assumed (no citation)
+    "acm_noise_rpm": 30.0,  # assumed (no citation)
+    "compressor_noise_c": 0.2,  # assumed (no citation)
+    "door_noise_pct": 0.25,  # assumed (no citation)
 }
 
 

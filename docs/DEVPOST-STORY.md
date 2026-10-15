@@ -4,7 +4,9 @@
 
 ---
 
-**AeroTwin AI is a digital twin of an airline fleet. It predicts which components will fail, plans the fix around flights, parts, technicians and hangars, and drafts the maintenance request. A person approves every one.**
+**AeroTwin AI is a digital twin of an airline fleet. It estimates which simulated components are running out of life, plans the fix around flights, parts, technicians and hangars, and drafts the maintenance request. A person approves every one.**
+
+*All aircraft data in this project is simulated. No airline, manufacturer or operator data was used, part numbers and life limits are fictional, and nothing here is for airworthiness, dispatch or maintenance decisions (see `docs/LIMITATIONS.md`).*
 
 ## Inspiration
 
@@ -14,7 +16,7 @@ Aadhavan's concept, *"the self-optimizing aircraft fleet"*, asked a simple quest
 
 ## What it does
 
-- **Predicts.** A health model estimates each component's remaining life with uncertainty (a conservative p10, a median p50, an optimistic p90) and flags abnormal sensor behavior. The aircraft twin shows the whole aircraft, then flies the camera in on the engine in trouble, marks the section the sensors point to, and lists every sensor against its healthy baseline.
+- **Estimates (on simulated data).** A health model estimates each component's remaining life with uncertainty (a conservative p10, a median p50, an optimistic p90) and flags abnormal sensor behavior. The aircraft twin shows the whole aircraft, then flies the camera in on the engine in trouble, marks the section the sensors point to, and lists every sensor against its healthy baseline.
 - **Simulates.** A digital twin of **24 simulated aircraft, 8 stations, 144 monitored components and 480 scheduled legs**. A scenario lab injects a fault, delays a part, closes a hangar or removes a technician.
 - **Plans.** A constraint solver (OR-Tools CP-SAT) finds the slot that fits flights, ground time, parts, technicians and hangar space, with the conservative p10 as a hard deadline. The plan is an **hourly calendar, one column per aircraft**, and it re-plans in a fraction of a second when something changes.
 - **One whole maintenance request.** What is damaged or inspected, the work, the part and whether it must be ordered, when and where, why it is needed, and an estimated cost, in one card. People who may decide can **edit** the name, work, part, ordering or time (the server checks the deadline, the aircraft's ground time and the technician's shift), then **approve or deny**. Requests can also be entered by hand. Every change is in an audit trail.

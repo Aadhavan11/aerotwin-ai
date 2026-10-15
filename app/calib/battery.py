@@ -225,7 +225,7 @@ def temperature_acceleration(cells: dict[str, dict[str, Any]], cap: dict[str, An
         "ambient_c_values": ambient,
         "reason": "all four cells were cycled at one ambient temperature; the small differences in measured cell temperature are self-heating and "
                   "are confounded with discharge cut-off voltage (2.5/2.2/2.5 V) and cell-to-cell spread, so no Arrhenius activation energy can be fitted. "
-                  "activation_k stays a literature prior.",
+                  "activation_k stays an assumed prior (no citation).",
         "observational_only": obs,
     }
 

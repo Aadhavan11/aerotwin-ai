@@ -204,7 +204,7 @@ Access to proprietary airline telemetry is not necessary for a convincing hackat
 
 **Public degradation data.** NASA's C-MAPSS turbofan engine degradation dataset can support Remaining Useful Life estimation and degradation-model evaluation. It is useful for the predictive component but does not provide a complete airline fleet scheduling dataset.
 
-**Synthetic fleet data.** Generate realistic simulated records for aircraft IDs and airport locations; flight schedules and operating cycles; component health states; maintenance requirements; technicians and qualifications; maintenance facilities and capacities; spare-part inventory and delivery times.
+**Synthetic fleet data.** Generate plausible-looking simulated records for aircraft IDs and airport locations; flight schedules and operating cycles; component health states; maintenance requirements; technicians and qualifications; maintenance facilities and capacities; spare-part inventory and delivery times.
 
 **Synthetic telemetry.** Generate normal sensor patterns and controlled anomalies. Include configurable temperature, pressure, and vibration trends.
 

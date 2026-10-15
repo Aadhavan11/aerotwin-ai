@@ -9,13 +9,14 @@ from typing import Sequence
 import numpy as np
 
 from app.sim.profile import FlightProfile
+from app.sim.constants import FLIGHTS_PER_DAY
 
 PHASES = ("taxi_out", "takeoff", "climb", "cruise", "descent", "landing", "taxi_in")
 TAXI_SPEED_KMH = 20.0
 TURNAROUND_MIN = 35.0
 # Single calendar constant: flown legs (cycles) per aircraft per calendar day at world utilisation 1.0. The runner, World and
 # reliability pack all use it, so 365 * LEGS_PER_DAY = 2190 cycles == 365 calendar days for every tail.
-LEGS_PER_DAY = 6.0
+LEGS_PER_DAY = FLIGHTS_PER_DAY  # app.sim.v2.constants is the single source
 BASE_CYCLES_PER_DAY = LEGS_PER_DAY
 
 # station -> (humidity %, dust index 0..1)

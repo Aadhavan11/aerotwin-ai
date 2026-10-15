@@ -18,8 +18,10 @@ import numpy as np
 
 from app.calib.engine import basis, load_fit
 from app.ml.sensors import SENSOR_NAMES
+from app.sim.constants import ENGINE_FLIGHTS_PER_MODEL_CYCLE, ENGINE_MODEL_LLP_LIMIT_CYCLES
 from app.sim.v2.core import State, register
 from app.sim.v2.drivers import OperatingContext
+from app.sim.v2.faults import fault_rate
 
 PARAMS = {
     # TIME SCALE: C-MAPSS runs to failure in ~206 cycles, which are not flights. One model cycle (one unit of the
@@ -27,7 +29,7 @@ PARAMS = {
     # flights (narrow-body shop-visit interval prior, 15-25k). Only the wear RATE is scaled: the sensor map is a
     # function of life fraction p and is unchanged. Set 1.0 to recover the raw C-MAPSS time axis (the validation
     # in docs/SIM-V2-ENGINE.md is run with 1.0 so its numbers stay comparable to the data).
-    "flights_per_model_cycle": 87.0,
+    "flights_per_model_cycle": ENGINE_FLIGHTS_PER_MODEL_CYCLE,  # shared constant (app.sim.constants)
     "jitter_sigma": 0.08,  # prior: per-cycle lognormal wear jitter
     "hot_per_c": 0.012,  # prior: +1.2% wear per degC above reference OAT (capped)
     "hot_ref_c": 15.0,
@@ -43,14 +45,16 @@ PARAMS = {
     "egt_margin_sd_c": 10.0,
     "egt_hot_c_per_c": 0.5,  # prior: margin lost per degC OAT above reference
     "egt_fault_c": 25.0,  # prior: extra margin loss at full HPT erosion severity
-    "llp_limit_cycles": 25000.0,  # prior: life-limited part cycle limit (flights; narrow-body LLPs are 20-30k)
+    "llp_limit_cycles": ENGINE_MODEL_LLP_LIMIT_CYCLES,  # shared constant: assumed (no citation) LLP cycle limit, flights (20-30k band)
     "llp_initial_frac_max": 0.3,
     "llp_derate_gain": 0.1,  # prior: full-thrust takeoff counts ~10% more LLP cycle
-    "fault_progress_hpt": 0.5,  # prior: fraction of life consumed at full erosion severity
+    "fault_progress_hpt": 0.6,  # prior: fraction of life consumed at full erosion severity (was 0.5: a severity-1 fault left hi at 0.40-0.44, never a shop visit)
     "fault_progress_foul": 0.15,
     "hpc_eff_loss_pct": 4.0,  # prior: HPC efficiency points lost at end of life
     "module_eff_loss_pct": 3.0,  # prior: other modules, efficiency points at full deficit
-    "repair_keep": 0.5,  # repair keeps repair_keep + (1 - repair_keep) * q of progress
+    # on-wing repair (borescope blade blend / wash) keeps repair_keep + (1 - repair_keep) * q of ALL damage, so one repair gives back at most
+    # 1 - repair_keep = 0.15 of health (was 0.5 on progress and faults: one repair raised hi 0.39 -> 0.66)
+    "repair_keep": 0.85,
     "overhaul_keep": 0.6,  # shop visit keeps overhaul_keep * q of progress
 }
 MODULES = ("fan", "lpc", "hpc", "hpt", "lpt")
@@ -183,6 +187,8 @@ class EngineModel:
         sj = PARAMS["jitter_sigma"]
         jitter = np.exp(sj * z - 0.5 * sj * sj)
         dp = accel / PARAMS["accel_ref"] * np.maximum(state["stress_ext"], 0.0) * jitter / (state["life_scale"] * PARAMS["flights_per_model_cycle"])
+        # HPT blade erosion also accelerates core wear: (1/m)**3 with m = LIBRARY effect_mult at the fault severity (EGT margin loss)
+        dp = dp * fault_rate(state, "hpt_blade_erosion")
         state["progress"] = np.minimum(state["progress"] + dp, 1.0)
         # acute faults: running peak so hi never recovers without maintenance
         sev_h = self._fault(state, "hpt_blade_erosion", n)
@@ -237,8 +243,9 @@ class EngineModel:
         if action in ("repair", "overhaul"):
             keep = PARAMS["repair_keep"] + (1.0 - PARAMS["repair_keep"]) * q if action == "repair" else PARAMS["overhaul_keep"] * q
             state["progress"][idx] *= keep
+            fk = 0.2 if action == "overhaul" else keep  # repair: a partial restoration of every damage term, bounded by 1 - repair_keep
             for k in ("fault_peak", "fault_hpt_peak", "fault_foul_peak"):
-                state[k][idx] *= 0.2 if action == "overhaul" else 0.5
+                state[k][idx] *= fk
             state["age_virtual"][idx] *= keep
         else:
             new = _sample(_fit(), state["variant"][idx], rng)
