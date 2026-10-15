@@ -64,8 +64,10 @@ class PartInstance:
     since_repair_cycles: float = 0.0
     llp_limit_cycles: float | None = None
     installed_on: str | None = None
-    status: str = "installed"  # installed | removed | scrapped
+    status: str = "installed"  # installed | removed | scrapped (rotables layer also: spare)
     provenance: str = PROVENANCE
+    mod_status: str = "none"  # rotables layer: none | pre | post (part-number variant); "none" keeps the lumped default
+    shop_visits: int = 0      # rotables layer: completed shop visits of this serial
 
     def accrue(self, hours: float, cycles: float) -> None:
         self.tsn_h += hours
@@ -79,7 +81,12 @@ class PartInstance:
         return None if self.llp_limit_cycles is None else self.llp_limit_cycles - self.csn
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        if self.mod_status == "none":
+            d.pop("mod_status")
+        if self.shop_visits == 0:
+            d.pop("shop_visits")
+        return d
 
 
 @dataclass
@@ -105,9 +112,20 @@ class Removal:
     time: str | None
     new_serial: str | None = None
     provenance: str = PROVENANCE
+    # Rotables layer only (defaults keep lumped-world records and state hashes unchanged):
+    part_no: str = ""
+    shop_finding: str | None = None  # confirmed | nff | partial
+    installed_at: str | None = None  # when this serial was installed in the position it was just removed from
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        d = asdict(self)
+        if not self.part_no:
+            d.pop("part_no")
+        if self.shop_finding is None:
+            d.pop("shop_finding")
+        if self.installed_at is None:
+            d.pop("installed_at")
+        return d
 
 
 @dataclass
@@ -311,6 +329,7 @@ class MaintenanceEngine:
         self.q_by_action = {**DEFAULT_Q, **(q_by_action or {})}
         self.pod_params = dict(pod or {})
         self.nff_health = nff_health
+        self.external_swap = False  # True: a rotables pool installs the replacement serial (no new serial minted here)
         self.mel = MelBook()
         self._rng = StreamRng(seed, "maintenance.inspect")
         self._n_inspect = 0
@@ -362,10 +381,12 @@ class MaintenanceEngine:
             if action == "replace":
                 pos = part.position
                 self.registry.remove(kind, i)
-                new = self.registry.install(kind, i, position=pos, tail=tail, part_no=part.part_no, llp_limit_cycles=part.llp_limit_cycles)
-                new_serial = new.serial
+                if not self.external_swap:
+                    new = self.registry.install(kind, i, position=pos, tail=tail, part_no=part.part_no, llp_limit_cycles=part.llp_limit_cycles)
+                    new_serial = new.serial
             elif action == "overhaul":
-                part.tso_h = part.cso = part.since_repair_cycles = 0.0
+                if not self.external_swap:   # with a rotables pool the shop resets TSO/CSO (Kijima) when the unit leaves it
+                    part.tso_h = part.cso = part.since_repair_cycles = 0.0
             elif action == "repair":
                 part.since_repair_cycles = 0.0
             rec = Removal(serial=part.serial, kind=kind, unit=i, position=part.position, tail=tail, action=action,

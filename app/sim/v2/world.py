@@ -37,6 +37,7 @@ from app.sim.v2.coupling import CouplingGraph
 from app.sim.v2.drivers import OperatingContext, build_context
 from app.sim.v2.faults import FaultInjector
 from app.sim.v2.models.tires import PARAMS as TIRE_PARAMS
+from app.sim.v2.rotables import SWAP_ACTIONS, RotableConfig, RotablePool
 from app.sim.v2.maintenance import (NFF_RETURN, CheckDef, InspectionRecord, InstallRegistry, MaintenanceEngine, MelDeferral,
                                     PartInstance, Removal, ScheduledCheckGenerator)
 
@@ -126,7 +127,8 @@ class World:
     ``(tail, cycle) -> FlightProfile``, a sequence of ``FlightProfile`` (cycled, shared) or of ``Leg`` (cycled per tail)."""
 
     def __init__(self, seed: int, tails: Sequence[str], legs_or_profiles: Any = None, stochastic: bool = True,
-                 coupling: bool = True, faults: bool = True, utilisation: float = 1.0, auto_maintain: bool = True) -> None:
+                 coupling: bool = True, faults: bool = True, utilisation: float = 1.0, auto_maintain: bool = True,
+                 rotables: bool | RotableConfig = False) -> None:
         self.seed = int(seed)
         self.utilisation = float(utilisation)  # multiplies drivers.LEGS_PER_DAY (cycles per calendar day); 1.0 = 6 legs/day
         self.auto_maintain = bool(auto_maintain)  # False: only explicit actions (live service) change components
@@ -147,6 +149,12 @@ class World:
             for i in range(self.counts[k]):
                 self.registry.install(k, i, position=self.component_name(k, i), tail=self.tails[int(self.unit_tail[k][i])])
         self.maintenance = MaintenanceEngine(self.seed, self.registry)
+        self.rotables: RotablePool | None = None
+        if rotables:   # serialised rotable layer (docs/ROTABLES.md); default off: lumped behaviour is unchanged
+            cfg = rotables if isinstance(rotables, RotableConfig) else RotableConfig()
+            self.rotables = RotablePool(self.seed, self.kinds, self.counts, cfg)
+            self.rotables.bootstrap(self.registry, self.component_name, self.tails, self.unit_tail)
+            self.maintenance.external_swap = True
         self._fc_rng = StreamRng(self.seed, "world.false_call")
         self._mx_rng = StreamRng(self.seed, "world.mx_induced")
         self._shop_rng = StreamRng(self.seed, "world.nff_shop")
@@ -209,14 +217,24 @@ class World:
         if self.coupling_enabled:
             self.coupling.apply(fl, ctx)
         saved: dict[str, np.ndarray] = {}
+        if self.rotables is not None:
+            for t, (_, a) in enumerate(pairs):
+                self.rotables.set_station(t, _arr_name(a))
         for k in self.kinds:
+            mult: Any = None
             if k in INFANT:
                 m, tau = INFANT[k]
+                mult = 1.0 + (m - 1.0) * np.exp(-self.infant_age[k] / tau)
+            if self.rotables is not None:   # per-serial quality x mod-status factor of the unit in the slot
+                mult = self.rotables.slot_mult[k] if mult is None else mult * self.rotables.slot_mult[k]
+            if mult is not None:
                 saved[k] = fl.state[k]["stress_ext"]
-                fl.state[k]["stress_ext"] = saved[k] * (1.0 + (m - 1.0) * np.exp(-self.infant_age[k] / tau))
+                fl.state[k]["stress_ext"] = saved[k] * mult
         fl.step_cycle(ctx)
         for k, v in saved.items():
             fl.state[k]["stress_ext"] = v
+        if self.rotables is not None:
+            self.rotables.step(fl.state, fl.cycle)
         for k in self.kinds:
             self.infant_age[k] = self.infant_age[k] + 1.0
         emitted = fl.emit_all(ctx)
@@ -268,7 +286,12 @@ class World:
     def _do(self, kind: str, unit: int, action: str, reason: str, text: str, ctx: OperatingContext, induce: bool = False) -> None:
         st = self.fleet.state[kind]
         t = int(self.unit_tail[kind][unit])
-        now = START + timedelta(days=float(ctx.calendar_days[t]))
+        now_day = float(ctx.calendar_days[t])
+        if self.rotables is not None:   # never remove a serial before its (possibly rush-)install time
+            cur = self.registry.installed.get((kind, int(unit)))
+            if cur in self.rotables.units:
+                now_day = max(now_day, self.rotables.units[cur].installed_day)
+        now = START + timedelta(days=now_day)
         hi0 = float(st["hi"][unit])
         if action not in ("inspect", NFF_RETURN):   # a no-fault-found return leaves faults, MEL items and state untouched
             # An on-wing engine repair (borescope blade blend / compressor wash) only clears fouling: eroded blades stay eroded
@@ -282,6 +305,8 @@ class World:
             recs = self.maintenance.apply(self.fleet, kind, [unit], action, reason=reason, now=now, reason_text=text)
             if action in ("replace", "overhaul") and recs and not getattr(recs[0], "nff", False):
                 self.infant_age[kind][unit] = 0.0
+        if self.rotables is not None and action in SWAP_ACTIONS and recs and isinstance(recs[0], Removal):
+            self.rotables.swap(self, kind, unit, recs[0], now_day, t)
         ev: dict[str, Any] = {"cycle": self.fleet.cycle, "kind": kind, "unit": unit, "tail": self.tails[t], "action": action,
                               "reason": reason, "hi_before": hi0, "hi_after": float(st["hi"][unit])}
         if action == "inspect":
@@ -546,6 +571,10 @@ class World:
     def removals(self) -> list[Removal]:
         return self.maintenance.removals
 
+    def rotable_truth(self) -> list[dict[str, Any]]:
+        """HIDDEN per-serial truth (quality, rogue flag) of the rotables layer; [] when it is off. Validation only."""
+        return [] if self.rotables is None else self.rotables.truth()
+
     def health_index(self) -> dict[str, np.ndarray]:
         return self.fleet.health_index()
 
@@ -570,6 +599,9 @@ class World:
             "bite": {str(i): h for i, h in self.bite_hist.items()},
             "events": self.events,
         }
+        if self.rotables is not None:
+            blob["rotables"] = self.rotables.to_blob()
+            out.update(self.rotables.arrays())
         out["blob"] = np.array(json.dumps(blob, sort_keys=True))
         has_ctx = self._ctx is not None
         out["ctx/present"] = np.array(has_ctx)
@@ -606,6 +638,8 @@ class World:
         self.sensor_state = blob["sensor"]
         self.bite_hist = {int(i): [tuple(x) for x in h] for i, h in blob["bite"].items()}
         self.events = blob["events"]
+        if self.rotables is not None and "rotables" in blob:
+            self.rotables.restore(blob["rotables"], {k: v for k, v in snap.items() if k.startswith("rot/")}, reg)
         self.rows = []
         if bool(snap["ctx/present"]):
             self._ctx = OperatingContext(**{f.name: np.array(snap[f"ctx/{f.name}"], copy=True) for f in fields(OperatingContext)})

@@ -101,7 +101,7 @@ def _mount_ops() -> None:
     import importlib
     import logging
 
-    for name in ("llp_api", "mel_api", "mc_api"):
+    for name in ("llp_api", "mel_api", "mc_api", "spares_api"):
         try:
             module = importlib.import_module(f"app.ops.{name}")
         except ModuleNotFoundError as exc:
@@ -115,3 +115,13 @@ def _mount_ops() -> None:
 
 
 _mount_ops()
+
+
+try:
+    from app.insights.operating_point_api import router as _op_router
+
+    router.include_router(_op_router)
+except ImportError as _exc:  # optional module
+    import logging as _logging
+
+    _logging.getLogger(__name__).warning("operating-point route unavailable: %s", _exc)
