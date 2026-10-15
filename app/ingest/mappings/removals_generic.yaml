@@ -1,0 +1,82 @@
+# Generic template. Adapt the column names and enum maps to your export. Not tied to any vendor format.
+name: removals_generic
+target: removals
+delimiter: ','
+encoding: utf-8
+missing_markers:
+- ''
+- N/A
+- n/a
+- '-'
+- 'NULL'
+timezone:
+  mode: utc
+  default_offset: +00:00
+provenance: operator-export
+columns:
+  part_number:
+    source: part_number
+    type: str
+    required: true
+  serial:
+    source: serial
+    type: str
+    required: false
+  tail:
+    source: tail
+    type: str
+    required: false
+  position:
+    source: position
+    type: str
+    required: true
+  installed_at:
+    source: installed_at
+    type: datetime
+    required: false
+  removed_at:
+    source: removed_at
+    type: datetime
+    required: false
+  tsn_h:
+    source: tsn_h
+    type: float
+    required: false
+    unit: hours
+  csn:
+    source: csn
+    type: int
+    required: false
+  removal_reason:
+    source: removal_reason
+    type: str
+    required: false
+  scheduled:
+    source: scheduled
+    type: bool
+    required: false
+  shop_finding:
+    source: shop_finding
+    type: str
+    required: false
+  ata_chapter:
+    source: ata_chapter
+    type: str
+    required: false
+enums:
+  removal_reason:
+    scheduled: scheduled
+    unscheduled: unscheduled
+    nff_suspected: nff_suspected
+    shop_finding_confirmed: shop_finding_confirmed
+    other: other
+    U/S: unscheduled
+    UNSCHED: unscheduled
+    SCHED: scheduled
+    NFF: nff_suspected
+    CONFIRMED: shop_finding_confirmed
+    OTHER: other
+  shop_finding:
+    confirmed: confirmed
+    nff: nff
+    no_data: no_data

@@ -71,10 +71,20 @@ def _rul_task(comp: ComponentState, card: TaskCard, state: FleetState, now: date
     p10 = comp.rul_cycles.p10  # type: ignore[union-attr]  (checked by caller)
     future = _future_legs(state.legs, comp.tail, now)
     n = int(p10 + 1e-9)  # floor: fly at most this many more cycles
+    econ_note = ""
+    if settings.REPLACEMENT_ECONOMICS:  # flag-gated, default OFF: economics-derived latest acceptable time
+        from app.decision.replacement import CostModel, economic_deadline_cycles
+
+        t_e, econ_note = economic_deadline_cycles(
+            comp.rul_cycles, CostModel.from_job(card.part, card.part_qty, card.duration_h))  # type: ignore[arg-type]
+        n = max(0, int(t_e + 1e-9))
     deadline, how = cycle_deadline(future, n, now)
     days = (deadline - now).total_seconds() / 86400.0
     basis = (f"{_short(comp.component_id)} RUL p10 = {p10:g} cycles = about {days:.1f} days at this aircraft's rotation "
              f"({how}); deadline {fmt(deadline)} (conservative p10, hard constraint)")
+    if econ_note:
+        basis = (f"{_short(comp.component_id)} RUL p10 = {p10:g} cycles; {econ_note}: {n} cycles = about {days:.1f} days at this "
+                 f"aircraft's rotation ({how}); deadline {fmt(deadline)} (hard constraint)")
     return Task(
         id=f"T-{comp.tail}-{_short(comp.component_id)}-{seq:03d}",
         tail=comp.tail, component_id=comp.component_id, title=card.title,

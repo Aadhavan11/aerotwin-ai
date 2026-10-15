@@ -32,6 +32,8 @@ SIM_START = "2026-10-12T12:00:00Z"  # SimClock origin (UTC)
 # solver tasks (T-LLP-...); MEL_TASKS: open MEL deferrals become rectification tasks (T-MEL-...). See app/solver/links.py.
 LLP_TASKS: bool = _flag("LLP_TASKS")
 MEL_TASKS: bool = _flag("MEL_TASKS")
+# Economics-derived RUL task deadlines (default OFF: the raw p10 rule stays). See app/decision/replacement.py.
+REPLACEMENT_ECONOMICS: bool = _flag("REPLACEMENT_ECONOMICS")
 VERSION = "0.1.0"
 
 

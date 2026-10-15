@@ -1,0 +1,44 @@
+# Generic template. Adapt the column names and enum maps to your export. Not tied to any vendor format.
+name: workorders_generic
+target: workorders
+delimiter: ','
+encoding: utf-8
+missing_markers:
+- ''
+- N/A
+- n/a
+- '-'
+- 'NULL'
+timezone:
+  mode: utc
+  default_offset: +00:00
+provenance: operator-export
+columns:
+  wo_id:
+    source: wo_id
+    type: str
+    required: true
+  tail:
+    source: tail
+    type: str
+    required: true
+  opened_at:
+    source: opened_at
+    type: datetime
+    required: true
+  closed_at:
+    source: closed_at
+    type: datetime
+    required: false
+  ata:
+    source: ata
+    type: str
+    required: false
+  task_text:
+    source: task_text
+    type: str
+    required: true
+  kind:
+    source: kind
+    type: str
+    required: false

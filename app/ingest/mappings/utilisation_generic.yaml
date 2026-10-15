@@ -1,0 +1,38 @@
+# Generic template. Adapt the column names and enum maps to your export. Not tied to any vendor format.
+name: utilisation_generic
+target: utilisation
+delimiter: ','
+encoding: utf-8
+missing_markers:
+- ''
+- N/A
+- n/a
+- '-'
+- 'NULL'
+timezone:
+  mode: utc
+  default_offset: +00:00
+provenance: operator-export
+columns:
+  tail:
+    source: tail
+    type: str
+    required: true
+  date:
+    source: date
+    type: date
+    required: true
+  flight_hours:
+    source: flight_hours
+    type: float
+    required: true
+    unit: hhmm_to_hours
+  cycles:
+    source: cycles
+    type: int
+    required: true
+  apu_hours:
+    source: apu_hours
+    type: float
+    required: false
+    unit: hours
