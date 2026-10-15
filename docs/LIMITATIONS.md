@@ -17,7 +17,11 @@ twin of any real aircraft, operator or manufacturer, and nothing in it has regul
 * **Lumped units.** One state per tail per kind (engines: two per tail). Brakes: one state for all braked wheels
   (`N_BRAKES` shares energy). Tires: one state for the main-gear tire set. Hydraulics, electrical, ECS, APU: one
   per-tail aggregate each. Avionics: one box standing for many LRUs. Statistics at part-number or position level
-  (per wheel, per pack, per LRU, per pump) do not exist in the models.
+  (per wheel, per pack, per LRU, per pump) do not exist in the models. The model STATE is still lumped per position.
+  With `World(..., rotables=True)` (default off) a serialised rotable layer adds per-serial lineage on top: serials,
+  part-number / mod variants, shop visits with findings, rogue units and swaps between tails (`docs/ROTABLES.md`). It does
+  not make the physics per-serial: wear stays a per-position proxy scaled by a per-serial factor, and every number in the
+  layer is an assumed prior.
 * **No affiliation, no real data.** No airline, manufacturer, MRO or regulator data is used, and nothing is endorsed
   by or derived from any of them. Tail names (`SIM-xxx`), part numbers, serials and station codes are fictional or
   generic. The 8 stations use a simplified static climate table (`_CLIMATE` in `app/sim/profile.py`: elevation, a

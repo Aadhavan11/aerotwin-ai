@@ -80,7 +80,7 @@ def build_world(spec: dict[str, Any]) -> World:
         tails = [f"SIM-{i:03d}" for i in range(1, fleet + 1)]
     else:
         tails = list(fleet)
-    w = World(seed, tails, stochastic=True, utilisation=1.0, auto_maintain=True)
+    w = World(seed, tails, stochastic=True, utilisation=1.0, auto_maintain=True, rotables=bool(spec.get("rotables", False)))
     if spec.get("initial_wear", True):
         age_world(w, initial_wear(state, w))
     return w
@@ -291,6 +291,10 @@ class Runner:
         from app.sim.v2.manifest import build_manifest
 
         recs = [dataclasses.asdict(r) for r in w.removals()]
+        if w.rotables is None:   # lineage columns exist only with the rotables layer (default exports stay byte-identical)
+            for rec in recs:
+                for col in ("part_no", "shop_finding", "installed_at"):
+                    rec.pop(col, None)
         buf = io.StringIO()
         if recs:
             wr = csv.DictWriter(buf, fieldnames=list(recs[0]), lineterminator="\n")
@@ -298,6 +302,14 @@ class Runner:
             wr.writerows(recs)
         with gzip.GzipFile(str(out / "removals.csv.gz"), "wb", compresslevel=6, mtime=0) as g:
             g.write(buf.getvalue().encode())
+        if w.rotables is not None:
+            from app.sim.v2.rotables import install_rows, removal_rows
+
+            lineage = {"provenance": PROVENANCE, "installs": install_rows(w), "removals": removal_rows(w),
+                       "shop_visits": [v.as_dict() for v in w.rotables.shop_visits], "exposure": w.rotables.exposure}
+            (out / "lineage.json").write_text(json.dumps(lineage, sort_keys=True))
+            # separate HIDDEN ground truth for validation; never a telemetry / reliability-pack input
+            (out / "rotables_truth.json").write_text(json.dumps({"provenance": PROVENANCE, "serials": w.rotable_truth()}, sort_keys=True))
         (out / "ground_truth.json").write_text(json.dumps({"provenance": PROVENANCE, "faults": w.ground_truth()}, sort_keys=True))
         (out / "events.json").write_text(json.dumps({"provenance": PROVENANCE, "events": w.events}, sort_keys=True))
         h = w.state_hash()
